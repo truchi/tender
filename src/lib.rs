@@ -1,3 +1,3 @@
-mod grid;
+pub mod grid;
 
-pub use grid::*;
+// pub use grid::*;

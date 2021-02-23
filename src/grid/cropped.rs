@@ -1,4 +1,4 @@
-use crate::*;
+use crate::grid::*;
 
 /// A grid that only iterates over a [`Rect`](Rect).
 ///

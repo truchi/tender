@@ -1,4 +1,4 @@
-use crate::Coord;
+use crate::grid::*;
 
 /// Encodes memory layout in [`Size`](crate::Size)s types
 /// ([`RowMajor`](RowMajor) / [`ColMajor`](ColMajor)).

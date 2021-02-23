@@ -1,4 +1,4 @@
-use crate::*;
+use crate::grid::*;
 
 /// [`Size`](Size) as [`Major`](Major) getter.
 ///

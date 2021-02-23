@@ -1,4 +1,4 @@
-use crate::*;
+use crate::grid::*;
 use std::marker::PhantomData;
 
 pub struct Iter2D<M, F> {

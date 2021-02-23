@@ -1,4 +1,4 @@
-use crate::*;
+use crate::grid::*;
 
 /// Indexes for [`Grid::item`](Grid::item).
 ///

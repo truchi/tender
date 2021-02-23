@@ -1,4 +1,4 @@
-use crate::*;
+use crate::grid::*;
 
 /// Base trait for dealing with grids.
 ///

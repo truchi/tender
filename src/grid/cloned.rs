@@ -1,4 +1,4 @@
-use crate::*;
+use crate::grid::*;
 use std::{
     iter::{Cloned as StdCloned, Copied as StdCopied, Map},
     ops::{Deref, DerefMut},

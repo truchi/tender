@@ -1,6 +1,6 @@
 pub mod iter;
 
-use crate::*;
+use crate::grid::*;
 
 /// Creates a grid that repeats elements of type `I` all over a [`Size`](Size)
 /// by applying the provided closure.

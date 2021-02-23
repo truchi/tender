@@ -1,4 +1,4 @@
-use crate::*;
+use crate::grid::*;
 use std::ops::Range;
 
 pub fn index0d<M: Major>(point: Point, size: M) -> usize {

@@ -1,7 +1,7 @@
 mod index;
 pub mod iter;
 
-use crate::*;
+use crate::grid::*;
 use index::*;
 use std::marker::PhantomData;
 

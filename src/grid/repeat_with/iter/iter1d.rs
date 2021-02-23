@@ -1,4 +1,4 @@
-use crate::*;
+use crate::grid::*;
 use std::{marker::PhantomData, ops::Range};
 
 pub struct Iter1D<M, F> {

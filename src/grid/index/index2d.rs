@@ -1,4 +1,4 @@
-use crate::*;
+use crate::grid::*;
 use std::ops::RangeBounds;
 
 /// Indexes for [`GridCols::cols`](GridCols::cols) /

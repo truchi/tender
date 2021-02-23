@@ -1,4 +1,4 @@
-use crate::*;
+use crate::grid::*;
 use std::{
     iter::{repeat as std_repeat, Repeat as StdRepeat, Take},
     ops::Range,
