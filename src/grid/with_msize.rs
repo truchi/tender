@@ -1,4 +1,5 @@
 use crate::grid::*;
+use std::ops::Deref;
 
 /// [`Size`](Size) as [`Major`](Major) getter.
 ///
@@ -10,7 +11,7 @@ pub trait WithMSize<M: Major>: WithSize {
     }
 }
 
-impl<M: Major, T: std::ops::Deref<Target = U>, U: WithMSize<M>> WithMSize<M> for T {
+impl<M: Major, T: Deref<Target = U>, U: WithMSize<M>> WithMSize<M> for T {
     fn msize(&self) -> M {
         self.deref().msize()
     }

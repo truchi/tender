@@ -1,4 +1,5 @@
 use crate::grid::*;
+use std::ops::Deref;
 
 /// [`Size`](Size) getter.
 ///
@@ -8,7 +9,7 @@ pub trait WithSize {
     fn size(&self) -> Size;
 }
 
-impl<T: std::ops::Deref<Target = U>, U: WithSize> WithSize for T {
+impl<T: Deref<Target = U>, U: WithSize> WithSize for T {
     fn size(&self) -> Size {
         self.deref().size()
     }
