@@ -12,14 +12,14 @@ pub struct Minor<'a, M, I, T> {
 
 impl<'a, M: Major, I, T: AsRef<[I]>> Minor<'a, M, I, T> {
     pub(crate) unsafe fn new_unchecked(grid: &'a Grid1D<M, I, T>, index: impl Index1D) -> Self {
-        let msize = grid.msize();
-        let (i, Range { start, end }) = index.unchecked(msize.minor());
+        let size = grid.size;
+        let (i, Range { start, end }) = index.unchecked(size.minor());
 
         Self {
             items:    grid.as_ref(),
-            current:  index0d(M::new(i, start).into(), msize),
+            current:  index0d(M::new(i, start).into(), size),
             count:    end - start,
-            by:       msize.major(),
+            by:       size.major(),
             _phantom: PhantomData,
         }
     }

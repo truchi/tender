@@ -15,7 +15,6 @@ mod grid;
 mod index;
 mod major;
 mod utils;
-mod with_msize;
 mod with_size;
 
 pub use self::grid::*;
@@ -25,7 +24,5 @@ pub use index::*;
 pub use major::*;
 pub use utils::*;
 pub use with_size::*;
-
-pub(crate) use with_msize::*;
 
 use crate::geometry::*;

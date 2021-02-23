@@ -15,7 +15,7 @@ impl<'a, M: Major, I, T: AsMut<[I]>> MajorsMut<'a, M, I, T> {
         let (range, minor) = major_index2d::<M>(index);
 
         // Splitting to the first col/row of interest
-        let major = grid.msize().major();
+        let major = grid.size.major();
         let first = minor.start * major;
         let items = grid.as_mut();
         debug_assert!(first <= items.len(), "Index out of bounds");

@@ -57,12 +57,6 @@ impl<M: Major, I, T> WithSize for Grid1D<M, I, T> {
     }
 }
 
-impl<M: Major, I, T> WithMSize<M> for Grid1D<M, I, T> {
-    fn msize(&self) -> M {
-        self.size
-    }
-}
-
 macro_rules! grid {
     ($(
         $Type:ident<$M:ident>
@@ -100,8 +94,7 @@ macro_rules! grid {
             type Item = &'a $($mut)? I;
 
             unsafe fn item_unchecked(self, index: impl Index0D) -> Self::Item {
-                let msize = self.msize();
-                let index = index0d(index.unchecked(), msize);
+                let index = index0d(index.unchecked(), self.size);
 
                 self.items.$as().$get(index)
             }
@@ -112,7 +105,7 @@ macro_rules! grid {
             type $Assoc = &'a $($mut)? [I];
 
             unsafe fn $fn(self, index: impl Index1D) -> Self::$Assoc {
-                let index = index1d(index.$fn(self.size()), self.msize());
+                let index = index1d(index.$fn(self.size()), self.size);
 
                 self.items.$as().$get(index)
             }
