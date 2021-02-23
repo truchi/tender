@@ -17,7 +17,7 @@ pub struct Grid1D<M, I, T> {
 
 /// ### Constructors
 impl<M: Major, I, T> Grid1D<M, I, T> {
-    /// Creates a new [`Grid1D`](crate::Grid1D), without checking size.
+    /// Creates a new [`Grid1D`](Grid1D), without checking size.
     pub fn new_unchecked(size: Size, items: T) -> Self {
         Self {
             size: size.into(),
@@ -26,8 +26,7 @@ impl<M: Major, I, T> Grid1D<M, I, T> {
         }
     }
 
-    /// Creates a new [`Grid1D`](crate::Grid1D) if `len != x * y`, `None`
-    /// otherwise.
+    /// Creates a new [`Grid1D`](Grid1D) if `len != x * y`, `None` otherwise.
     pub fn new(size: Size, items: T) -> Option<Self>
     where
         T: AsRef<[I]>,
