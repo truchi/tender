@@ -7,7 +7,7 @@ pub mod repeat_with;
 
 pub use grid1d::{ColGrid1D, Grid1D, RowGrid1D};
 pub use repeat::{repeat, Repeat};
-pub use repeat_with::RepeatWith;
+pub use repeat_with::{repeat_with, RepeatWith};
 
 mod cloned;
 mod cropped;
@@ -27,3 +27,5 @@ pub use utils::*;
 pub use with_size::*;
 
 pub(crate) use with_msize::*;
+
+use crate::geometry::*;
