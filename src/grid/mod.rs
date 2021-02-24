@@ -22,7 +22,7 @@ pub use cloned::*;
 pub use cropped::*;
 pub use index::*;
 pub use major::*;
-pub use utils::*;
 pub use with_size::*;
 
 use crate::geometry::*;
+use utils::*;
