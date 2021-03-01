@@ -7,4 +7,4 @@ use crate::style::*;
 /// `Default`s to `Background(Color::ResetColor)`, user's default terminal's
 /// background color.
 #[derive(Copy, Clone, Eq, PartialEq, Default, Hash, Debug)]
-pub struct Background(pub Rgba);
+pub struct Background(pub PreRgba);
