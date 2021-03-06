@@ -10,7 +10,7 @@ use std::ops::{Range, RangeBounds};
 ///
 /// `usize` (implied [`RangeFull`](std::ops::RangeFull)) and `(usize, T:
 /// RangeBounds<usize>)` are [`Index1D`](Index1D)s.
-pub trait Index1D: Sized {
+pub trait Index1D: Clone + Sized {
     /// Returns the index as `(usize, Range<usize>)`, without bounds checking.
     ///
     /// [`Unbounded`](std::ops::Bound::Unbounded) start/end bounds will
@@ -97,7 +97,7 @@ impl Index1D for usize {
     }
 }
 
-impl<T: RangeBounds<usize>> Index1D for (usize, T) {
+impl<T: RangeBounds<usize> + Clone> Index1D for (usize, T) {
     fn unchecked(self, max_end: usize) -> (usize, Range<usize>) {
         (self.0, ToRange::unchecked(self.1, max_end))
     }

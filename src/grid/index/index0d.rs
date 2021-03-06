@@ -5,7 +5,7 @@ use crate::grid::*;
 /// The underlying type to index an item is [`Point`](Point).
 ///
 /// Anything that `Into<Point>` is an [`Index0D`](Index0D).
-pub trait Index0D {
+pub trait Index0D: Clone {
     /// Returns the index as a [`Point`](Point), without bounds checking.
     fn unchecked(self) -> Point;
 
@@ -18,7 +18,7 @@ pub trait Index0D {
     fn checked(self, size: Size) -> Option<Point>;
 }
 
-impl<T: Into<Point>> Index0D for T {
+impl<T: Into<Point> + Clone> Index0D for T {
     fn unchecked(self) -> Point {
         self.into()
     }

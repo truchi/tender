@@ -16,6 +16,7 @@ mod index;
 mod major;
 mod utils;
 mod with_size;
+mod zip;
 
 pub use self::grid::*;
 pub use cloned::*;
@@ -23,6 +24,7 @@ pub use cropped::*;
 pub use index::*;
 pub use major::*;
 pub use with_size::*;
+pub use zip::*;
 
 use crate::geometry::*;
 use utils::*;

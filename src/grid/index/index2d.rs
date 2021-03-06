@@ -11,7 +11,7 @@ use std::ops::RangeBounds;
 /// [`RangeFull`](std::ops::RangeFull) (implied on both axis), `Coord<X:
 /// RangeBounds<usize>, Y: RangeBounds<usize>>` and `(X: RangeBounds<usize>, Y:
 /// RangeBounds<usize>)` are [`Index2D`](Index2D)s.
-pub trait Index2D {
+pub trait Index2D: Clone {
     /// Returns the index as a [`Rect`](Rect), without bounds checking.
     ///
     /// [`Unbounded`](std::ops::Bound::Unbounded) start/end bounds will
@@ -45,7 +45,7 @@ impl Index2D for std::ops::RangeFull {
     }
 }
 
-impl<X: RangeBounds<usize>, Y: RangeBounds<usize>> Index2D for Coord<X, Y> {
+impl<X: RangeBounds<usize> + Clone, Y: RangeBounds<usize> + Clone> Index2D for Coord<X, Y> {
     fn unchecked(self, size: Size) -> Rect {
         (self.x, self.y).unchecked(size)
     }
@@ -55,7 +55,7 @@ impl<X: RangeBounds<usize>, Y: RangeBounds<usize>> Index2D for Coord<X, Y> {
     }
 }
 
-impl<X: RangeBounds<usize>, Y: RangeBounds<usize>> Index2D for (X, Y) {
+impl<X: RangeBounds<usize> + Clone, Y: RangeBounds<usize> + Clone> Index2D for (X, Y) {
     fn unchecked(self, size: Size) -> Rect {
         Point {
             x: ToRange::unchecked(self.0, size.x),

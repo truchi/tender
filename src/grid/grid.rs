@@ -60,6 +60,13 @@ pub trait Grid: WithSize + Sized {
     fn cropped(self, rect: impl Index2D) -> Option<Cropped<Self>> {
         Cropped::new(rect, self)
     }
+
+    /// Creates a new grid by zipping `self` with `other`.
+    ///
+    /// Yields elements from the overlapping area of both grids.
+    fn zip<U: Grid>(self, other: U) -> Zip<Self, U> {
+        Zip::new(self, other)
+    }
 }
 
 macro_rules! grid1d {
