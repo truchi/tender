@@ -54,6 +54,7 @@ macro_rules! grid1d {
                 let mut index = index.$fn(self.size());
                 index.0 += self.rect.$i.start;
                 index.1.start += self.rect.$range.start;
+                index.1.end += self.rect.$range.start;
 
                 self.grid.$fn(index)
             }
@@ -70,6 +71,8 @@ macro_rules! grid2d {
                 let mut index = index.unchecked(self.size());
                 index.x.start += self.rect.x.start;
                 index.y.start += self.rect.y.start;
+                index.x.end += self.rect.x.start;
+                index.y.end += self.rect.y.start;
 
                 self.grid.$fn(index)
             }
