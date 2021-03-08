@@ -35,7 +35,7 @@ pub trait Index1D: Clone + Sized {
     /// checking.
     ///
     /// [`Unbounded`](std::ops::Bound::Unbounded) start/end bounds will
-    /// transform into `0`/`max_end`.  
+    /// transform into `0`/`size.y`.  
     /// [`Excluded`](std::ops::Bound::Excluded) start bounds and
     /// [`Included`](std::ops::Bound::Included) end bounds may overflow.
     fn col_unchecked(self, size: Size) -> (usize, Range<usize>) {
@@ -52,7 +52,6 @@ pub trait Index1D: Clone + Sized {
     /// - `usize < size.x`
     /// - `range.start <= range.end`
     /// - `range.end <= size.y`
-    /// - `range.end <= usize::MAX` (saturates end bound)
     fn col(self, size: Size) -> Option<(usize, Range<usize>)> {
         self.checked(size.x, size.y)
     }
@@ -61,7 +60,7 @@ pub trait Index1D: Clone + Sized {
     /// checking.
     ///
     /// [`Unbounded`](std::ops::Bound::Unbounded) start/end bounds will
-    /// transform into `0`/`max_end`.  
+    /// transform into `0`/`size.x`.  
     /// [`Excluded`](std::ops::Bound::Excluded) start bounds and
     /// [`Included`](std::ops::Bound::Included) end bounds may overflow.
     fn row_unchecked(self, size: Size) -> (usize, Range<usize>) {
