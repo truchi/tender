@@ -10,7 +10,7 @@ pub use repeat::{repeat, Repeat};
 pub use repeat_with::{repeat_with, RepeatWith};
 
 mod cloned;
-mod cropped;
+mod crop;
 mod grid;
 mod index;
 mod major;
@@ -20,7 +20,7 @@ mod zip;
 
 pub use self::grid::*;
 pub use cloned::*;
-pub use cropped::*;
+pub use crop::*;
 pub use index::*;
 pub use major::*;
 pub use with_size::*;

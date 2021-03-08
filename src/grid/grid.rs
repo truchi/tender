@@ -51,14 +51,14 @@ pub trait Grid: WithSize + Sized {
 
     /// Creates a new grid by cropping with `rect`, without bounds
     /// checking.
-    unsafe fn cropped_unchecked(self, rect: impl Index2D) -> Cropped<Self> {
-        Cropped::new_unchecked(rect, self)
+    unsafe fn crop_unchecked(self, rect: impl Index2D) -> Crop<Self> {
+        Crop::new_unchecked(rect, self)
     }
 
     /// Creates a new grid by cropping with `rect`, or
     /// [`None`](std::option::Option::None) if out of bounds.
-    fn cropped(self, rect: impl Index2D) -> Option<Cropped<Self>> {
-        Cropped::new(rect, self)
+    fn crop(self, rect: impl Index2D) -> Option<Crop<Self>> {
+        Crop::new(rect, self)
     }
 
     /// Creates a new grid by zipping `self` with `other`.

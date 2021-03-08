@@ -2,13 +2,13 @@ use crate::grid::*;
 
 /// A grid that only iterates over a [`Rect`](Rect).
 ///
-/// This `struct` is created by [`Grid::cropped`](Grid::cropped).
-pub struct Cropped<T> {
+/// This `struct` is created by [`Grid::crop`](Grid::crop).
+pub struct Crop<T> {
     rect: Rect,
     grid: T,
 }
 
-impl<T: WithSize> Cropped<T> {
+impl<T: WithSize> Crop<T> {
     pub(crate) fn new(rect: impl Index2D, grid: T) -> Option<Self> {
         let rect = rect.checked(grid.size())?;
 
@@ -22,7 +22,7 @@ impl<T: WithSize> Cropped<T> {
     }
 }
 
-impl<I> WithSize for Cropped<I> {
+impl<I> WithSize for Crop<I> {
     fn size(&self) -> Size {
         let Size { x, y } = self.rect.clone();
 
@@ -33,7 +33,7 @@ impl<I> WithSize for Cropped<I> {
     }
 }
 
-impl<T: Grid> Grid for Cropped<T> {
+impl<T: Grid> Grid for Crop<T> {
     type Item = T::Item;
 
     unsafe fn item_unchecked(self, index: impl Index0D) -> Self::Item {
@@ -47,7 +47,7 @@ impl<T: Grid> Grid for Cropped<T> {
 
 macro_rules! grid1d {
     ($($Trait:ident $Assoc:ident $fn:ident $i:ident $range:ident)*) => { $(
-        impl<T: $Trait> $Trait for Cropped<T> {
+        impl<T: $Trait> $Trait for Crop<T> {
             type $Assoc = T::$Assoc;
 
             unsafe fn $fn(self, index: impl Index1D) -> Self::$Assoc {
@@ -64,7 +64,7 @@ macro_rules! grid1d {
 
 macro_rules! grid2d {
     ($($Trait:ident $Assoc:ident $fn:ident)*) => { $(
-        impl<T: $Trait> $Trait for Cropped<T> {
+        impl<T: $Trait> $Trait for Crop<T> {
             type $Assoc = T::$Assoc;
 
             unsafe fn $fn(self, index: impl Index2D) -> Self::$Assoc {
