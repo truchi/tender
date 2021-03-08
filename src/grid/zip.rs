@@ -2,6 +2,7 @@ use crate::grid::*;
 use std::iter::{Map, Zip as StdZip};
 
 /// TODO doc
+#[derive(Copy, Clone, Default, Debug)]
 pub struct Zip<A, B> {
     a:    A,
     b:    B,
@@ -12,7 +13,7 @@ impl<A: WithSize, B: WithSize> Zip<A, B> {
     /// TODO doc
     pub(crate) fn new(a: A, b: B) -> Self {
         let Size { x: xa, y: ya } = a.size();
-        let Size { x: xb, y: yb } = a.size();
+        let Size { x: xb, y: yb } = b.size();
 
         Self {
             a,
