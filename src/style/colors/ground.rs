@@ -58,7 +58,6 @@ macro_rules! ground {
             }
         }
 
-        /*
         from!($Ground($ground)
             RgbTuple <->    Rgb
             RgbTuple <->    Rgba
@@ -74,6 +73,7 @@ macro_rules! ground {
             }
         }
 
+        /*
         impl<T: Color> Color for $Ground<T> {
             fn red(self) -> u8 {
                 self.0
@@ -113,27 +113,3 @@ ground!(
     /// A `Background` wrapper for [`Color`](crate::style::Color)s.
     Background(background)
 );
-
-impl<T: Color> From<T> for Foreground<RgbTuple> {
-    fn from(color: T) -> Self {
-        Self(color.into())
-    }
-}
-
-impl<T: Color> From<T> for Foreground<Rgb> {
-    fn from(color: T) -> Self {
-        Self(color.into())
-    }
-}
-
-impl<T: Color> From<T> for Foreground<Rgba> {
-    fn from(color: T) -> Self {
-        Self(color.into())
-    }
-}
-
-impl<T: Color> From<T> for Foreground<PreRgba> {
-    fn from(color: T) -> Self {
-        Self(color.into())
-    }
-}

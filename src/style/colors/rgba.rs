@@ -60,33 +60,3 @@ impl From<PreRgba> for Rgba {
         }
     }
 }
-
-impl Color for Rgba {
-    fn red(self) -> u8 {
-        self.red
-    }
-
-    fn green(self) -> u8 {
-        self.green
-    }
-
-    fn blue(self) -> u8 {
-        self.blue
-    }
-
-    fn pre_red(self) -> u8 {
-        self.red * self.alpha / u8::MAX
-    }
-
-    fn pre_green(self) -> u8 {
-        self.green * self.alpha / u8::MAX
-    }
-
-    fn pre_blue(self) -> u8 {
-        self.blue * self.alpha / u8::MAX
-    }
-
-    fn alpha(self) -> u8 {
-        self.alpha
-    }
-}

@@ -20,33 +20,3 @@ impl From<PreRgba> for RgbTuple {
         Rgba::from(pre_rgba).into()
     }
 }
-
-impl Color for RgbTuple {
-    fn red(self) -> u8 {
-        self.0
-    }
-
-    fn green(self) -> u8 {
-        self.1
-    }
-
-    fn blue(self) -> u8 {
-        self.2
-    }
-
-    fn pre_red(self) -> u8 {
-        self.0
-    }
-
-    fn pre_green(self) -> u8 {
-        self.1
-    }
-
-    fn pre_blue(self) -> u8 {
-        self.2
-    }
-
-    fn alpha(self) -> u8 {
-        u8::MAX
-    }
-}

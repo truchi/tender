@@ -40,33 +40,3 @@ impl From<PreRgba> for Rgb {
         Rgba::from(pre_rgba).into()
     }
 }
-
-impl Color for Rgb {
-    fn red(self) -> u8 {
-        self.red
-    }
-
-    fn green(self) -> u8 {
-        self.green
-    }
-
-    fn blue(self) -> u8 {
-        self.blue
-    }
-
-    fn pre_red(self) -> u8 {
-        self.red
-    }
-
-    fn pre_green(self) -> u8 {
-        self.green
-    }
-
-    fn pre_blue(self) -> u8 {
-        self.blue
-    }
-
-    fn alpha(self) -> u8 {
-        u8::MAX
-    }
-}
