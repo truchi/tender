@@ -2,36 +2,30 @@ use super::*;
 
 /// Rgb color.
 #[derive(Copy, Clone, Eq, PartialEq, Default, Hash, Debug)]
-pub struct Rgb {
-    pub red:   u8,
-    pub green: u8,
-    pub blue:  u8,
-}
+pub struct Rgb(pub u8, pub u8, pub u8);
 
 impl Rgb {
+    pub fn red(self) -> u8 {
+        self.0
+    }
+
+    pub fn green(self) -> u8 {
+        self.1
+    }
+
+    pub fn blue(self) -> u8 {
+        self.2
+    }
+
     /// Maps `red`, `green` and `blue` components with `f`.
     pub fn map(self, f: impl Fn(u8) -> u8) -> Self {
-        Self {
-            red:   f(self.red),
-            green: f(self.green),
-            blue:  f(self.blue),
-        }
-    }
-}
-
-impl From<RgbTuple> for Rgb {
-    fn from((red, green, blue): RgbTuple) -> Self {
-        Self { red, green, blue }
+        Self(f(self.0), f(self.1), f(self.2))
     }
 }
 
 impl From<Rgba> for Rgb {
-    fn from(
-        Rgba {
-            red, green, blue, ..
-        }: Rgba,
-    ) -> Rgb {
-        Self { red, green, blue }
+    fn from(Rgba(red, green, blue, ..): Rgba) -> Rgb {
+        Self(red, green, blue)
     }
 }
 

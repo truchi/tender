@@ -3,27 +3,27 @@ use std::ops::{Deref, DerefMut};
 
 macro_rules! from {
     ($Ground:ident($ground:ident) $($A:ident <-> $B:ident)*) => { $(
-        impl From<$A> for $Ground<$B> {
-            fn from(color: $A) -> Self {
-                Self(color.into())
-            }
-        }
-        impl From<$B> for $Ground<$A> {
-            fn from(color: $B) -> Self {
-                Self(color.into())
-            }
-        }
-
-        impl From<$Ground<$A>> for $B {
-            fn from($ground: $Ground<$A>) -> Self {
-                $ground.0.into()
-            }
-        }
-        impl From<$Ground<$B>> for $A {
-            fn from($ground: $Ground<$B>) -> Self {
-                $ground.0.into()
-            }
-        }
+        // impl From<$A> for $Ground<$B> {
+            // fn from(color: $A) -> Self {
+                // Self(color.into())
+            // }
+        // }
+        // impl From<$B> for $Ground<$A> {
+            // fn from(color: $B) -> Self {
+                // Self(color.into())
+            // }
+        // }
+//
+        // impl From<$Ground<$A>> for $B {
+            // fn from($ground: $Ground<$A>) -> Self {
+                // $ground.0.into()
+            // }
+        // }
+        // impl From<$Ground<$B>> for $A {
+            // fn from($ground: $Ground<$B>) -> Self {
+                // $ground.0.into()
+            // }
+        // }
 
         impl From<$Ground<$A>> for $Ground<$B> {
             fn from($ground: $Ground<$A>) -> Self {
@@ -52,6 +52,31 @@ macro_rules! ground {
             }
         }
 
+        // TODO ???
+        impl<T> $Ground<T> {
+            pub fn color(self) -> T {
+                self.0
+            }
+
+            pub fn into_color<U>(self) -> U
+            where
+                T: Into<U>
+            {
+                self.0.into()
+            }
+
+            pub fn from<U: Into<T>>(color: U) -> Self {
+                Self(color.into())
+            }
+
+            pub fn into<U>(self) -> $Ground<U>
+            where
+                T: Into<U>
+            {
+                $Ground(self.0.into())
+            }
+        }
+
         impl<T> DerefMut for $Ground<T> {
             fn deref_mut(&mut self) -> &mut T {
                 &mut self.0
@@ -59,9 +84,6 @@ macro_rules! ground {
         }
 
         from!($Ground($ground)
-            RgbTuple <->    Rgb
-            RgbTuple <->    Rgba
-            RgbTuple <-> PreRgba
             Rgb      <->    Rgba
             Rgb      <-> PreRgba
             Rgba     <-> PreRgba
@@ -72,38 +94,6 @@ macro_rules! ground {
                 Self(color)
             }
         }
-
-        /*
-        impl<T: Color> Color for $Ground<T> {
-            fn red(self) -> u8 {
-                self.0
-            }
-
-            fn green(self) -> u8 {
-                self.1
-            }
-
-            fn blue(self) -> u8 {
-                self.2
-            }
-
-            fn pre_red(self) -> u8 {
-                self.0
-            }
-
-            fn pre_green(self) -> u8 {
-                self.1
-            }
-
-            fn pre_blue(self) -> u8 {
-                self.2
-            }
-
-            fn alpha(self) -> u8 {
-                u8::MAX
-            }
-        }
-        */
     )* };
 }
 

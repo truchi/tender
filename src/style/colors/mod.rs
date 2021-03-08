@@ -6,11 +6,9 @@
 mod ground;
 mod pre_rgba;
 mod rgb;
-mod rgb_tuple;
 mod rgba;
 
 pub use ground::*;
 pub use pre_rgba::*;
 pub use rgb::*;
-pub use rgb_tuple::*;
 pub use rgba::*;
