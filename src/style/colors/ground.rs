@@ -1,105 +1,128 @@
 use super::*;
-use std::ops::{Deref, DerefMut};
 
-macro_rules! from {
-    ($Ground:ident($ground:ident) $($A:ident <-> $B:ident)*) => { $(
-        // impl From<$A> for $Ground<$B> {
-            // fn from(color: $A) -> Self {
-                // Self(color.into())
-            // }
-        // }
-        // impl From<$B> for $Ground<$A> {
-            // fn from(color: $B) -> Self {
-                // Self(color.into())
-            // }
-        // }
-//
-        // impl From<$Ground<$A>> for $B {
-            // fn from($ground: $Ground<$A>) -> Self {
-                // $ground.0.into()
-            // }
-        // }
-        // impl From<$Ground<$B>> for $A {
-            // fn from($ground: $Ground<$B>) -> Self {
-                // $ground.0.into()
-            // }
-        // }
+macro_rules! ground_color {
+    ($Ground:ident<$($Color:ident)*>) => { $(
+        color!($Ground<$Color>, self
+            red       { self.0.red() }
+            green     { self.0.green() }
+            blue      { self.0.blue() }
+            pre_red   { self.0.pre_red() }
+            pre_green { self.0.pre_green() }
+            pre_blue  { self.0.pre_blue() }
+            alpha     { self.0.alpha() }
+        );
+    )* };
+}
 
-        impl From<$Ground<$A>> for $Ground<$B> {
-            fn from($ground: $Ground<$A>) -> Self {
-                $Ground($ground.0.into())
+macro_rules! convert {
+    (From $(
+        $FromColor:ident for $Ground:ident<$IntoColor:ident>
+    )*) => { $(
+        #[doc(hidden)]
+        impl From<$FromColor> for $Ground<$IntoColor> {
+            fn from(color: $FromColor) -> Self {
+                Self(color.into())
             }
         }
-        impl From<$Ground<$B>> for $Ground<$A> {
-            fn from($ground: $Ground<$B>) -> Self {
-                $Ground($ground.0.into())
+    )* };
+    (From $(
+        $Ground:ident<$FromColor:ident> for $IntoColor:ident $(($into:ident))?
+    )*) => { $(
+        #[doc(hidden)]
+        impl From<$Ground<$FromColor>> for $IntoColor {
+            fn from(ground: $Ground<$FromColor>) -> Self {
+                ground.0$(.$into())?
+            }
+        }
+    )* };
+    (From $(
+        $FromGround:ident<$FromColor:ident> for $IntoGround:ident<$IntoColor:ident>
+    )*) => { $(
+        #[doc(hidden)]
+        impl From<$FromGround<$FromColor>> for $IntoGround<$IntoColor> {
+            fn from(ground: $FromGround<$FromColor>) -> Self {
+                $IntoGround(ground.0.into())
             }
         }
     )* };
 }
 
 macro_rules! ground {
-    ($($(#[$meta:meta])* $Ground:ident($ground:ident))*) => { $(
+    ($($(#[$meta:meta])* $Ground:ident)*) => { $(
         $(#[$meta])*
         #[derive(Copy, Clone, Eq, PartialEq, Default, Hash, Debug)]
         pub struct $Ground<T>(pub T);
 
-        impl<T> Deref for $Ground<T> {
-            type Target = T;
-
-            fn deref(&self) -> &T {
-                &self.0
-            }
-        }
-
-        // TODO ???
-        impl<T> $Ground<T> {
-            pub fn color(self) -> T {
-                self.0
-            }
-
-            pub fn into_color<U>(self) -> U
-            where
-                T: Into<U>
-            {
-                self.0.into()
-            }
-
-            pub fn from<U: Into<T>>(color: U) -> Self {
-                Self(color.into())
-            }
-
-            pub fn into<U>(self) -> $Ground<U>
-            where
-                T: Into<U>
-            {
-                $Ground(self.0.into())
-            }
-        }
-
-        impl<T> DerefMut for $Ground<T> {
-            fn deref_mut(&mut self) -> &mut T {
-                &mut self.0
-            }
-        }
-
-        from!($Ground($ground)
-            Rgb      <->    Rgba
-            Rgb      <-> PreRgba
-            Rgba     <-> PreRgba
-        );
+        ground_color!($Ground<Rgb Rgba PreRgba>);
 
         impl<T> From<T> for $Ground<T> {
             fn from(color: T) -> Self {
                 Self(color)
             }
         }
+
+        convert!(From
+               Rgba for $Ground<   Rgb >
+            PreRgba for $Ground<   Rgb >
+               Rgb  for $Ground<   Rgba>
+            PreRgba for $Ground<   Rgba>
+               Rgb  for $Ground<PreRgba>
+               Rgba for $Ground<PreRgba>
+        );
+        convert!(From
+            $Ground<   Rgb > for    Rgb
+            $Ground<   Rgba> for    Rgb  (into)
+            $Ground<PreRgba> for    Rgb  (into)
+            $Ground<   Rgba> for    Rgba
+            $Ground<   Rgb > for    Rgba (into)
+            $Ground<PreRgba> for    Rgba (into)
+            $Ground<PreRgba> for PreRgba
+            $Ground<   Rgb > for PreRgba (into)
+            $Ground<   Rgba> for PreRgba (into)
+        );
+        convert!(From
+            $Ground<   Rgba> for $Ground<   Rgb >
+            $Ground<PreRgba> for $Ground<   Rgb >
+            $Ground<   Rgb > for $Ground<   Rgba>
+            $Ground<PreRgba> for $Ground<   Rgba>
+            $Ground<   Rgb > for $Ground<PreRgba>
+            $Ground<   Rgba> for $Ground<PreRgba>
+        );
     )* };
 }
 
 ground!(
     /// A `Foreground` wrapper for [`Color`](crate::style::Color)s.
-    Foreground(foreground)
+    Foreground
     /// A `Background` wrapper for [`Color`](crate::style::Color)s.
-    Background(background)
+    Background
+);
+
+#[doc(hidden)]
+impl<T> From<Foreground<T>> for Background<T> {
+    fn from(foreground: Foreground<T>) -> Self {
+        Background(foreground.0)
+    }
+}
+
+#[doc(hidden)]
+impl<T> From<Background<T>> for Foreground<T> {
+    fn from(background: Background<T>) -> Self {
+        Foreground(background.0)
+    }
+}
+
+convert!(From
+    Foreground<   Rgba> for Background<   Rgb >
+    Foreground<PreRgba> for Background<   Rgb >
+    Foreground<   Rgb > for Background<   Rgba>
+    Foreground<PreRgba> for Background<   Rgba>
+    Foreground<   Rgb > for Background<PreRgba>
+    Foreground<   Rgba> for Background<PreRgba>
+    Background<   Rgba> for Foreground<   Rgb >
+    Background<PreRgba> for Foreground<   Rgb >
+    Background<   Rgb > for Foreground<   Rgba>
+    Background<PreRgba> for Foreground<   Rgba>
+    Background<   Rgb > for Foreground<PreRgba>
+    Background<   Rgba> for Foreground<PreRgba>
 );
