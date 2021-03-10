@@ -3,7 +3,7 @@
 //! [`Rgba`](crate::style::Rgba), [`PreRgba`](crate::style::PreRgba)).
 
 macro_rules! color {
-    ($Self:ty, $self:ident
+    ($self:ident
         red       $red:block
         green     $green:block
         blue      $blue:block
@@ -12,16 +12,14 @@ macro_rules! color {
         pre_blue  $pre_blue:block
         alpha     $alpha:block
     ) => {
-        impl Color for $Self {
-            fn red($self) -> u8 $red
-            fn green($self) -> u8 $green
-            fn blue($self) -> u8 $blue
-            fn pre_red($self) -> u8 $pre_red
-            fn pre_green($self) -> u8 $pre_green
-            fn pre_blue($self) -> u8 $pre_blue
-            fn alpha($self) -> u8 $alpha
-        }
-    }
+        fn red($self) -> u8 $red
+        fn green($self) -> u8 $green
+        fn blue($self) -> u8 $blue
+        fn pre_red($self) -> u8 $pre_red
+        fn pre_green($self) -> u8 $pre_green
+        fn pre_blue($self) -> u8 $pre_blue
+        fn alpha($self) -> u8 $alpha
+    };
 }
 
 mod ground;
@@ -47,25 +45,7 @@ pub use rgba::*;
 ///
 /// `From` impls on thoses types are hidden in the documentation.
 pub trait Color:
-    Copy
-    + From<Rgb>
-    + From<Rgba>
-    + From<PreRgba>
-    + From<Foreground<Rgb>>
-    + From<Foreground<Rgba>>
-    + From<Foreground<PreRgba>>
-    + From<Background<Rgb>>
-    + From<Background<Rgba>>
-    + From<Background<PreRgba>>
-    + Into<Rgb>
-    + Into<Rgba>
-    + Into<PreRgba>
-    + Into<Foreground<Rgb>>
-    + Into<Foreground<Rgba>>
-    + Into<Foreground<PreRgba>>
-    + Into<Background<Rgb>>
-    + Into<Background<Rgba>>
-    + Into<Background<PreRgba>>
+    Copy + From<Rgb> + From<Rgba> + From<PreRgba> + Into<Rgb> + Into<Rgba> + Into<PreRgba>
 {
     /// Returns the `red` component's value.
     fn red(self) -> u8;

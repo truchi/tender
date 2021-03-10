@@ -1,37 +1,35 @@
 use super::*;
 
 macro_rules! ground_color {
-    ($Ground:ident<$($Color:ident)*>) => { $(
-        color!($Ground<$Color>, self
-            red       { self.0.red() }
-            green     { self.0.green() }
-            blue      { self.0.blue() }
-            pre_red   { self.0.pre_red() }
-            pre_green { self.0.pre_green() }
-            pre_blue  { self.0.pre_blue() }
-            alpha     { self.0.alpha() }
-        );
-    )* };
+    ($Ground:ident) => {
+        impl<T: Color> Color for $Ground<T> {
+            color!(self
+                red       { self.0.red() }
+                green     { self.0.green() }
+                blue      { self.0.blue() }
+                pre_red   { self.0.pre_red() }
+                pre_green { self.0.pre_green() }
+                pre_blue  { self.0.pre_blue() }
+                alpha     { self.0.alpha() }
+            );
+        }
+    };
 }
 
 macro_rules! convert {
-    (From $(
-        $FromColor:ident for $Ground:ident<$IntoColor:ident>
-    )*) => { $(
+    ($Ground:ident From $($Color:ident)*) => { $(
         #[doc(hidden)]
-        impl From<$FromColor> for $Ground<$IntoColor> {
-            fn from(color: $FromColor) -> Self {
+        impl<T: Color> From<$Color> for $Ground<T> {
+            fn from(color: $Color) -> Self {
                 Self(color.into())
             }
         }
     )* };
-    (From $(
-        $Ground:ident<$FromColor:ident> for $IntoColor:ident $(($into:ident))?
-    )*) => { $(
+    (($($Color:ident)*) From $Ground:ident) => { $(
         #[doc(hidden)]
-        impl From<$Ground<$FromColor>> for $IntoColor {
-            fn from(ground: $Ground<$FromColor>) -> Self {
-                ground.0$(.$into())?
+        impl<T: Color> From<$Ground<T>> for $Color {
+            fn from(ground: $Ground<T>) -> Self {
+                ground.0.into()
             }
         }
     )* };
@@ -53,33 +51,10 @@ macro_rules! ground {
         #[derive(Copy, Clone, Eq, PartialEq, Default, Hash, Debug)]
         pub struct $Ground<T>(pub T);
 
-        ground_color!($Ground<Rgb Rgba PreRgba>);
+        ground_color!($Ground);
 
-        impl<T> From<T> for $Ground<T> {
-            fn from(color: T) -> Self {
-                Self(color)
-            }
-        }
-
-        convert!(From
-               Rgba for $Ground<   Rgb >
-            PreRgba for $Ground<   Rgb >
-               Rgb  for $Ground<   Rgba>
-            PreRgba for $Ground<   Rgba>
-               Rgb  for $Ground<PreRgba>
-               Rgba for $Ground<PreRgba>
-        );
-        convert!(From
-            $Ground<   Rgb > for    Rgb
-            $Ground<   Rgba> for    Rgb  (into)
-            $Ground<PreRgba> for    Rgb  (into)
-            $Ground<   Rgba> for    Rgba
-            $Ground<   Rgb > for    Rgba (into)
-            $Ground<PreRgba> for    Rgba (into)
-            $Ground<PreRgba> for PreRgba
-            $Ground<   Rgb > for PreRgba (into)
-            $Ground<   Rgba> for PreRgba (into)
-        );
+        convert!($Ground From Rgb Rgba PreRgba);
+        convert!((Rgb Rgba PreRgba) From $Ground);
         convert!(From
             $Ground<   Rgba> for $Ground<   Rgb >
             $Ground<PreRgba> for $Ground<   Rgb >
@@ -98,14 +73,12 @@ ground!(
     Background
 );
 
-#[doc(hidden)]
 impl<T> From<Foreground<T>> for Background<T> {
     fn from(foreground: Foreground<T>) -> Self {
         Background(foreground.0)
     }
 }
 
-#[doc(hidden)]
 impl<T> From<Background<T>> for Foreground<T> {
     fn from(background: Background<T>) -> Self {
         Foreground(background.0)

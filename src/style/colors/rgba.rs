@@ -4,15 +4,17 @@ use super::*;
 #[derive(Copy, Clone, Eq, PartialEq, Default, Hash, Debug)]
 pub struct Rgba(pub u8, pub u8, pub u8, pub u8);
 
-color!(Rgba, self
-    red       { self.0 }
-    green     { self.1 }
-    blue      { self.2 }
-    pre_red   { self.0 * self.3 / u8::MAX }
-    pre_green { self.1 * self.3 / u8::MAX }
-    pre_blue  { self.2 * self.3 / u8::MAX }
-    alpha     { self.3 }
-);
+impl Color for Rgba {
+    color!(self
+        red       { self.0 }
+        green     { self.1 }
+        blue      { self.2 }
+        pre_red   { self.0 * self.3 / u8::MAX }
+        pre_green { self.1 * self.3 / u8::MAX }
+        pre_blue  { self.2 * self.3 / u8::MAX }
+        alpha     { self.3 }
+    );
+}
 
 impl Rgba {
     /// Maps `red`, `green` and `blue` components with `f`.
@@ -21,14 +23,12 @@ impl Rgba {
     }
 }
 
-#[doc(hidden)]
 impl From<Rgb> for Rgba {
     fn from(Rgb(red, green, blue): Rgb) -> Self {
         Self(red, green, blue, u8::MAX)
     }
 }
 
-#[doc(hidden)]
 impl From<PreRgba> for Rgba {
     fn from(PreRgba(red, green, blue, alpha): PreRgba) -> Self {
         if alpha == 0 {

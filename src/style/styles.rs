@@ -52,6 +52,7 @@ impl Styles<PreRgba, PreRgba> {
 
 macro_rules! from {
     ($($From:ident for $For:ident)*) => { $(
+        #[doc(hidden)]
         impl From<Styles<$From>> for Styles<$For> {
             fn from(style: Styles<$From>) -> Self {
                 Self {
