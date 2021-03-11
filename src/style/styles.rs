@@ -10,6 +10,20 @@ pub struct Styles<Fg, Bg = Fg> {
     pub attributes: Attributes,
 }
 
+impl<Fg, Bg> Styles<Fg, Bg> {
+    pub fn cast<T, U>(self) -> Styles<T, U>
+    where
+        Fg: Into<T>,
+        Bg: Into<U>,
+    {
+        Styles {
+            foreground: Foreground(self.foreground.0.into()),
+            background: Background(self.background.0.into()),
+            attributes: self.attributes,
+        }
+    }
+}
+
 impl Styles<Rgb> {
     /// Applies `color` over `Foreground` and `Background`.
     pub fn color(self, color: PreRgba) -> Self {
@@ -37,6 +51,7 @@ impl Styles<PreRgba, Rgb> {
     }
 }
 
+/*
 impl Styles<PreRgba, PreRgba> {
     /// Resolves `Foreground` to `Rgb` from `Background`
     /// (its alpha being discarded).
@@ -49,27 +64,64 @@ impl Styles<PreRgba, PreRgba> {
         .resolve()
     }
 }
+*/
 
-macro_rules! from {
-    ($($From:ident for $For:ident)*) => { $(
-        #[doc(hidden)]
-        impl From<Styles<$From>> for Styles<$For> {
-            fn from(style: Styles<$From>) -> Self {
-                Self {
-                    foreground: style.foreground.into(),
-                    background: style.background.into(),
-                    attributes: style.attributes,
-                }
+macro_rules! styler {
+    ($($get:ident $set:ident $attr:ident: $Attr:ident)*) => { $(
+        fn $get(self) -> $Attr {
+            self.attributes.$attr
+        }
+        fn $set(self, $attr: $Attr) -> Self {
+            Self {
+                attributes: Attributes {
+                    $attr,
+                    ..self.attributes
+                },
+                ..self
             }
         }
     )* };
 }
 
-from!(
-    Rgba    for Rgb
-    PreRgba for Rgb
-    Rgb     for Rgba
-    PreRgba for Rgba
-    Rgb     for PreRgba
-    Rgba    for PreRgba
-);
+impl<Fg, Bg> Styler<Fg, Bg> for Styles<Fg, Bg> {
+    fn get_foreground(self) -> Foreground<Fg> {
+        self.foreground
+    }
+
+    fn get_background(self) -> Background<Bg> {
+        self.background
+    }
+
+    fn get_attributes(self) -> Attributes {
+        self.attributes
+    }
+
+    fn set_foreground(self, color: Fg) -> Self {
+        Self {
+            foreground: Foreground(color),
+            ..self
+        }
+    }
+
+    fn set_background(self, color: Bg) -> Self {
+        Self {
+            background: Background(color),
+            ..self
+        }
+    }
+
+    fn set_attributes(self, attributes: Attributes) -> Self {
+        Self { attributes, ..self }
+    }
+
+    styler!(
+        get_weight    set_weight    weight:    Weight
+        get_slant     set_slant     slant:     Slant
+        get_underline set_underline underline: Underline
+        get_strike    set_strike    strike:    Strike
+        get_overline  set_overline  overline:  Overline
+        get_invert    set_invert    invert:    Invert
+        get_blink     set_blink     blink:     Blink
+        get_border    set_border    border:    Border
+    );
+}

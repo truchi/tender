@@ -2,15 +2,39 @@ use crate::canvas::*;
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
 pub struct Cell<Fg, Bg = Fg> {
-    pub char:   char,
+    pub char: char,
     pub styles: Styles<Fg, Bg>,
 }
 
-impl Cell<PreRgba, Rgb> {
-    pub fn flatten(self) -> Cell<Rgb> {
+impl<Fg, Bg> Cell<Fg, Bg> {
+    pub fn cast<T, U>(self) -> Cell<T, U>
+    where
+        Fg: Into<T>,
+        Bg: Into<U>,
+    {
         Cell {
-            char:   self.char,
-            styles: self.styles.flatten(),
+            char: self.char,
+            styles: self.styles.cast::<T, U>(),
+        }
+    }
+}
+
+impl Cell<Rgb> {
+    /// Applies `color` over `Foreground` and `Background`.
+    pub fn color(self, color: PreRgba) -> Self {
+        Self {
+            styles: self.styles.color(color),
+            ..self
+        }
+    }
+}
+
+impl Cell<PreRgba, Rgb> {
+    /// Resolves `Foreground` to `Rgb` from `Background`.
+    pub fn resolve(self) -> Cell<Rgb> {
+        Cell {
+            char: self.char,
+            styles: self.styles.resolve(),
         }
     }
 }
@@ -18,84 +42,108 @@ impl Cell<PreRgba, Rgb> {
 impl Cell<PreRgba> {
     /// Places `self` over `other`.
     pub fn over(self, other: Cell<Rgb>) -> Cell<Rgb> {
-        let foreground = self.styles.foreground.0;
-        let background = self.styles.background.0;
+        let foreground = self.styles.foreground;
+        let background = self.styles.background;
 
         // When self has opaque background, other is invisible
         if background.is_opaque() {
-            // self.flatten()
-            // Blend foreground over background
-            let background = background.into();
-            let foreground = foreground.over(background);
-
-            Cell {
-                char:   self.char,
-                styles: Styles {
-                    foreground: Foreground(foreground),
-                    background: Background(background),
-                    ..self.styles.into()
-                },
-            }
+            self.cast::<PreRgba, Rgb>().resolve()
         }
-        // Here we blend
+        // Otherwise, we see through self's background
         else {
-            if foreground.alpha == 0 {
-            } else {
+            // If self's char is invisible
+            if foreground.is_invisible() {
+                // Apply self's background over other
+                other.color(background.0)
             }
-
-            other
+            // If self's char is visible
+            else {
+                // Replace self's background with other's
+                Cell {
+                    char: self.char,
+                    styles: Styles {
+                        foreground: self.styles.foreground,
+                        background: other.styles.background,
+                        attributes: self.styles.attributes,
+                    }
+                    .resolve(),
+                }
+            }
         }
-
-        // // When self has opaque background, other is invisible
-        // if self.style.background.0.alpha == u8::MAX {
-        //     self
-        // } else {
-        //     let background =
-        // self.style.background.0.over(other.style.background.0);
-
-        //     let cell = if self.style.foreground.0.alpha == u8::MAX {
-        //         self
-        //     } else {
-        //         let foreground =
-        // self.style.background.0.over(other.style.foreground.0);
-        //         other
-        //     };
-
-        //     other
-        // }
     }
 }
 
-macro_rules! from {
-    ($($From:ident for $For:ident)*) => { $(
-        impl From<Cell<$From>> for Cell<$For> {
-            fn from(cell: Cell<$From>) -> Self {
-                Self {
-                    char:  cell.char,
-                    styles: cell.styles.into(),
-                }
+macro_rules! styler {
+    ($($get:ident $set:ident $attr:ident: $Attr:ident)*) => { $(
+        fn $get(self) -> $Attr {
+            self.styles.$get()
+        }
+        fn $set(self, $attr: $Attr) -> Self {
+            Self {
+                styles: self.styles.$set($attr),
+                ..self
             }
         }
     )* };
 }
 
-from!(
-    Rgba    for Rgb
-    PreRgba for Rgb
-    Rgb     for Rgba
-    PreRgba for Rgba
-    Rgb     for PreRgba
-    Rgba    for PreRgba
-);
+impl<Fg, Bg> Styler<Fg, Bg> for Cell<Fg, Bg> {
+    fn get_foreground(self) -> Foreground<Fg> {
+        self.styles.get_foreground()
+    }
 
-// #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
-// pub struct DamageCell {
-// pub new: Cell,
-// pub old: Option<Cell>,
-// }
-//
-// impl From<Cell> for DamageCell {
-// fn from(new: Cell) -> Self {
-// DamageCell { new, old: None }
-// }
-// }
+    fn get_background(self) -> Background<Bg> {
+        self.styles.get_background()
+    }
+
+    fn set_foreground(self, color: Fg) -> Self {
+        Self {
+            styles: self.styles.set_foreground(color),
+            ..self
+        }
+    }
+
+    fn set_background(self, color: Bg) -> Self {
+        Self {
+            styles: self.styles.set_background(color),
+            ..self
+        }
+    }
+
+    styler!(
+        get_attributes set_attributes attributes: Attributes
+        get_weight     set_weight     weight:     Weight
+        get_slant      set_slant      slant:      Slant
+        get_underline  set_underline  underline:  Underline
+        get_strike     set_strike     strike:     Strike
+        get_overline   set_overline   overline:   Overline
+        get_invert     set_invert     invert:     Invert
+        get_blink      set_blink      blink:      Blink
+        get_border     set_border     border:     Border
+    );
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
+pub struct DamageCell {
+    pub new: Cell<Rgb>,
+    pub old: Cell<Rgb>,
+}
+
+impl DamageCell {
+    pub fn new(self, new: Cell<Rgb>) -> Self {
+        Self { new, old: self.old }
+    }
+
+    pub fn old(self, old: Cell<Rgb>) -> Self {
+        Self { new: self.new, old }
+    }
+}
+
+impl From<Cell<Rgb>> for DamageCell {
+    fn from(cell: Cell<Rgb>) -> Self {
+        DamageCell {
+            new: cell,
+            old: cell,
+        }
+    }
+}
