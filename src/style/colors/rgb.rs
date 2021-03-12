@@ -1,4 +1,5 @@
 use super::*;
+use std::fmt::{self, Display, Formatter};
 
 /// Rgb color.
 #[derive(Copy, Clone, Eq, PartialEq, Default, Hash, Debug)]
@@ -25,5 +26,11 @@ impl From<Rgba> for Rgb {
 impl From<PreRgba> for Rgb {
     fn from(color: PreRgba) -> Rgb {
         Self(color.red(), color.green(), color.blue())
+    }
+}
+
+impl Display for Rgb {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "2;{};{};{}", self.red(), self.green(), self.blue())
     }
 }

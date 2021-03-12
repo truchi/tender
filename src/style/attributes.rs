@@ -4,6 +4,8 @@
 //! [`Overline`](crate::style::Overline), [`Invert`](crate::style::Invert),
 //! [`Blink`](crate::style::Blink), [`Border`](crate::style::Border)).
 
+use std::fmt::{self, Display, Formatter};
+
 /// `Attributes` ([`Weight`](crate::style::Weight),
 /// [`Slant`](crate::style::Slant), [`Underline`](crate::style::Underline),
 /// [`Strike`](crate::style::Strike), [`Overline`](crate::style::Overline),
@@ -26,10 +28,10 @@ macro_rules! attr {
         $(#[$attr_meta:meta])*
         $Attr:ident { $(
             $(#[$variant_meta:meta])*
-            $Variant:ident
+            $Variant:ident ($variant_csi:literal)
         )*;
             $(#[$default_meta:meta])*
-            $Default:ident
+            $Default:ident ($default_csi:literal)
         }
     )*) => { $(
         pub use $Attr::*;
@@ -50,6 +52,15 @@ macro_rules! attr {
                 $Attr::$Default
             }
         }
+
+        impl Display for $Attr {
+            fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+                match self {
+                    $(Self::$Variant => write!(f, "\x1B[{}m", $variant_csi),)*
+                    Self::$Default => write!(f, "\x1B[{}m", $default_csi),
+                }
+            }
+        }
     )* };
 }
 
@@ -57,63 +68,63 @@ attr!(
     /// `Weight` (`Bold`, `Light`, `NoWeight`).
     Weight {
         ///
-        Bold
+        Bold (1)
         ///
-        Light;
+        Light (2);
         ///
-        NoWeight
+        ResetWeight (22)
     }
     /// `Slant` (`Italic`, `NoSlant`).
     Slant {
         ///
-        Italic;
+        Italic (3);
         ///
-        NoSlant
+        ResetSlant (23)
     }
     /// `Underline` (`Underlined`, `NoUnderline`).
     Underline {
         ///
-        Underlined;
+        Underlined (4);
         ///
-        NoUnderline
+        ResetUnderline (24)
     }
     /// `Strike` (`Striked`, `NoStrike`).
     Strike {
         ///
-        Striked;
+        Striked (9);
         ///
-        NoStrike
+        ResetStrike (29)
     }
     /// `Overline` (`Overlined`, `NoOverline`).
     Overline {
         ///
-        Overlined;
+        Overlined (53);
         ///
-        NoOverline
+        ResetOverline (55)
     }
     /// `Invert` (`Inverted`, `NoInvert`).
     Invert {
         ///
-        Inverted;
+        Inverted (7);
         ///
-        NoInvert
+        ResetInvert (27)
     }
     /// `Blink` (`Slow`, `Fast`, `NoBlink`).
     Blink {
         ///
-        Slow
+        Slow (5)
         ///
-        Fast;
+        Fast (6);
         ///
-        NoBlink
+        ResetBlink (25)
     }
     /// `Border` (`Circle`, `Frame`, `NoBorder`).
     Border {
         ///
-        Circle
+        Circle (52)
         ///
-        Frame;
+        Frame (51);
         ///
-        NoBorder
+        ResetBorder (54)
     }
 );

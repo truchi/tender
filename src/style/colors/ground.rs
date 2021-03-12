@@ -1,4 +1,5 @@
 use super::*;
+use std::fmt::{self, Display, Formatter};
 
 macro_rules! ground_color {
     ($Ground:ident) => {
@@ -52,7 +53,7 @@ macro_rules! convert {
 }
 
 macro_rules! ground {
-    ($($(#[$meta:meta])* $Ground:ident ($other:ident: $Other:ident))*) => { $(
+    ($($(#[$meta:meta])* $Ground:ident ($other:ident: $Other:ident) ($csi:literal))*) => { $(
         $(#[$meta])*
         #[derive(Copy, Clone, Eq, PartialEq, Default, Hash, Debug)]
         pub struct $Ground<T>(pub T);
@@ -79,12 +80,18 @@ macro_rules! ground {
                Rgb  <-> PreRgba
                Rgba <-> PreRgba
         );
+
+        impl Display for $Ground<Rgb> {
+            fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+                write!(f, "\x1B[{};{}m", $csi, self.0)
+            }
+        }
     )* };
 }
 
 ground!(
     /// A `Foreground` wrapper for [`Color`](crate::style::Color)s.
-    Foreground (background: Background)
+    Foreground (background: Background) (38)
     /// A `Background` wrapper for [`Color`](crate::style::Color)s.
-    Background (foreground: Foreground)
+    Background (foreground: Foreground) (48)
 );
