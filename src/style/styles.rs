@@ -22,6 +22,22 @@ impl<Fg, Bg> Styles<Fg, Bg> {
             attributes: self.attributes,
         }
     }
+
+    pub fn set_foreground<NewFg>(self, foreground: NewFg) -> Styles<NewFg, Bg> {
+        Styles {
+            foreground: Foreground(foreground),
+            background: self.background,
+            attributes: self.attributes,
+        }
+    }
+
+    pub fn set_background<NewBg>(self, background: NewBg) -> Styles<Fg, NewBg> {
+        Styles {
+            foreground: self.foreground,
+            background: Background(background),
+            attributes: self.attributes,
+        }
+    }
 }
 
 impl Styles<Rgb> {

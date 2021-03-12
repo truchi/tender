@@ -17,6 +17,20 @@ impl<Fg, Bg> Cell<Fg, Bg> {
             styles: self.styles.cast::<T, U>(),
         }
     }
+
+    pub fn set_foreground<NewFg>(self, foreground: NewFg) -> Cell<NewFg, Bg> {
+        Cell {
+            char:   self.char,
+            styles: self.styles.set_foreground(foreground),
+        }
+    }
+
+    pub fn set_background<NewBg>(self, background: NewBg) -> Cell<Fg, NewBg> {
+        Cell {
+            char:   self.char,
+            styles: self.styles.set_background(background),
+        }
+    }
 }
 
 impl Cell<Rgb> {
@@ -59,15 +73,7 @@ impl Cell<PreRgba> {
             // If self's char is visible
             else {
                 // Replace self's background with other's
-                Cell {
-                    char:   self.char,
-                    styles: Styles {
-                        foreground: self.styles.foreground,
-                        background: other.styles.background,
-                        attributes: self.styles.attributes,
-                    }
-                    .resolve(),
-                }
+                self.set_background(other.get_background().0).resolve()
             }
         }
     }
