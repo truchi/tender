@@ -68,10 +68,11 @@ impl Styles<PreRgba, PreRgba> {
 
 macro_rules! styler {
     ($($get:ident $set:ident $attr:ident: $Attr:ident)*) => { $(
-        fn $get(self) -> $Attr {
+        fn $get(self) -> Option<$Attr> {
             self.attributes.$attr
         }
-        fn $set(self, $attr: $Attr) -> Self {
+
+        fn $set(self, $attr: Option<$Attr>) -> Self {
             Self {
                 attributes: Attributes {
                     $attr,
@@ -84,6 +85,17 @@ macro_rules! styler {
 }
 
 impl<Fg, Bg> Styler<Fg, Bg> for Styles<Fg, Bg> {
+    styler!(
+        get_weight    set_weight    weight:    Weight
+        get_slant     set_slant     slant:     Slant
+        get_underline set_underline underline: Underline
+        get_strike    set_strike    strike:    Strike
+        get_overline  set_overline  overline:  Overline
+        get_invert    set_invert    invert:    Invert
+        get_blink     set_blink     blink:     Blink
+        get_border    set_border    border:    Border
+    );
+
     fn get_foreground(self) -> Foreground<Fg> {
         self.foreground
     }
@@ -113,15 +125,4 @@ impl<Fg, Bg> Styler<Fg, Bg> for Styles<Fg, Bg> {
     fn set_attributes(self, attributes: Attributes) -> Self {
         Self { attributes, ..self }
     }
-
-    styler!(
-        get_weight    set_weight    weight:    Weight
-        get_slant     set_slant     slant:     Slant
-        get_underline set_underline underline: Underline
-        get_strike    set_strike    strike:    Strike
-        get_overline  set_overline  overline:  Overline
-        get_invert    set_invert    invert:    Invert
-        get_blink     set_blink     blink:     Blink
-        get_border    set_border    border:    Border
-    );
 }

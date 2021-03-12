@@ -2,7 +2,7 @@ use crate::canvas::*;
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
 pub struct Cell<Fg, Bg = Fg> {
-    pub char: char,
+    pub char:   char,
     pub styles: Styles<Fg, Bg>,
 }
 
@@ -13,7 +13,7 @@ impl<Fg, Bg> Cell<Fg, Bg> {
         Bg: Into<U>,
     {
         Cell {
-            char: self.char,
+            char:   self.char,
             styles: self.styles.cast::<T, U>(),
         }
     }
@@ -33,7 +33,7 @@ impl Cell<PreRgba, Rgb> {
     /// Resolves `Foreground` to `Rgb` from `Background`.
     pub fn resolve(self) -> Cell<Rgb> {
         Cell {
-            char: self.char,
+            char:   self.char,
             styles: self.styles.resolve(),
         }
     }
@@ -60,7 +60,7 @@ impl Cell<PreRgba> {
             else {
                 // Replace self's background with other's
                 Cell {
-                    char: self.char,
+                    char:   self.char,
                     styles: Styles {
                         foreground: self.styles.foreground,
                         background: other.styles.background,
@@ -75,10 +75,11 @@ impl Cell<PreRgba> {
 
 macro_rules! styler {
     ($($get:ident $set:ident $attr:ident: $Attr:ident)*) => { $(
-        fn $get(self) -> $Attr {
+        fn $get(self) -> Option<$Attr> {
             self.styles.$get()
         }
-        fn $set(self, $attr: $Attr) -> Self {
+
+        fn $set(self, $attr: Option<$Attr>) -> Self {
             Self {
                 styles: self.styles.$set($attr),
                 ..self
@@ -88,12 +89,27 @@ macro_rules! styler {
 }
 
 impl<Fg, Bg> Styler<Fg, Bg> for Cell<Fg, Bg> {
+    styler!(
+        get_weight     set_weight     weight:     Weight
+        get_slant      set_slant      slant:      Slant
+        get_underline  set_underline  underline:  Underline
+        get_strike     set_strike     strike:     Strike
+        get_overline   set_overline   overline:   Overline
+        get_invert     set_invert     invert:     Invert
+        get_blink      set_blink      blink:      Blink
+        get_border     set_border     border:     Border
+    );
+
     fn get_foreground(self) -> Foreground<Fg> {
         self.styles.get_foreground()
     }
 
     fn get_background(self) -> Background<Bg> {
         self.styles.get_background()
+    }
+
+    fn get_attributes(self) -> Attributes {
+        self.styles.get_attributes()
     }
 
     fn set_foreground(self, color: Fg) -> Self {
@@ -110,17 +126,12 @@ impl<Fg, Bg> Styler<Fg, Bg> for Cell<Fg, Bg> {
         }
     }
 
-    styler!(
-        get_attributes set_attributes attributes: Attributes
-        get_weight     set_weight     weight:     Weight
-        get_slant      set_slant      slant:      Slant
-        get_underline  set_underline  underline:  Underline
-        get_strike     set_strike     strike:     Strike
-        get_overline   set_overline   overline:   Overline
-        get_invert     set_invert     invert:     Invert
-        get_blink      set_blink      blink:      Blink
-        get_border     set_border     border:     Border
-    );
+    fn set_attributes(self, attributes: Attributes) -> Self {
+        Self {
+            styles: self.styles.set_attributes(attributes),
+            ..self
+        }
+    }
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
