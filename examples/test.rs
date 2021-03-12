@@ -6,24 +6,29 @@ fn main() {
         styles: Default::default(),
     });
 
-    let repeat = grid::repeat((5, 5).into(), canvas::Cell::<style::PreRgba> {
-        char:   'a',
-        styles: style::Styles {
-            foreground: style::Foreground(style::PreRgba {
-                red:   0,
-                green: 0,
-                blue:  0,
-                alpha: 10,
-            }),
-            ..Default::default()
-        },
-    });
-    let layer = canvas::GridLayer {
+    let layer1 = canvas::GridLayer {
         position: (10, 10).into(),
-        grid:     repeat,
+        grid:     grid::repeat((5, 5).into(), canvas::Cell::<style::PreRgba> {
+            char:   'a',
+            styles: style::Styles {
+                foreground: style::Foreground(style::PreRgba(0, 0, 0, 10)),
+                ..Default::default()
+            },
+        }),
+    };
+    let layer2 = canvas::GridLayer {
+        position: (8, 8).into(),
+        grid:     grid::repeat((3, 3).into(), canvas::Cell::<style::PreRgba> {
+            char:   'b',
+            styles: style::Styles {
+                foreground: style::Foreground(style::PreRgba(0, 0, 0, 10)),
+                ..Default::default()
+            },
+        }),
     };
 
-    canvas.over(layer);
+    canvas.over(layer1);
+    canvas.over(layer2);
 
     for row in unsafe { canvas.rows_unchecked(..) } {
         let row = row
@@ -31,10 +36,5 @@ fn main() {
             .map(|cell| cell.new.char)
             .collect::<String>();
         println!("{}", row);
-
-        // for cell in row {
-        // print!("{:?}", cell.new.char);
-        // }
-        // println!();
     }
 }
