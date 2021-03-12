@@ -11,10 +11,10 @@ pub struct Styles<Fg, Bg = Fg> {
 }
 
 impl<Fg, Bg> Styles<Fg, Bg> {
-    pub fn cast<T, U>(self) -> Styles<T, U>
+    pub fn cast<NewFg, NewBg>(self) -> Styles<NewFg, NewBg>
     where
-        Fg: Into<T>,
-        Bg: Into<U>,
+        Fg: Into<NewFg>,
+        Bg: Into<NewBg>,
     {
         Styles {
             foreground: Foreground(self.foreground.0.into()),
