@@ -17,85 +17,74 @@ macro_rules! ground_color {
 }
 
 macro_rules! convert {
-    ($Ground:ident From $($Color:ident)*) => { $(
+    ($Ground:ident $Other:ident $($A:ident <-> $B:ident)*) => {
+        convert!($(impl From<$A> for $Ground<$B>)*);
+        convert!($(impl From<$Ground<$A>> for $B)*);
+        convert!($(impl From<$Ground<$A>> for $Ground<$B>)*);
+        convert!($(impl From<$Other<$A>> for $Ground<$B>)*);
+    };
+    ($(impl From<$FromColor:ident> for $Ground:ident<$IntoColor:ident>)*) => { $(
         #[doc(hidden)]
-        impl<T: Color> From<$Color> for $Ground<T> {
-            fn from(color: $Color) -> Self {
+        impl From<$FromColor> for $Ground<$IntoColor> {
+            fn from(color: $FromColor) -> Self {
                 Self(color.into())
             }
         }
     )* };
-    (($($Color:ident)*) From $Ground:ident) => { $(
+    ($(impl From<$Ground:ident<$FromColor:ident>> for $IntoColor:ident)*) => { $(
         #[doc(hidden)]
-        impl<T: Color> From<$Ground<T>> for $Color {
-            fn from(ground: $Ground<T>) -> Self {
+        impl From<$Ground<$FromColor>> for $IntoColor {
+            fn from(ground: $Ground<$FromColor>) -> Self {
                 ground.0.into()
             }
         }
     )* };
-    (From $(
-        $FromGround:ident<$FromColor:ident> for $IntoGround:ident<$IntoColor:ident>
+    ($(
+        impl From<$FromGround:ident<$FromColor:ident>> for $IntoGround:ident<$IntoColor:ident>
     )*) => { $(
         #[doc(hidden)]
         impl From<$FromGround<$FromColor>> for $IntoGround<$IntoColor> {
             fn from(ground: $FromGround<$FromColor>) -> Self {
-                $IntoGround(ground.0.into())
+                Self(ground.0.into())
             }
         }
     )* };
 }
 
 macro_rules! ground {
-    ($($(#[$meta:meta])* $Ground:ident)*) => { $(
+    ($($(#[$meta:meta])* $Ground:ident ($other:ident: $Other:ident))*) => { $(
         $(#[$meta])*
         #[derive(Copy, Clone, Eq, PartialEq, Default, Hash, Debug)]
         pub struct $Ground<T>(pub T);
 
         ground_color!($Ground);
 
-        convert!($Ground From Rgb Rgba PreRgba);
-        convert!((Rgb Rgba PreRgba) From $Ground);
-        convert!(From
-            $Ground<   Rgba> for $Ground<   Rgb >
-            $Ground<PreRgba> for $Ground<   Rgb >
-            $Ground<   Rgb > for $Ground<   Rgba>
-            $Ground<PreRgba> for $Ground<   Rgba>
-            $Ground<   Rgb > for $Ground<PreRgba>
-            $Ground<   Rgba> for $Ground<PreRgba>
+        impl<T> From<T> for $Ground<T> {
+            fn from(color: T) -> Self {
+                $Ground(color)
+            }
+        }
+
+        impl<T> From<$Other<T>> for $Ground<T> {
+            fn from($other: $Other<T>) -> Self {
+                Self($other.0)
+            }
+        }
+
+        convert!($Ground $Other
+               Rgba <->    Rgb
+            PreRgba <->    Rgb
+               Rgb  <->    Rgba
+            PreRgba <->    Rgba
+               Rgb  <-> PreRgba
+               Rgba <-> PreRgba
         );
     )* };
 }
 
 ground!(
     /// A `Foreground` wrapper for [`Color`](crate::style::Color)s.
-    Foreground
+    Foreground (background: Background)
     /// A `Background` wrapper for [`Color`](crate::style::Color)s.
-    Background
-);
-
-impl<T> From<Foreground<T>> for Background<T> {
-    fn from(foreground: Foreground<T>) -> Self {
-        Background(foreground.0)
-    }
-}
-
-impl<T> From<Background<T>> for Foreground<T> {
-    fn from(background: Background<T>) -> Self {
-        Foreground(background.0)
-    }
-}
-
-convert!(From
-    Foreground<   Rgba> for Background<   Rgb >
-    Foreground<PreRgba> for Background<   Rgb >
-    Foreground<   Rgb > for Background<   Rgba>
-    Foreground<PreRgba> for Background<   Rgba>
-    Foreground<   Rgb > for Background<PreRgba>
-    Foreground<   Rgba> for Background<PreRgba>
-    Background<   Rgba> for Foreground<   Rgb >
-    Background<PreRgba> for Foreground<   Rgb >
-    Background<   Rgb > for Foreground<   Rgba>
-    Background<PreRgba> for Foreground<   Rgba>
-    Background<   Rgb > for Foreground<PreRgba>
-    Background<   Rgba> for Foreground<PreRgba>
+    Background (foreground: Foreground)
 );

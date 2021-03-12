@@ -44,9 +44,7 @@ pub use rgba::*;
 ///   - `Self` <-> `Background<C>`
 ///
 /// `From` impls on thoses types are hidden in the documentation.
-pub trait Color:
-    Copy + From<Rgb> + From<Rgba> + From<PreRgba> + Into<Rgb> + Into<Rgba> + Into<PreRgba>
-{
+pub trait Color: Copy {
     /// Returns the `red` component's value.
     fn red(self) -> u8;
 
@@ -98,15 +96,13 @@ pub trait Color:
     }
 
     /// Places `self` over `other`.
-    fn over<T: Color>(self, other: impl Color) -> T {
+    fn over(self, other: Rgb) -> Rgb {
         let over = |a, b| a + b * (u8::MAX - self.alpha());
 
-        PreRgba(
-            over(self.pre_red(), other.pre_red()),
-            over(self.pre_green(), other.pre_green()),
-            over(self.pre_blue(), other.pre_blue()),
-            self.alpha(),
+        Rgb(
+            over(self.pre_red(), other.red()),
+            over(self.pre_green(), other.green()),
+            over(self.pre_blue(), other.blue()),
         )
-        .into()
     }
 }

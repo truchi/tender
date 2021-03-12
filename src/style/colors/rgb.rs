@@ -16,21 +16,14 @@ impl Color for Rgb {
     );
 }
 
-impl Rgb {
-    /// Maps `red`, `green` and `blue` components with `f`.
-    pub fn map(self, f: impl Fn(u8) -> u8) -> Self {
-        Self(f(self.0), f(self.1), f(self.2))
-    }
-}
-
 impl From<Rgba> for Rgb {
-    fn from(Rgba(red, green, blue, ..): Rgba) -> Rgb {
-        Self(red, green, blue)
+    fn from(color: Rgba) -> Rgb {
+        Self(color.red(), color.green(), color.blue())
     }
 }
 
 impl From<PreRgba> for Rgb {
-    fn from(pre_rgba: PreRgba) -> Rgb {
-        Rgba::from(pre_rgba).into()
+    fn from(color: PreRgba) -> Rgb {
+        Self(color.red(), color.green(), color.blue())
     }
 }

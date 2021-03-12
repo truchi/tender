@@ -6,9 +6,9 @@ pub struct PreRgba(pub u8, pub u8, pub u8, pub u8);
 
 impl Color for PreRgba {
     color!(self
-        red       { self.0 * u8::MAX / self.3 }
-        green     { self.1 * u8::MAX / self.3 }
-        blue      { self.2 * u8::MAX / self.3 }
+        red       { if self.3 == 0 { 0 } else { self.0 * u8::MAX / self.3 } }
+        green     { if self.3 == 0 { 0 } else { self.1 * u8::MAX / self.3 } }
+        blue      { if self.3 == 0 { 0 } else { self.2 * u8::MAX / self.3 } }
         pre_red   { self.0 }
         pre_green { self.1 }
         pre_blue  { self.2 }
@@ -16,21 +16,19 @@ impl Color for PreRgba {
     );
 }
 
-impl PreRgba {
-    /// Maps `red`, `green` and `blue` components with `f`.
-    pub fn map(self, f: impl Fn(u8) -> u8) -> Self {
-        Self(f(self.0), f(self.1), f(self.2), self.3)
-    }
-}
-
 impl From<Rgb> for PreRgba {
-    fn from(rgb: Rgb) -> Self {
-        Rgba::from(rgb).into()
+    fn from(color: Rgb) -> Self {
+        Self(color.pre_red(), color.pre_green(), color.pre_blue(), 0)
     }
 }
 
 impl From<Rgba> for PreRgba {
-    fn from(Rgba(red, green, blue, alpha): Rgba) -> Self {
-        Self(red, green, blue, alpha).map(|v| v * alpha / u8::MAX)
+    fn from(color: Rgba) -> Self {
+        Self(
+            color.pre_red(),
+            color.pre_green(),
+            color.pre_blue(),
+            color.alpha(),
+        )
     }
 }
