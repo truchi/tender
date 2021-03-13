@@ -43,44 +43,17 @@ impl<Fg, Bg> Styles<Fg, Bg> {
 impl Styles<Rgb> {
     /// Applies `color` over `Foreground` and `Background`.
     pub fn color(self, color: PreRgba) -> Self {
-        let foreground = color.over(self.foreground.0);
-        let background = color.over(self.background.0);
-
-        Styles {
-            foreground: Foreground(foreground),
-            background: Background(background),
-            attributes: self.attributes,
-        }
+        self.set_foreground(color.over(self.foreground.0))
+            .set_background(color.over(self.background.0))
     }
 }
 
 impl Styles<PreRgba, Rgb> {
     /// Resolves `Foreground` to `Rgb` from `Background`.
     pub fn resolve(self) -> Styles<Rgb> {
-        let foreground = self.foreground.over(self.background.0);
-
-        Styles {
-            foreground: Foreground(foreground),
-            background: self.background,
-            attributes: self.attributes,
-        }
+        self.set_foreground(self.foreground.over(self.background.0))
     }
 }
-
-/*
-impl Styles<PreRgba, PreRgba> {
-    /// Resolves `Foreground` to `Rgb` from `Background`
-    /// (its alpha being discarded).
-    pub fn resolve(self) -> Styles<Rgb> {
-        Styles::<_, Rgb> {
-            foreground: self.foreground,
-            background: self.background.into(),
-            attributes: self.attributes,
-        }
-        .resolve()
-    }
-}
-*/
 
 macro_rules! styler {
     ($($get:ident $set:ident $attr:ident: $Attr:ident)*) => { $(
