@@ -1,27 +1,66 @@
-use tender::{grid::GridRows, *};
+use crossterm::{
+    cursor::{Hide, Show},
+    execute,
+    terminal::{EnterAlternateScreen, LeaveAlternateScreen},
+};
+use std::{
+    io::{stdout, Write},
+    thread::sleep,
+    time::Duration,
+};
+use tender::{canvas::*, grid::*, style::*};
+
+fn _main() {
+    let cell = Cell::<Rgb, Rgb> {
+        char:   'a',
+        styles: Styles {
+            foreground: Rgb(0, 255, 0).into(),
+            background: Rgb(255, 255, 255).into(),
+            ..Default::default()
+        },
+    };
+    let top = Cell::<Rgba, Rgba> {
+        char:   'b',
+        styles: Styles {
+            foreground: Rgba(0, 255, 0, 255 / 2).into(),
+            background: Rgba(255, 0, 0, 255 / 2).into(),
+            ..Default::default()
+        },
+    };
+
+    // println!("{:#?}", top.over(cell));
+
+    let red = Rgba(255, 0, 0, 255 / 2);
+    let green = Rgb(0, 255, 0);
+    println!("{:#?}", red.over(green));
+    println!("{:#?}", Rgba(255, 0, 0, 255 / 2).over(Rgb(255, 255, 255)));
+    println!("{:#?}", Rgba(255, 255, 255, 0).over(Rgb(255, 255, 255)));
+}
 
 fn main() {
-    let mut canvas = canvas::Canvas::new((20, 20).into(), canvas::Cell::<style::Rgb> {
-        char:   'X',
-        styles: Default::default(),
-    });
+    enter();
 
-    let layer1 = canvas::GridLayer {
+    // =======
+    let mut canvas = Canvas::new((151, 40).into(), Rgb(255, 0, 0));
+
+    let layer1 = GridLayer {
         position: (10, 10).into(),
-        grid:     grid::repeat((5, 5).into(), canvas::Cell::<style::PreRgba> {
+        grid:     repeat((5, 5).into(), Cell::<PreRgba> {
             char:   'a',
-            styles: style::Styles {
-                foreground: style::Foreground(style::PreRgba(0, 0, 0, 10)),
+            styles: Styles {
+                foreground: Rgba(0, 255, 0, 255).into(),
+                background: Rgba(0, 0, 0, 255 / 2).into(),
                 ..Default::default()
             },
         }),
     };
-    let layer2 = canvas::GridLayer {
+    let layer2 = GridLayer {
         position: (8, 8).into(),
-        grid:     grid::repeat((3, 3).into(), canvas::Cell::<style::PreRgba> {
+        grid:     repeat((3, 3).into(), Cell::<PreRgba> {
             char:   'b',
-            styles: style::Styles {
-                foreground: style::Foreground(style::PreRgba(0, 0, 0, 10)),
+            styles: Styles {
+                foreground: Rgba(0, 0, 255, 255 / 2).into(),
+                background: Rgba(0, 255, 0, 255 / 2).into(),
                 ..Default::default()
             },
         }),
@@ -30,11 +69,17 @@ fn main() {
     canvas.over(layer1);
     canvas.over(layer2);
 
-    for row in unsafe { canvas.rows_unchecked(..) } {
-        let row = row
-            .into_iter()
-            .map(|cell| cell.new.char)
-            .collect::<String>();
-        println!("{}", row);
-    }
+    print!("{}", canvas);
+    stdout().flush().unwrap();
+    sleep(Duration::from_millis(2000));
+
+    leave();
+}
+
+fn enter() {
+    execute!(stdout(), EnterAlternateScreen, Hide).unwrap();
+}
+
+fn leave() {
+    execute!(stdout(), LeaveAlternateScreen, Show).unwrap();
 }

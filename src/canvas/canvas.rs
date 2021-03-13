@@ -1,48 +1,30 @@
 use crate::canvas::*;
+use std::fmt::{self, Display, Formatter};
 
 pub struct Canvas {
-    grid: RowGrid1D<DamageCell, Vec<DamageCell>>,
+    grid: RowGrid1D<Cell<Rgb>, Vec<Cell<Rgb>>>,
 }
 
 impl Deref for Canvas {
-    type Target = RowGrid1D<DamageCell, Vec<DamageCell>>;
+    type Target = RowGrid1D<Cell<Rgb>, Vec<Cell<Rgb>>>;
 
     fn deref(&self) -> &Self::Target {
         &self.grid
     }
 }
 
-// impl<'a> Grid for &'a mut Canvas {
-// type Item = &'a mut DamageCell;
-//
-// unsafe fn item_unchecked(self, index: impl Index0D) -> Self::Item {
-// (&mut self.grid).item_unchecked(index)
-// }
-// }
-//
-// impl<'a> GridRow for &'a mut Canvas {
-// type Row = <&'a mut RowGrid1D<DamageCell, Vec<DamageCell>> as GridRow>::Row;
-//
-// unsafe fn row_unchecked(self, index: impl Index1D) -> Self::Row {
-// (&mut self.grid).row_unchecked(index)
-// }
-// }
-//
-// impl<'a> GridRows for &'a mut Canvas {
-// type Rows = <&'a mut RowGrid1D<DamageCell, Vec<DamageCell>> as
-// GridRows>::Rows;
-//
-// unsafe fn rows_unchecked(self, index: impl Index2D) -> Self::Rows {
-// (&mut self.grid).rows_unchecked(index)
-// }
-// }
-
 impl Canvas {
-    pub fn new(size: Size, cell: Cell<Rgb>) -> Self {
+    pub fn new(size: Size, background: Rgb) -> Self {
         let len = size.x * size.y;
 
         let mut cells = Vec::with_capacity(len);
-        cells.resize(len, cell.into());
+        cells.resize(len, Cell {
+            char:   ' ',
+            styles: Styles::<Rgb>::default()
+                // .set_foreground(Rgb(100, 0, 0))
+                .set_background(background),
+        });
+        // cells.resize(len, Cell::<Rgb>::default().set_background(background));
 
         debug_assert!(cells.len() == len);
         let grid = RowGrid1D::new_unchecked(size, cells);
@@ -62,10 +44,41 @@ impl Canvas {
             // SAFETY: RangeFull are safe for grids
             unsafe { zip.rows_unchecked(..) }
                 .flatten()
-                .for_each(|(canvas_cell, layer_cell)| {
-                    canvas_cell.new = layer_cell.over(canvas_cell.new);
-                });
+                .for_each(|(canvas_cell, layer_cell)| *canvas_cell = layer_cell.over(*canvas_cell));
         }
+    }
+}
+
+impl Display for Canvas {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "\x1B[1;1;H")?;
+
+        for cell in self.grid.items(..).unwrap() {
+            let Cell {
+                char,
+                styles:
+                    Styles {
+                        foreground,
+                        background,
+                        attributes: _attributes
+                            // Attributes {
+                                // weight,
+                                // slant,
+                                // underline,
+                                // strike,
+                                // overline,
+                                // invert,
+                                // blink,
+                                // border,
+                            // },
+                    },
+            } = cell;
+
+            write!(f, "{}{}{}", foreground, background, char)?;
+            // write!(f, "{}", char)?;
+        }
+
+        Ok(())
     }
 }
 
