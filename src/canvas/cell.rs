@@ -72,8 +72,9 @@ impl Cell<PreRgba> {
             }
             // If self's char is visible
             else {
-                // Replace self's background with other's
-                self.set_background(other.get_background().0).resolve()
+                // Merge backgrounds in self
+                let background = self.get_background().over(other.get_background().0);
+                self.set_background(background).resolve()
             }
         }
     }
