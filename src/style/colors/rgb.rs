@@ -25,7 +25,7 @@ impl From<Rgba> for Rgb {
 
 impl From<PreRgba> for Rgb {
     fn from(color: PreRgba) -> Rgb {
-        Self(color.red(), color.green(), color.blue())
+        Rgba::from(color).into()
     }
 }
 

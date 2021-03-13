@@ -9,9 +9,6 @@ impl Color for Rgba {
         red       { self.0 }
         green     { self.1 }
         blue      { self.2 }
-        pre_red   { self.0 * self.3 / u8::MAX }
-        pre_green { self.1 * self.3 / u8::MAX }
-        pre_blue  { self.2 * self.3 / u8::MAX }
         alpha     { self.3 }
     );
 }
@@ -27,10 +24,12 @@ impl From<PreRgba> for Rgba {
         if alpha == 0 {
             Self(0, 0, 0, 0)
         } else {
+            let ratio = u8::MAX as f64 / alpha as f64;
+
             Self(
-                red * u8::MAX / alpha,
-                green * u8::MAX / alpha,
-                blue * u8::MAX / alpha,
+                (ratio * red as f64).round() as _,
+                (ratio * green as f64).round() as _,
+                (ratio * blue as f64).round() as _,
                 alpha,
             )
         }

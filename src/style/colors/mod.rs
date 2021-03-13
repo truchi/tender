@@ -7,17 +7,17 @@ macro_rules! color {
         red       $red:block
         green     $green:block
         blue      $blue:block
-        pre_red   $pre_red:block
-        pre_green $pre_green:block
-        pre_blue  $pre_blue:block
+        $(pre_red   $pre_red:block)?
+        $(pre_green $pre_green:block)?
+        $(pre_blue  $pre_blue:block)?
         alpha     $alpha:block
     ) => {
         fn red($self) -> u8 $red
         fn green($self) -> u8 $green
         fn blue($self) -> u8 $blue
-        fn pre_red($self) -> u8 $pre_red
-        fn pre_green($self) -> u8 $pre_green
-        fn pre_blue($self) -> u8 $pre_blue
+        $(fn pre_red($self) -> u8 $pre_red)?
+        $(fn pre_green($self) -> u8 $pre_green)?
+        $(fn pre_blue($self) -> u8 $pre_blue)?
         fn alpha($self) -> u8 $alpha
     };
 }
@@ -60,19 +60,19 @@ pub trait Color: Copy {
     /// Returns the `red` component's value,
     /// multiplied by the `alpha` component's value.
     fn pre_red(self) -> u8 {
-        self.red() * self.alpha() / u8::MAX
+        (self.alpha() as f64 / u8::MAX as f64 * self.red() as f64).round() as _
     }
 
     /// Returns the `green` component's value,
     /// multiplied by the `alpha` component's value.
     fn pre_green(self) -> u8 {
-        self.green() * self.alpha() / u8::MAX
+        (self.alpha() as f64 / u8::MAX as f64 * self.green() as f64).round() as _
     }
 
     /// Returns the `blue` component's value,
     /// multiplied by the `alpha` component's value.
     fn pre_blue(self) -> u8 {
-        self.blue() * self.alpha() / u8::MAX
+        (self.alpha() as f64 / u8::MAX as f64 * self.blue() as f64).round() as _
     }
 
     /// Returns true if `alpha` is `u8::MAX`.
@@ -97,7 +97,8 @@ pub trait Color: Copy {
 
     /// Places `self` over `other`.
     fn over(self, other: Rgb) -> Rgb {
-        let over = |a, b| a + b * (u8::MAX - self.alpha());
+        let ratio = (u8::MAX as f64 - self.alpha() as f64) / u8::MAX as f64;
+        let over = |a: u8, b: u8| a + (b as f64 * ratio) as u8;
 
         Rgb(
             over(self.pre_red(), other.red()),
