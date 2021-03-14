@@ -82,11 +82,11 @@ impl Cell<PreRgba> {
 
 macro_rules! styler {
     ($($get:ident $set:ident $attr:ident: $Attr:ident)*) => { $(
-        fn $get(self) -> Option<$Attr> {
+        fn $get(self) -> $Attr {
             self.styles.$get()
         }
 
-        fn $set(self, $attr: Option<$Attr>) -> Self {
+        fn $set(self, $attr: $Attr) -> Self {
             Self {
                 styles: self.styles.$set($attr),
                 ..self

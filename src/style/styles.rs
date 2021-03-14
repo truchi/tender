@@ -57,11 +57,11 @@ impl Styles<PreRgba, Rgb> {
 
 macro_rules! styler {
     ($($get:ident $set:ident $attr:ident: $Attr:ident)*) => { $(
-        fn $get(self) -> Option<$Attr> {
+        fn $get(self) -> $Attr {
             self.attributes.$attr
         }
 
-        fn $set(self, $attr: Option<$Attr>) -> Self {
+        fn $set(self, $attr: $Attr) -> Self {
             Self {
                 attributes: Attributes {
                     $attr,
