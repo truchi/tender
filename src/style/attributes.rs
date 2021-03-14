@@ -23,6 +23,27 @@ pub struct Attributes {
     pub border:    Border,
 }
 
+impl Display for Attributes {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        let Self {
+            weight,
+            slant,
+            underline,
+            strike,
+            overline,
+            invert,
+            blink,
+            border,
+        } = self;
+
+        write!(
+            f,
+            "{}{}{}{}{}{}{}{}",
+            weight, slant, underline, strike, overline, invert, blink, border,
+        )
+    }
+}
+
 macro_rules! attr {
     ($(
         $(#[$attr_meta:meta])*

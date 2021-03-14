@@ -39,9 +39,6 @@ fn _main() {
 }
 
 fn main() {
-    enter();
-
-    // =======
     let mut canvas = Canvas::new((151, 40).into(), Rgb(255, 0, 0));
 
     let layer1 = GridLayer {
@@ -70,10 +67,9 @@ fn main() {
     canvas.over(layer1);
     canvas.over(layer2);
 
+    enter();
     print!("{}", canvas);
     stdout().flush().unwrap();
-    sleep(Duration::from_millis(2000));
-
     leave();
 }
 

@@ -1,4 +1,5 @@
 use crate::canvas::*;
+use std::fmt::{self, Display, Formatter};
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
 pub struct Cell<Fg, Bg = Fg> {
@@ -138,6 +139,14 @@ impl<Fg, Bg> Styler<Fg, Bg> for Cell<Fg, Bg> {
             styles: self.styles.set_attributes(attributes),
             ..self
         }
+    }
+}
+
+impl Display for Cell<Rgb> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        let Self { char, styles } = self;
+
+        write!(f, "{}{}", styles, char)
     }
 }
 

@@ -52,30 +52,68 @@ impl Canvas {
 impl Display for Canvas {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "\x1B[1;1;H")?;
+        let mut items = unsafe { self.grid.items_unchecked(..) };
 
-        for cell in self.grid.items(..).unwrap() {
-            let Cell {
-                char,
-                styles:
-                    Styles {
-                        foreground,
-                        background,
-                        attributes: _attributes
-                            // Attributes {
-                                // weight,
-                                // slant,
-                                // underline,
-                                // strike,
-                                // overline,
-                                // invert,
-                                // blink,
-                                // border,
-                            // },
+        if let Some(cell) = items.next() {
+            let Styles {
+                foreground: mut prev_foreground,
+                background: mut prev_background,
+                attributes:
+                    Attributes {
+                        weight: mut prev_weight,
+                        slant: mut prev_slant,
+                        underline: mut prev_underline,
+                        strike: mut prev_strike,
+                        overline: mut prev_overline,
+                        invert: mut prev_invert,
+                        blink: mut prev_blink,
+                        border: mut prev_border,
                     },
-            } = cell;
+            } = cell.styles;
 
-            write!(f, "{}{}{}", foreground, background, char)?;
-            // write!(f, "{}", char)?;
+            write!(f, "{}", cell)?;
+
+            for cell in items {
+                let Cell { char, styles } = cell;
+                let Styles {
+                    foreground,
+                    background,
+                    attributes:
+                        Attributes {
+                            weight,
+                            slant,
+                            underline,
+                            strike,
+                            overline,
+                            invert,
+                            blink,
+                            border,
+                        },
+                } = styles;
+
+                macro_rules! attr {
+                    ($($attr:ident $prev:ident)*) => { $(
+                        if *$attr != $prev {
+                            write!(f, "{}", $attr)?;
+                            $prev = *$attr;
+                        }
+                    )* };
+                }
+
+                attr!(
+                    foreground prev_foreground
+                    background prev_background
+                    weight     prev_weight
+                    slant      prev_slant
+                    underline  prev_underline
+                    strike     prev_strike
+                    overline   prev_overline
+                    invert     prev_invert
+                    blink      prev_blink
+                    border     prev_border
+                );
+                write!(f, "{}", char)?;
+            }
         }
 
         Ok(())

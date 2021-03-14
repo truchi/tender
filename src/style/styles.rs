@@ -1,4 +1,5 @@
 use crate::style::*;
+use std::fmt::{self, Display, Formatter};
 
 /// `Styles` ([`Foreground`](crate::style::Foreground),
 /// [`Background`](crate::style::Background),
@@ -113,5 +114,17 @@ impl<Fg, Bg> Styler<Fg, Bg> for Styles<Fg, Bg> {
 
     fn set_attributes(self, attributes: Attributes) -> Self {
         Self { attributes, ..self }
+    }
+}
+
+impl Display for Styles<Rgb> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        let Self {
+            foreground,
+            background,
+            attributes,
+        } = self;
+
+        write!(f, "{}{}{}", foreground, background, attributes)
     }
 }
