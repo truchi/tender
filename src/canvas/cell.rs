@@ -1,5 +1,8 @@
 use crate::canvas::*;
-use std::fmt::{self, Display, Formatter};
+use std::{
+    cell::Cell as StdCell,
+    fmt::{self, Display, Formatter},
+};
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
 pub struct Cell<Fg, Bg = Fg> {
@@ -157,12 +160,8 @@ pub struct DamageCell {
 }
 
 impl DamageCell {
-    pub fn new(self, new: Cell<Rgb>) -> Self {
-        Self { new, old: self.old }
-    }
-
-    pub fn old(self, old: Cell<Rgb>) -> Self {
-        Self { new: self.new, old }
+    pub fn over((below, above): (&mut Self, Cell<PreRgba>)) {
+        below.new = above.over(below.new);
     }
 }
 

@@ -5,7 +5,7 @@ pub use canvas::*;
 pub use cell::*;
 
 use crate::{geometry::*, grid::*, style::*};
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 
 pub trait WithPosition {
     fn position(&self) -> Point;

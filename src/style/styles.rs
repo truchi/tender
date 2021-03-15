@@ -128,3 +128,54 @@ impl Display for Styles<Rgb> {
         write!(f, "{}{}{}", foreground, background, attributes)
     }
 }
+
+#[derive(Copy, Clone, Eq, PartialEq, Default, Hash, Debug)]
+pub struct DedupStyles {
+    new: Styles<Rgb>,
+    old: Styles<Rgb>,
+}
+
+impl DedupStyles {
+    pub fn new(styles: Styles<Rgb>) -> Self {
+        Self {
+            new: styles,
+            old: styles,
+        }
+    }
+
+    pub fn update(&mut self, new: Styles<Rgb>) {
+        self.old = self.new;
+        self.new = new;
+    }
+}
+
+impl Display for DedupStyles {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        if self.new.foreground != self.old.foreground {
+            write!(f, "{}", self.new.foreground)?;
+        }
+
+        macro_rules! dedup {
+            (
+                colors $($color:ident)*,
+                attributes $($attr:ident)*,
+            ) => {
+                $(if self.new.$color != self.old.$color {
+                    write!(f, "{}", self.new.$color)?;
+                })*
+                $(if self.new.attributes.$attr != self.old.attributes.$attr {
+                    write!(f, "{}", self.new.attributes.$attr)?;
+                })*
+            };
+        }
+
+        dedup!(
+            colors
+                foreground background,
+            attributes
+                weight slant underline strike overline invert blink border,
+        );
+
+        Ok(())
+    }
+}

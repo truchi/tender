@@ -1,35 +1,39 @@
 use crate::canvas::*;
-use std::fmt::{self, Display, Formatter};
+use std::io::Write;
 
 pub struct Canvas {
-    grid: RowGrid1D<Cell<Rgb>, Vec<Cell<Rgb>>>,
+    first:  bool,
+    styles: DedupStyles,
+    grid:   RowGrid1D<DamageCell, Vec<DamageCell>>,
 }
 
 impl Deref for Canvas {
-    type Target = RowGrid1D<Cell<Rgb>, Vec<Cell<Rgb>>>;
+    type Target = RowGrid1D<DamageCell, Vec<DamageCell>>;
 
     fn deref(&self) -> &Self::Target {
         &self.grid
     }
 }
 
+impl DerefMut for Canvas {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.grid
+    }
+}
+
 impl Canvas {
     pub fn new(size: Size, background: Rgb) -> Self {
         let len = size.x * size.y;
+        let styles = Styles::<Rgb>::default().set_background(background);
 
         let mut cells = Vec::with_capacity(len);
-        cells.resize(len, Cell {
-            char:   ' ',
-            styles: Styles::<Rgb>::default()
-                // .set_foreground(Rgb(100, 0, 0))
-                .set_background(background),
-        });
-        // cells.resize(len, Cell::<Rgb>::default().set_background(background));
+        cells.resize(len, DamageCell::from(Cell { char: ' ', styles }).into());
 
-        debug_assert!(cells.len() == len);
-        let grid = RowGrid1D::new_unchecked(size, cells);
-
-        Self { grid }
+        Self {
+            first:  true.into(),
+            styles: Default::default(),
+            grid:   RowGrid1D::new_unchecked(size, cells),
+        }
     }
 
     pub fn over<T: GridRows<Item = Cell<PreRgba>> + WithPosition>(&mut self, layer: T) {
@@ -44,79 +48,40 @@ impl Canvas {
             // SAFETY: RangeFull are safe for grids
             unsafe { zip.rows_unchecked(..) }
                 .flatten()
-                .for_each(|(canvas_cell, layer_cell)| *canvas_cell = layer_cell.over(*canvas_cell));
+                .for_each(DamageCell::over)
         }
     }
-}
 
-impl Display for Canvas {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "\x1B[1;1;H")?;
-        let mut items = unsafe { self.grid.items_unchecked(..) };
+    pub fn render(&mut self, w: &mut impl Write) {
+        let mut items = unsafe { (&mut self.grid).items_unchecked(..) };
 
         if let Some(cell) = items.next() {
-            let Styles {
-                foreground: mut prev_foreground,
-                background: mut prev_background,
-                attributes:
-                    Attributes {
-                        weight: mut prev_weight,
-                        slant: mut prev_slant,
-                        underline: mut prev_underline,
-                        strike: mut prev_strike,
-                        overline: mut prev_overline,
-                        invert: mut prev_invert,
-                        blink: mut prev_blink,
-                        border: mut prev_border,
-                    },
-            } = cell.styles;
-
-            write!(f, "{}", cell)?;
+            write!(w, "\x1B[1;1;H{}", cell.new).unwrap();
+            self.styles = DedupStyles::new(cell.new.styles);
+            cell.old = cell.new;
 
             for cell in items {
-                let Cell { char, styles } = cell;
-                let Styles {
-                    foreground,
-                    background,
-                    attributes:
-                        Attributes {
-                            weight,
-                            slant,
-                            underline,
-                            strike,
-                            overline,
-                            invert,
-                            blink,
-                            border,
-                        },
-                } = styles;
-
-                macro_rules! attr {
-                    ($($attr:ident $prev:ident)*) => { $(
-                        if *$attr != $prev {
-                            write!(f, "{}", $attr)?;
-                            $prev = *$attr;
-                        }
-                    )* };
-                }
-
-                attr!(
-                    foreground prev_foreground
-                    background prev_background
-                    weight     prev_weight
-                    slant      prev_slant
-                    underline  prev_underline
-                    strike     prev_strike
-                    overline   prev_overline
-                    invert     prev_invert
-                    blink      prev_blink
-                    border     prev_border
-                );
-                write!(f, "{}", char)?;
+                self.styles.update(cell.new.styles);
+                write!(w, "{}{}", self.styles, cell.new.char).unwrap();
+                cell.old = cell.new;
             }
         }
+    }
 
-        Ok(())
+    pub fn render_damage(&mut self, w: &mut impl Write) {
+        let mut items = unsafe { (&mut self.grid).items_unchecked(..) };
+
+        if let Some(cell) = items.next() {
+            write!(w, "\x1B[1;1;H{}", cell.new).unwrap();
+            self.styles = DedupStyles::new(cell.new.styles);
+            cell.old = cell.new;
+
+            for cell in items {
+                self.styles.update(cell.new.styles);
+                write!(w, "{}{}", self.styles, cell.new.char).unwrap();
+                cell.old = cell.new;
+            }
+        }
     }
 }
 

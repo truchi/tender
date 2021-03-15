@@ -67,9 +67,16 @@ fn main() {
     canvas.over(layer1);
     canvas.over(layer2);
 
+    // let s1 = canvas.to_string();
+    // let s2 = canvas.to_string();
+    // dbg!(s1.len(), s2.len(), s2);
+
+    // print!("{}", canvas);
     enter();
-    print!("{}", canvas);
+    canvas.render(&mut stdout());
     stdout().flush().unwrap();
+    // canvas.render(&mut stdout());
+    // stdout().flush().unwrap();
     leave();
 }
 
