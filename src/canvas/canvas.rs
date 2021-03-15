@@ -1,5 +1,8 @@
 use crate::canvas::*;
-use std::io::Write;
+use std::{
+    fmt::{self, Display, Formatter},
+    io::Write,
+};
 
 pub struct Canvas {
     first:  bool,
@@ -52,36 +55,86 @@ impl Canvas {
         }
     }
 
-    pub fn render(&mut self, w: &mut impl Write) {
+    pub fn render<T: Write>(&mut self, w: &mut T) {
+        if self.first == true {
+            self.first = false;
+            self.render_initial(w);
+        } else {
+            self.render_damage(w);
+        }
+    }
+
+    pub fn render_initial<T: Write>(&mut self, w: &mut T) {
         let mut items = unsafe { (&mut self.grid).items_unchecked(..) };
 
         if let Some(cell) = items.next() {
             write!(w, "\x1B[1;1;H{}", cell.new).unwrap();
+
             self.styles = DedupStyles::new(cell.new.styles);
             cell.old = cell.new;
 
             for cell in items {
-                self.styles.update(cell.new.styles);
-                write!(w, "{}{}", self.styles, cell.new.char).unwrap();
-                cell.old = cell.new;
+                Self::render_cell(w, cell, &mut self.styles);
             }
         }
     }
 
-    pub fn render_damage(&mut self, w: &mut impl Write) {
+    pub fn render_damage<T: Write>(&mut self, w: &mut T) {
+        let mut move_to = MoveTo::new(self.grid.size());
         let mut items = unsafe { (&mut self.grid).items_unchecked(..) };
+        let mut rendered = false;
 
-        if let Some(cell) = items.next() {
-            write!(w, "\x1B[1;1;H{}", cell.new).unwrap();
-            self.styles = DedupStyles::new(cell.new.styles);
-            cell.old = cell.new;
+        while let Some(cell) = items.next() {
+            if cell.new == cell.old {
+                rendered = false;
+            } else {
+                if !rendered {
+                    // dbg!(move_to.point);
+                    write!(w, "{}", move_to).unwrap();
+                }
 
-            for cell in items {
-                self.styles.update(cell.new.styles);
-                write!(w, "{}{}", self.styles, cell.new.char).unwrap();
-                cell.old = cell.new;
+                Self::render_cell(w, cell, &mut self.styles);
+                rendered = true;
             }
+
+            move_to.next();
         }
+    }
+
+    fn render_cell<T: Write>(w: &mut T, cell: &mut DamageCell, styles: &mut DedupStyles) {
+        styles.update(cell.new.styles);
+        write!(w, "{}{}", styles, cell.new.char).unwrap();
+        cell.old = cell.new;
+    }
+}
+
+#[derive(Debug)]
+struct MoveTo {
+    size:  Size,
+    point: Point,
+}
+
+impl MoveTo {
+    fn new(size: Size) -> Self {
+        Self {
+            size,
+            point: (0, 0).into(),
+        }
+    }
+
+    fn next(&mut self) {
+        if self.point.x == self.size.x - 1 {
+            self.point.x = 0;
+            self.point.y += 1;
+        } else {
+            self.point.x += 1;
+        }
+    }
+}
+
+impl Display for MoveTo {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "\x1B[{};{}H", self.point.y + 1, self.point.x + 1)
     }
 }
 

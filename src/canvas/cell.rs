@@ -1,8 +1,5 @@
 use crate::canvas::*;
-use std::{
-    cell::Cell as StdCell,
-    fmt::{self, Display, Formatter},
-};
+use std::fmt::{self, Display, Formatter};
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
 pub struct Cell<Fg, Bg = Fg> {

@@ -42,8 +42,8 @@ fn main() {
     let mut canvas = Canvas::new((151, 40).into(), Rgb(255, 0, 0));
 
     let layer1 = GridLayer {
-        position: (10, 10).into(),
-        grid:     repeat((5, 5).into(), Cell::<PreRgba> {
+        position: (1, 1).into(),
+        grid:     repeat((40, 20).into(), Cell::<PreRgba> {
             char:   'a',
             styles: Styles {
                 foreground: Rgba(0, 255, 0, 255).into(),
@@ -53,8 +53,8 @@ fn main() {
         }),
     };
     let layer2 = GridLayer {
-        position: (8, 8).into(),
-        grid:     repeat((3, 3).into(), Cell::<PreRgba> {
+        position: (2, 2).into(),
+        grid:     repeat((40, 20).into(), Cell::<PreRgba> {
             char:   'b',
             styles: Styles {
                 foreground: Rgba(0, 0, 255, 255 / 2).into(),
@@ -64,19 +64,23 @@ fn main() {
         }),
     };
 
-    canvas.over(layer1);
-    canvas.over(layer2);
-
-    // let s1 = canvas.to_string();
-    // let s2 = canvas.to_string();
-    // dbg!(s1.len(), s2.len(), s2);
-
-    // print!("{}", canvas);
     enter();
+
     canvas.render(&mut stdout());
     stdout().flush().unwrap();
-    // canvas.render(&mut stdout());
-    // stdout().flush().unwrap();
+    sleep(Duration::from_millis(1000));
+
+    canvas.over(layer1);
+
+    canvas.render(&mut stdout());
+    stdout().flush().unwrap();
+    sleep(Duration::from_millis(1000));
+
+    canvas.over(layer2);
+
+    canvas.render(&mut stdout());
+    stdout().flush().unwrap();
+
     leave();
 }
 
