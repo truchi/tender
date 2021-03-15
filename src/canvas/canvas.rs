@@ -6,7 +6,7 @@ use std::{
 
 pub struct Canvas {
     first:  bool,
-    styles: DedupStyles,
+    styles: Styles<Rgb>,
     grid:   RowGrid1D<DamageCell, Vec<DamageCell>>,
 }
 
@@ -68,13 +68,10 @@ impl Canvas {
         let mut items = unsafe { (&mut self.grid).items_unchecked(..) };
 
         if let Some(cell) = items.next() {
-            write!(w, "\x1B[1;1;H{}", cell.new).unwrap();
-
-            self.styles = DedupStyles::new(cell.new.styles);
-            cell.old = cell.new;
+            Self::render_first_cell(w, cell, &mut self.styles);
 
             for cell in items {
-                Self::render_cell(w, cell, &mut self.styles);
+                Self::render_dedup_cell(w, cell, &mut self.styles);
             }
         }
     }
@@ -89,11 +86,10 @@ impl Canvas {
                 rendered = false;
             } else {
                 if !rendered {
-                    // dbg!(move_to.point);
                     write!(w, "{}", move_to).unwrap();
                 }
 
-                Self::render_cell(w, cell, &mut self.styles);
+                Self::render_dedup_cell(w, cell, &mut self.styles);
                 rendered = true;
             }
 
@@ -101,9 +97,18 @@ impl Canvas {
         }
     }
 
-    fn render_cell<T: Write>(w: &mut T, cell: &mut DamageCell, styles: &mut DedupStyles) {
-        styles.update(cell.new.styles);
-        write!(w, "{}{}", styles, cell.new.char).unwrap();
+    fn render_first_cell<T: Write>(w: &mut T, cell: &mut DamageCell, styles: &mut Styles<Rgb>) {
+        write!(w, "\x1B[1;1;H{}", cell.new).unwrap();
+
+        *styles = cell.new.styles;
+        cell.old = cell.new;
+    }
+
+    fn render_dedup_cell<T: Write>(w: &mut T, cell: &mut DamageCell, styles: &mut Styles<Rgb>) {
+        cell.new.styles.render_dedup(w, styles);
+        write!(w, "{}", cell.new.char).unwrap();
+
+        *styles = cell.new.styles;
         cell.old = cell.new;
     }
 }

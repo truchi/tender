@@ -1,5 +1,8 @@
 use crate::style::*;
-use std::fmt::{self, Display, Formatter};
+use std::{
+    fmt::{self, Display, Formatter},
+    io::Write,
+};
 
 /// `Styles` ([`Foreground`](crate::style::Foreground),
 /// [`Background`](crate::style::Background),
@@ -46,6 +49,29 @@ impl Styles<Rgb> {
     pub fn color(self, color: PreRgba) -> Self {
         self.set_foreground(color.over(self.foreground.0))
             .set_background(color.over(self.background.0))
+    }
+
+    pub fn render_dedup<T: Write>(self, w: &mut T, prev: &Self) {
+        macro_rules! dedup {
+            (
+                colors $($color:ident)*,
+                attributes $($attr:ident)*,
+            ) => {
+                $(if self.$color != prev.$color {
+                    write!(w, "{}", self.$color).unwrap();
+                })*
+                $(if self.attributes.$attr != prev.attributes.$attr {
+                    write!(w, "{}", self.attributes.$attr).unwrap();
+                })*
+            };
+        }
+
+        dedup!(
+            colors
+                foreground background,
+            attributes
+                weight slant underline strike overline invert blink border,
+        );
     }
 }
 
@@ -126,56 +152,5 @@ impl Display for Styles<Rgb> {
         } = self;
 
         write!(f, "{}{}{}", foreground, background, attributes)
-    }
-}
-
-#[derive(Copy, Clone, Eq, PartialEq, Default, Hash, Debug)]
-pub struct DedupStyles {
-    new: Styles<Rgb>,
-    old: Styles<Rgb>,
-}
-
-impl DedupStyles {
-    pub fn new(styles: Styles<Rgb>) -> Self {
-        Self {
-            new: styles,
-            old: styles,
-        }
-    }
-
-    pub fn update(&mut self, new: Styles<Rgb>) {
-        self.old = self.new;
-        self.new = new;
-    }
-}
-
-impl Display for DedupStyles {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        if self.new.foreground != self.old.foreground {
-            write!(f, "{}", self.new.foreground)?;
-        }
-
-        macro_rules! dedup {
-            (
-                colors $($color:ident)*,
-                attributes $($attr:ident)*,
-            ) => {
-                $(if self.new.$color != self.old.$color {
-                    write!(f, "{}", self.new.$color)?;
-                })*
-                $(if self.new.attributes.$attr != self.old.attributes.$attr {
-                    write!(f, "{}", self.new.attributes.$attr)?;
-                })*
-            };
-        }
-
-        dedup!(
-            colors
-                foreground background,
-            attributes
-                weight slant underline strike overline invert blink border,
-        );
-
-        Ok(())
     }
 }

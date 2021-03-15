@@ -68,13 +68,13 @@ fn main() {
 
     canvas.render(&mut stdout());
     stdout().flush().unwrap();
-    sleep(Duration::from_millis(1000));
+    sleep(Duration::from_millis(500));
 
     canvas.over(layer1);
 
     canvas.render(&mut stdout());
     stdout().flush().unwrap();
-    sleep(Duration::from_millis(1000));
+    sleep(Duration::from_millis(500));
 
     canvas.over(layer2);
 
@@ -90,7 +90,8 @@ fn enter() {
 }
 
 fn leave() {
-    read().unwrap();
+    // read().unwrap();
+    sleep(Duration::from_millis(500));
     disable_raw_mode().unwrap();
     execute!(stdout(), LeaveAlternateScreen, Show).unwrap();
 }
