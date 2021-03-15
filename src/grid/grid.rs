@@ -61,7 +61,7 @@ pub trait Grid: WithSize + Sized {
         Crop::new(rect, self)
     }
 
-    /// Creates a new grid by zipping `self` with `other`.
+    /// ‘Zips up’ two grids into a single grid of pairs.
     ///
     /// Yields elements from the overlapping area of both grids.
     fn zip<U: Grid>(self, other: U) -> Zip<Self, U> {
