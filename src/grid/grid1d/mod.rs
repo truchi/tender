@@ -135,7 +135,7 @@ macro_rules! grid {
         impl<'a, I, T: $As<[I]>> GridItems for &'a $($mut)? $Type<I, T> {
             type Items = std::iter::Flatten<<Self as $GridMajors>::$Majors>;
 
-            unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items {
+            unsafe fn cropped_items_unchecked(self, index: impl Index2D) -> Self::Items {
                 self.$majors(index).flatten()
             }
         }
@@ -146,11 +146,11 @@ grid!(
     RowGrid1D<RowMajor>
         GridRow<Row> (row_unchecked)
         GridCol<Col> (col_unchecked)
-        GridRows<Rows> (rows_unchecked)
-        GridCols<Cols> (cols_unchecked)
+        GridRows<Rows> (cropped_rows_unchecked)
+        GridCols<Cols> (cropped_cols_unchecked)
     ColGrid1D<ColMajor>
         GridCol<Col> (col_unchecked)
         GridRow<Row> (row_unchecked)
-        GridCols<Cols> (cols_unchecked)
-        GridRows<Rows> (rows_unchecked)
+        GridCols<Cols> (cropped_cols_unchecked)
+        GridRows<Rows> (cropped_rows_unchecked)
 );

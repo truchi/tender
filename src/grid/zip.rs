@@ -88,17 +88,17 @@ grid1d!(
 );
 
 grid2d!(
-    GridCols Cols(Col) cols_unchecked
-    GridRows Rows(Row) rows_unchecked
+    GridCols Cols(Col) cropped_cols_unchecked
+    GridRows Rows(Row) cropped_rows_unchecked
 );
 
 impl<A: GridItems, B: GridItems> GridItems for Zip<A, B> {
     type Items = StdZip<<A::Items as IntoIterator>::IntoIter, <B::Items as IntoIterator>::IntoIter>;
 
-    unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items {
+    unsafe fn cropped_items_unchecked(self, index: impl Index2D) -> Self::Items {
         self.a
-            .items_unchecked(index.clone())
+            .cropped_items_unchecked(index.clone())
             .into_iter()
-            .zip(self.b.items_unchecked(index))
+            .zip(self.b.cropped_items_unchecked(index))
     }
 }

@@ -67,15 +67,15 @@ macro_rules! cloned {
         );
 
         grid2d!($Type: $Clone ($cloned)
-            GridRows Rows Row rows_unchecked
-            GridCols Cols Col cols_unchecked
+            GridRows Rows Row cropped_rows_unchecked
+            GridCols Cols Col cropped_cols_unchecked
         );
 
         impl<'a, I: 'a + $Clone, T: GridItems<Item = &'a I>> GridItems for $Type<T> {
             type Items = $Std<<T::Items as IntoIterator>::IntoIter>;
 
-            unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items {
-                self.0.items_unchecked(index).into_iter().$cloned()
+            unsafe fn cropped_items_unchecked(self, index: impl Index2D) -> Self::Items {
+                self.0.cropped_items_unchecked(index).into_iter().$cloned()
             }
         }
     )* };

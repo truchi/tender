@@ -86,7 +86,7 @@ grid1d!(
 );
 
 grid2d!(
-    GridCols Cols cols_unchecked
-    GridRows Rows rows_unchecked
-    GridItems Items items_unchecked
+    GridCols  Cols  cropped_cols_unchecked
+    GridRows  Rows  cropped_rows_unchecked
+    GridItems Items cropped_items_unchecked
 );

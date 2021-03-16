@@ -60,14 +60,14 @@ grid1d!(
 );
 
 grid2d!(
-    GridCols<ColMajor> Cols cols_unchecked
-    GridRows<RowMajor> Rows rows_unchecked
+    GridCols<ColMajor> Cols cropped_cols_unchecked
+    GridRows<RowMajor> Rows cropped_rows_unchecked
 );
 
 impl<I, F: FnMut(Point) -> I> GridItems for RepeatWith<F> {
     type Items = iter::Items<F>;
 
-    unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items {
+    unsafe fn cropped_items_unchecked(self, index: impl Index2D) -> Self::Items {
         Self::Items::new(self.fun, index.unchecked(self.size))
     }
 }
