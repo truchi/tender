@@ -55,8 +55,8 @@ impl<T: GridRow> GridRow for GridLayer<T> {
 impl<T: GridRows> GridRows for GridLayer<T> {
     type Rows = T::Rows;
 
-    unsafe fn rows_unchecked(self, index: impl Index2D) -> Self::Rows {
-        self.grid.rows_unchecked(index)
+    unsafe fn cropped_rows_unchecked(self, index: impl Index2D) -> Self::Rows {
+        self.grid.cropped_rows_unchecked(index)
     }
 }
 
