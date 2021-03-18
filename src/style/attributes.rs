@@ -86,7 +86,7 @@ macro_rules! attr {
 }
 
 attr!(
-    /// `Weight` (`Bold`, `Light`, `NoWeight`).
+    /// `Weight` (`Bold`, `Light`, `ResetWeight`).
     Weight {
         ///
         Bold (1)
@@ -95,42 +95,42 @@ attr!(
         ///
         ResetWeight (22)
     }
-    /// `Slant` (`Italic`, `NoSlant`).
+    /// `Slant` (`Italic`, `ResetSlant`).
     Slant {
         ///
         Italic (3);
         ///
         ResetSlant (23)
     }
-    /// `Underline` (`Underlined`, `NoUnderline`).
+    /// `Underline` (`Underlined`, `ResetUnderline`).
     Underline {
         ///
         Underlined (4);
         ///
         ResetUnderline (24)
     }
-    /// `Strike` (`Striked`, `NoStrike`).
+    /// `Strike` (`Striked`, `ResetStrike`).
     Strike {
         ///
         Striked (9);
         ///
         ResetStrike (29)
     }
-    /// `Overline` (`Overlined`, `NoOverline`).
+    /// `Overline` (`Overlined`, `ResetOverline`).
     Overline {
         ///
         Overlined (53);
         ///
         ResetOverline (55)
     }
-    /// `Invert` (`Inverted`, `NoInvert`).
+    /// `Invert` (`Inverted`, `ResetInvert`).
     Invert {
         ///
         Inverted (7);
         ///
         ResetInvert (27)
     }
-    /// `Blink` (`Slow`, `Fast`, `NoBlink`).
+    /// `Blink` (`Slow`, `Fast`, `ResetBlink`).
     Blink {
         ///
         Slow (5)
@@ -139,7 +139,7 @@ attr!(
         ///
         ResetBlink (25)
     }
-    /// `Border` (`Circle`, `Frame`, `NoBorder`).
+    /// `Border` (`Circle`, `Frame`, `ResetBorder`).
     Border {
         ///
         Circle (52)
