@@ -32,10 +32,13 @@ impl Canvas {
         let mut cells = Vec::with_capacity(len);
         cells.resize(len, DamageCell::from(Cell { char: ' ', styles }).into());
 
+        // SAFETY: len == x * y
+        let grid = unsafe { RowGrid1D::new_unchecked(size, cells) };
+
         Self {
-            first:  true.into(),
+            first: true.into(),
             styles: Default::default(),
-            grid:   RowGrid1D::new_unchecked(size, cells),
+            grid,
         }
     }
 

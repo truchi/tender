@@ -1,9 +1,11 @@
-use crate::grid::*;
+use super::*;
 
-/// Encodes memory layout in [`Size`](Size)s types ([`RowMajor`](RowMajor) /
-/// [`ColMajor`](ColMajor)).
+/// Type-level memory layout.
 ///
-/// A `Major` is a [`Size`](Size) which knows its *major* and *minor* axis.
+/// A `Major` is a [`Size`] which knows its *major* and *minor* axis, and can be
+/// constructed from thoses.
+///
+/// See [`ColMajor`], [`RowMajor`].
 pub trait Major: Copy + From<Coord> + Into<Coord> {
     /// Returns a new `Self` from the lengths of the major axis `major`
     /// and minor axis `minor`.
@@ -55,13 +57,17 @@ macro_rules! majors {
 }
 
 majors!(
-    /// A [`Size`](Size) for column-major grids.
+    /// A [`Size`] for column-major grids.
+    ///
+    /// You do not have to instanciate this type yourself, use [`Size`].
     ColMajor (y x)
         /// The size on the x axis.
         x
         /// The size on the y axis.
         y
-    /// A [`Size`](Size) for row-major grids.
+    /// A [`Size`] for row-major grids.
+    ///
+    /// You do not have to instanciate this type yourself, use [`Size`].
     RowMajor (x y)
         /// The size on the x axis.
         x

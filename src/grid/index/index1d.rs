@@ -1,29 +1,28 @@
 use crate::grid::*;
 use std::ops::{Range, RangeBounds};
 
-/// Indexes for [`GridCol::col`](GridCol::col) /
-/// [`GridRow::row`](GridRow::row).
+/// Indexes for [`GridCol::Col`]/[`GridRow::Row`].
 ///
 /// The underlying type to index a column/row is `(usize, Range<usize>)`, with:
-/// - [`usize`](usize): the index of the column/row,
-/// - [`Range<usize>`](std::ops::Range): the range of items in that column/row.
+/// - `usize`: the index of the column/row,
+/// - `Range<usize>`: the range of items in that column/row.
 ///
-/// `usize` (implied [`RangeFull`](std::ops::RangeFull)) and `(usize, T:
-/// RangeBounds<usize>)` are [`Index1D`](Index1D)s.
+/// `usize` (implied `RangeFull`) and `(usize, T: RangeBounds<usize>)`
+/// are [`Index1D`]s.
+///
+/// See [`Index0D`], [`Index2D`].
 pub trait Index1D: Clone + Sized {
     /// Returns the index as `(usize, Range<usize>)`, without bounds checking.
     ///
-    /// [`Unbounded`](std::ops::Bound::Unbounded) start/end bounds will
-    /// transform into `0`/`max_end`.  
-    /// [`Excluded`](std::ops::Bound::Excluded) start bounds and
-    /// [`Included`](std::ops::Bound::Included) end bounds may overflow.
+    /// `Unbounded` start/end bounds will transform into `0`/`max_end`.  
+    /// `Excluded` start bounds and `Included` end bounds may overflow.
     fn unchecked(self, max_end: usize) -> (usize, Range<usize>);
 
-    /// Returns the index as `(usize, Range<usize>)`, or
-    /// [`None`](std::option::Option::None) if out of bounds.
+    /// Returns the index as `(usize, Range<usize>)`, or `None` if out of
+    /// bounds.
     ///
-    /// [`Excluded`](std::ops::Bound::Excluded) start bounds and
-    /// [`Included`](std::ops::Bound::Included) end bounds saturate.
+    /// `Unbounded` start/end bounds will transform into `0`/`max_end`.  
+    /// `Excluded` start bounds and `Included` end bounds saturate.
     ///
     /// When `Some`, guaranties:
     /// - `usize < max_i`
@@ -34,19 +33,17 @@ pub trait Index1D: Clone + Sized {
     /// Returns the column index as `(usize, Range<usize>)`, without bounds
     /// checking.
     ///
-    /// [`Unbounded`](std::ops::Bound::Unbounded) start/end bounds will
-    /// transform into `0`/`size.y`.  
-    /// [`Excluded`](std::ops::Bound::Excluded) start bounds and
-    /// [`Included`](std::ops::Bound::Included) end bounds may overflow.
+    /// `Unbounded` start/end bounds will transform into `0`/`size.y`.  
+    /// `Excluded` start bounds and `Included` end bounds may overflow.
     fn col_unchecked(self, size: Size) -> (usize, Range<usize>) {
         self.unchecked(size.y)
     }
 
-    /// Returns the column index as `(usize, Range<usize>)`, or
-    /// [`None`](std::option::Option::None) if out of bounds.
+    /// Returns the column index as `(usize, Range<usize>)`, or `None` if out of
+    /// bounds.
     ///
-    /// [`Excluded`](std::ops::Bound::Excluded) start bounds and
-    /// [`Included`](std::ops::Bound::Included) end bounds saturate.
+    /// `Unbounded` start/end bounds will transform into `0`/`size.y`.  
+    /// `Excluded` start bounds and `Included` end bounds saturate.
     ///
     /// When `Some`, guaranties:
     /// - `usize < size.x`
@@ -59,19 +56,17 @@ pub trait Index1D: Clone + Sized {
     /// Returns the row index as `(usize, Range<usize>)`, without bounds
     /// checking.
     ///
-    /// [`Unbounded`](std::ops::Bound::Unbounded) start/end bounds will
-    /// transform into `0`/`size.x`.  
-    /// [`Excluded`](std::ops::Bound::Excluded) start bounds and
-    /// [`Included`](std::ops::Bound::Included) end bounds may overflow.
+    /// `Unbounded` start/end bounds will transform into `0`/`size.x`.  
+    /// `Excluded` start bounds and `Included` end bounds may overflow.
     fn row_unchecked(self, size: Size) -> (usize, Range<usize>) {
         self.unchecked(size.x)
     }
 
-    /// Returns the row index as `(usize, Range<usize>)`, or
-    /// [`None`](std::option::Option::None) if out of bounds.
+    /// Returns the row index as `(usize, Range<usize>)`, or `None` if out of
+    /// bounds.
     ///
-    /// [`Excluded`](std::ops::Bound::Excluded) start bounds and
-    /// [`Included`](std::ops::Bound::Included) end bounds saturate.
+    /// `Unbounded` start/end bounds will transform into `0`/`size.x`.  
+    /// `Excluded` start bounds and `Included` end bounds saturate.
     ///
     /// When `Some`, guaranties:
     /// - `usize < size.y`

@@ -5,9 +5,49 @@ use crate::grid::*;
 use index::*;
 use std::marker::PhantomData;
 
+/// A grid from a column-major slice. Alias of [`Grid1D<ColMajor, I, T>`].
+///
+/// You can get a [`Col`](GridCol::Col)/[`Cols`](GridCols::Cols) through the
+/// [`GridCol`]/[`GridCols`] traits, both immutably and mutably.
+///
+/// You can get a [`Row`](GridRow::Row) through the [`GridRow`] trait, though
+/// this is **not CPU cache friendly**, both immutably and mutably.
+///
+/// You can get [`Rows`](GridRows::Rows) through the [`GridRows`] trait, though
+/// this is **not CPU cache friendly**, but only immutably.
+///
+/// You can get [`Items`](GridItems::Items) through the [`GridItems`] trait,
+/// both immutably and mutably. Items will be yielded in a column-major fashion.
+///
+/// See [`Grid1D`], [`RowGrid1D`].
 pub type ColGrid1D<I, T> = Grid1D<ColMajor, I, T>;
+
+/// A grid from a row-major slice. Alias of [`Grid1D<RowMajor, I, T>`].
+///
+/// You can get a [`Row`](GridRow::Row)/[`Rows`](GridRows::Rows) through the
+/// [`GridRow`]/[`GridRows`] traits, both immutably and mutably.
+///
+/// You can get a [`Col`](GridCol::Col) through the [`GridCol`] trait, though
+/// this is **not CPU cache friendly**, both immutably and mutably.
+///
+/// You can get [`Cols`](GridCols::Cols) through the [`GridCols`] trait, though
+/// this is **not CPU cache friendly**, but only immutably.
+///
+/// You can get [`Items`](GridItems::Items) through the [`GridItems`] trait,
+/// both immutably and mutably. Items will be yielded in a row-major fashion.
+///
+/// See [`Grid1D`], [`ColGrid1D`].
 pub type RowGrid1D<I, T> = Grid1D<RowMajor, I, T>;
 
+/// A grid from a slice.
+///
+/// A `Grid1D` has a layout type `M` ([`ColMajor`]/[`RowMajor`]), an item type
+/// `I` and a collection type `T` (which is `AsRef<[I]>`/`AsMut<[I]>`).
+///
+/// You can get an [`Item`](Grid::Item) through the [`Grid`] trait, both
+/// immutably and mutably.
+///
+/// See [`ColGrid1D`], [`RowGrid1D`].
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct Grid1D<M, I, T> {
     size:    M,
@@ -15,24 +55,45 @@ pub struct Grid1D<M, I, T> {
     phantom: PhantomData<I>,
 }
 
-/// ### Constructors
 impl<M: Major, I, T> Grid1D<M, I, T> {
-    /// Creates a new [`Grid1D`](Grid1D), without checking size.
-    pub fn new_unchecked(size: Size, items: T) -> Self {
+    /// Creates a new [`Grid1D`], without checking size.
+    ///
+    /// ### Safety
+    ///
+    /// Accessing items is *undefined behavior* if `len != x * y`.
+    pub unsafe fn new_unchecked<S: Into<Size>>(size: S, items: T) -> Self {
         Self {
-            size: size.into(),
+            size: size.into().into(),
             items,
             phantom: PhantomData,
         }
     }
 
-    /// Creates a new [`Grid1D`](Grid1D) if `len != x * y`, `None` otherwise.
-    pub fn new(size: Size, items: T) -> Option<Self>
+    /// Creates a new [`Grid1D`] if `len == x * y`, `None` otherwise.
+    pub fn new<S: Into<Size>>(size: S, items: T) -> Option<Self>
     where
         T: AsRef<[I]>,
     {
+        let size = size.into();
+
         if items.as_ref().len() == size.x * size.y {
-            Some(Self::new_unchecked(size, items))
+            // SAFETY: len == x * y
+            Some(unsafe { Self::new_unchecked(size, items) })
+        } else {
+            None
+        }
+    }
+
+    /// Creates a new [`Grid1D`] if `len == x * y`, `None` otherwise.
+    pub fn new_mut<S: Into<Size>>(size: S, mut items: T) -> Option<Self>
+    where
+        T: AsMut<[I]>,
+    {
+        let size = size.into();
+
+        if items.as_mut().len() == size.x * size.y {
+            // SAFETY: len == x * y
+            Some(unsafe { Self::new_unchecked(size, items) })
         } else {
             None
         }

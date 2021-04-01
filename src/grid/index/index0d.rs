@@ -1,16 +1,17 @@
 use crate::grid::*;
 
-/// Indexes for [`Grid::item`](Grid::item).
+/// Indexes for [`Grid::Item`].
 ///
-/// The underlying type to index an item is [`Point`](Point).
+/// The underlying type to index an item is [`Point`].
 ///
-/// Anything that `Into<Point>` is an [`Index0D`](Index0D).
+/// Anything that `Into<Point>` is an [`Index0D`].
+///
+/// See [`Index1D`], [`Index2D`].
 pub trait Index0D: Clone {
-    /// Returns the index as a [`Point`](Point), without bounds checking.
+    /// Returns the index as a [`Point`], without bounds checking.
     fn unchecked(self) -> Point;
 
-    /// Returns the index as a [`Point`](Point), or
-    /// [`None`](std::option::Option::None) if out of bounds.
+    /// Returns the index as a [`Point`], or `None` if out of bounds.
     ///
     /// When `Some`, guaranties:
     /// - `point.x < size.x`

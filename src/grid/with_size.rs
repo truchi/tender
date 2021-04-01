@@ -1,11 +1,11 @@
 use crate::grid::*;
 use std::ops::Deref;
 
-/// [`Size`](Size) getter.
+/// [`Size`] getter.
 ///
-/// Anything that [`Deref`](std::ops::Deref)s into a `WithSize` is `WithSize`.
+/// Anything that derefs into a `WithSize` is `WithSize`.
 pub trait WithSize {
-    /// Returns the [`Size`](Size).
+    /// Returns the [`Size`].
     fn size(&self) -> Size;
 }
 

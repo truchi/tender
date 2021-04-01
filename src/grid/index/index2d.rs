@@ -1,30 +1,27 @@
 use crate::grid::*;
 use std::ops::RangeBounds;
 
-/// Indexes for [`GridCols::cols`](GridCols::cols) /
-/// [`GridRows::rows`](GridRows::rows) /
-/// [`GridItems::items`](GridItems::items).
+/// Indexes for [`GridCols::Cols`]/[`GridRows::Rows`]/[`GridItems::Items`].
 ///
-/// The underlying type to index columns/rows/items is [`Rect`](Rect)
+/// The underlying type to index columns/rows/items is [`Rect`]
 /// (`Coord<Range<usize>>`).
 ///
-/// [`RangeFull`](std::ops::RangeFull) (implied on both axis), `Coord<X:
-/// RangeBounds<usize>, Y: RangeBounds<usize>>` and `(X: RangeBounds<usize>, Y:
-/// RangeBounds<usize>)` are [`Index2D`](Index2D)s.
+/// `RangeFull` (implied on both axis), `Coord<X: RangeBounds<usize>, Y:
+/// RangeBounds<usize>>` and `(X: RangeBounds<usize>, Y: RangeBounds<usize>)`
+/// are [`Index2D`]s.
+///
+/// See [`Index1D`], [`Index2D`].
 pub trait Index2D: Clone {
-    /// Returns the index as a [`Rect`](Rect), without bounds checking.
+    /// Returns the index as a [`Rect`], without bounds checking.
     ///
-    /// [`Unbounded`](std::ops::Bound::Unbounded) start/end bounds will
-    /// transform into `0`/`size`.  
-    /// [`Excluded`](std::ops::Bound::Excluded) start bounds and
-    /// [`Included`](std::ops::Bound::Included) end bounds may overflow.
+    /// `Unbounded` start/end bounds will transform into `0`/`size`.  
+    /// `Excluded` start bounds and `Included` end bounds may overflow.
     fn unchecked(self, size: Size) -> Rect;
 
-    /// Returns the index as [`Rect`](Rect), or
-    /// [`None`](std::option::Option::None) if out of bounds.
+    /// Returns the index as [`Rect`], or `None` if out of bounds.
     ///
-    /// [`Excluded`](std::ops::Bound::Excluded) start bounds and
-    /// [`Included`](std::ops::Bound::Included) end bounds saturate.
+    /// `Unbounded` start/end bounds will transform into `0`/`size`.  
+    /// `Excluded` start bounds and `Included` end bounds saturate.
     ///
     /// When `Some`, guaranties on both axis:
     /// - `start <= end`
