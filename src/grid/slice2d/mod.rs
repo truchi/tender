@@ -5,7 +5,25 @@ use crate::grid::*;
 use index::*;
 use std::marker::PhantomData;
 
-/// A grid from a column-major slice. Alias of [`Grid1D<ColMajor, I, T>`].
+/// A grid from a `Vec`. Alias of [`Slice2D<M, I, Vec<T>>`].
+///
+/// See [`Slice2D`].  
+/// See [`ColVec2D`], [`RowVec2D`].
+pub type Vec2D<M, I> = Slice2D<M, I, Vec<I>>;
+
+/// A grid from a column-major `Vec`. Alias of [`Vec2D<ColMajor, I>`].
+///
+/// See [`Slice2D`].  
+/// See [`Vec2D`], [`RowVec2D`].
+pub type ColVec2D<I> = Slice2D<ColMajor, I, Vec<I>>;
+
+/// A grid from a row-major `Vec`. Alias of [`Vec2D<RowMajor, I>`].
+///
+/// See [`Slice2D`].  
+/// See [`Vec2D`], [`ColVec2D`].
+pub type RowVec2D<I> = Slice2D<RowMajor, I, Vec<I>>;
+
+/// A grid from a column-major slice. Alias of [`Slice2D<ColMajor, I, T>`].
 ///
 /// You can get a [`Col`](GridCol::Col)/[`Cols`](GridCols::Cols) through the
 /// [`GridCol`]/[`GridCols`] traits, both immutably and mutably.
@@ -19,10 +37,10 @@ use std::marker::PhantomData;
 /// You can get [`Items`](GridItems::Items) through the [`GridItems`] trait,
 /// both immutably and mutably. Items will be yielded in a column-major fashion.
 ///
-/// See [`Grid1D`], [`RowGrid1D`].
-pub type ColGrid1D<I, T> = Grid1D<ColMajor, I, T>;
+/// See [`Slice2D`], [`RowSlice2D`].
+pub type ColSlice2D<I, T> = Slice2D<ColMajor, I, T>;
 
-/// A grid from a row-major slice. Alias of [`Grid1D<RowMajor, I, T>`].
+/// A grid from a row-major slice. Alias of [`Slice2D<RowMajor, I, T>`].
 ///
 /// You can get a [`Row`](GridRow::Row)/[`Rows`](GridRows::Rows) through the
 /// [`GridRow`]/[`GridRows`] traits, both immutably and mutably.
@@ -36,27 +54,28 @@ pub type ColGrid1D<I, T> = Grid1D<ColMajor, I, T>;
 /// You can get [`Items`](GridItems::Items) through the [`GridItems`] trait,
 /// both immutably and mutably. Items will be yielded in a row-major fashion.
 ///
-/// See [`Grid1D`], [`ColGrid1D`].
-pub type RowGrid1D<I, T> = Grid1D<RowMajor, I, T>;
+/// See [`Slice2D`], [`ColSlice2D`].
+pub type RowSlice2D<I, T> = Slice2D<RowMajor, I, T>;
 
 /// A grid from a slice.
 ///
-/// A `Grid1D` has a layout type `M` ([`ColMajor`]/[`RowMajor`]), an item type
+/// A `Slice2D` has a layout type `M` ([`ColMajor`]/[`RowMajor`]), an item type
 /// `I` and a collection type `T` (which is `AsRef<[I]>`/`AsMut<[I]>`).
 ///
 /// You can get an [`Item`](Grid::Item) through the [`Grid`] trait, both
 /// immutably and mutably.
 ///
-/// See [`ColGrid1D`], [`RowGrid1D`].
+/// See [`ColSlice2D`], [`RowSlice2D`].  
+/// See [`Vec2D`], [`ColVec2D`], [`RowVec2D`].
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
-pub struct Grid1D<M, I, T> {
+pub struct Slice2D<M, I, T> {
     size:    M,
     items:   T,
     phantom: PhantomData<I>,
 }
 
-impl<M: Major, I, T> Grid1D<M, I, T> {
-    /// Creates a new [`Grid1D`], without checking size.
+impl<M: Major, I, T> Slice2D<M, I, T> {
+    /// Creates a new [`Slice2D`], without checking size.
     ///
     /// ### Safety
     ///
@@ -69,7 +88,7 @@ impl<M: Major, I, T> Grid1D<M, I, T> {
         }
     }
 
-    /// Creates a new [`Grid1D`] if `len == x * y`, `None` otherwise.
+    /// Creates a new [`Slice2D`] if `len == x * y`, `None` otherwise.
     pub fn new<S: Into<Size>>(size: S, items: T) -> Option<Self>
     where
         T: AsRef<[I]>,
@@ -84,7 +103,7 @@ impl<M: Major, I, T> Grid1D<M, I, T> {
         }
     }
 
-    /// Creates a new [`Grid1D`] if `len == x * y`, `None` otherwise.
+    /// Creates a new [`Slice2D`] if `len == x * y`, `None` otherwise.
     pub fn new_mut<S: Into<Size>>(size: S, mut items: T) -> Option<Self>
     where
         T: AsMut<[I]>,
@@ -98,21 +117,26 @@ impl<M: Major, I, T> Grid1D<M, I, T> {
             None
         }
     }
+
+    /// Returns the underlying item collection.
+    pub fn into_inner(self) -> T {
+        self.items
+    }
 }
 
-impl<M, I, T: AsRef<[I]>> AsRef<[I]> for Grid1D<M, I, T> {
+impl<M, I, T: AsRef<[I]>> AsRef<[I]> for Slice2D<M, I, T> {
     fn as_ref(&self) -> &[I] {
         self.items.as_ref()
     }
 }
 
-impl<M, I, T: AsMut<[I]>> AsMut<[I]> for Grid1D<M, I, T> {
+impl<M, I, T: AsMut<[I]>> AsMut<[I]> for Slice2D<M, I, T> {
     fn as_mut(&mut self) -> &mut [I] {
         self.items.as_mut()
     }
 }
 
-impl<M: Major, I, T> WithSize for Grid1D<M, I, T> {
+impl<M: Major, I, T> WithSize for Slice2D<M, I, T> {
     fn size(&self) -> Size {
         self.size.into()
     }
@@ -151,7 +175,7 @@ macro_rules! grid {
         )*
     };
     (impl [ITEM] $As:ident $as:ident $get:ident $(($mut:ident))?) => {
-        impl<'a, M: Major, I, T: $As<[I]>> Grid for &'a $($mut)? Grid1D<M, I, T> {
+        impl<'a, M: Major, I, T: $As<[I]>> Grid for &'a $($mut)? Slice2D<M, I, T> {
             type Item = &'a $($mut)? I;
 
             unsafe fn item_unchecked(self, index: impl Index0D) -> Self::Item {
@@ -204,12 +228,12 @@ macro_rules! grid {
 }
 
 grid!(
-    RowGrid1D<RowMajor>
+    RowSlice2D<RowMajor>
         GridRow<Row> (row_unchecked)
         GridCol<Col> (col_unchecked)
         GridRows<Rows> (cropped_rows_unchecked)
         GridCols<Cols> (cropped_cols_unchecked)
-    ColGrid1D<ColMajor>
+    ColSlice2D<ColMajor>
         GridCol<Col> (col_unchecked)
         GridRow<Row> (row_unchecked)
         GridCols<Cols> (cropped_cols_unchecked)

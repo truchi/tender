@@ -1,18 +1,33 @@
+//! Composable external 2-dimensional iteration.
+//!
+//! Abstractions over 2D collections iteration.
+//!
+//! # Organization
+//!
+//! This module provides the main traits and structs at its root. Implementors
+//! and adapters are found in submodules (and their iterators in that
+//! submodule's iter module):
+//! - Implementors:
+//!   - [`Slice2D`]
+//! - Adapters:
+//!   - [`Cloned`], [`Copied`]
+//!   - [`Crop`]
+//!   - [`Repeat`], [`RepeatWith`]
+//!   - [`Zip`]
+
 // TODO: tests, docs, examples
 // #![warn(missing_docs)]
 
 pub mod cloned;
 pub mod crop;
-pub mod grid1d;
 pub mod repeat;
-pub mod repeat_with;
+pub mod slice2d;
 pub mod zip;
 
 pub use cloned::{Cloned, Copied};
 pub use crop::Crop;
-pub use grid1d::{ColGrid1D, Grid1D, RowGrid1D};
-pub use repeat::{repeat, Repeat};
-pub use repeat_with::{repeat_with, RepeatWith};
+pub use repeat::{repeat, repeat_with, Repeat, RepeatWith};
+pub use slice2d::{ColSlice2D, ColVec2D, RowSlice2D, RowVec2D, Slice2D, Vec2D};
 pub use zip::Zip;
 
 mod grid;
