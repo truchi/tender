@@ -3,7 +3,7 @@ use std::ops::Deref;
 
 /// [`Size`] getter.
 ///
-/// Anything that derefs into a `WithSize` is `WithSize`.
+/// Anything that derefs into a [`WithSize`] is [`WithSize`].
 pub trait WithSize {
     /// Returns the [`Size`].
     fn size(&self) -> Size;

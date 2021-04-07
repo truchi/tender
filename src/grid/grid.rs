@@ -3,7 +3,9 @@ use crate::grid::*;
 /// Base trait for dealing with grids.
 ///
 /// Grids can yield their [`Item`](Grid::Item)s given a [`Index0D`]
-/// (a [`Point`]).
+/// (i.e. a [`Point`]).
+///
+/// See [`GridCol`], [`GridRow`], [`GridItems`], [`GridCols`], [`GridRows`].
 pub trait Grid: WithSize + Sized {
     /// The type of the grid's items.
     type Item;
@@ -26,8 +28,8 @@ pub trait Grid: WithSize + Sized {
 
     /// Creates a grid which copies all of its elements.
     ///
-    /// This is useful when you have an iterator over `&T`, but you need an
-    /// iterator over `T`.
+    /// This is useful when you have a grid over `&T`, but you need a
+    /// grid over `T`.
     fn copied<'a, T>(self) -> Copied<Self>
     where
         Self: Grid<Item = &'a T>,
@@ -38,8 +40,8 @@ pub trait Grid: WithSize + Sized {
 
     /// Creates a grid which clones all of its elements.
     ///
-    /// This is useful when you have an iterator over `&T`, but you need an
-    /// iterator over `T`.
+    /// This is useful when you have a grid over `&T`, but you need a
+    /// grid over `T`.
     fn cloned<'a, T>(self) -> Cloned<Self>
     where
         Self: Grid<Item = &'a T>,

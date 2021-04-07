@@ -60,6 +60,8 @@ majors!(
     /// A [`Size`] for column-major grids.
     ///
     /// You do not have to instanciate this type yourself, use [`Size`].
+    ///
+    /// See [`Size`], [`RowMajor`].
     ColMajor (y x)
         /// The size on the x axis.
         x
@@ -68,6 +70,8 @@ majors!(
     /// A [`Size`] for row-major grids.
     ///
     /// You do not have to instanciate this type yourself, use [`Size`].
+    ///
+    /// See [`Size`], [`ColMajor`].
     RowMajor (x y)
         /// The size on the x axis.
         x
