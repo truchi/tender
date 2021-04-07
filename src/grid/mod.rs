@@ -1,10 +1,16 @@
 //! Composable external 2-dimensional iteration.
 //!
-//! Grids enable abstraction over 2D collections. Collections are usually
+//! Grids enable 2D abstraction over your collections. Collections are usually
 //! 1-dimensional, just like `Vec` or `[T]` are. This crate provides traits to
 //! elevate your types into two dimensions in order to query items, rows and
 //! columns with a familiar geometrical interface. It largely revolves around
 //! iteration and integrates well with `std::iter`.
+//!
+//! This crate is very simple: all you can do is query items and iterate over
+//! columns or rows. You wont be able to add/remove columns/rows, for instance.
+//! Hence it is probably not very well suited for math/physics. Rust ecosystem
+//! already provides that anyway. I wrote this crate to power a
+//! layer-compositing lib for terminal rendering.
 //!
 //! - [Organization](#organization)
 //! - [Indexes](#indexes)

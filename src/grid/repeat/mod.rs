@@ -100,7 +100,7 @@ impl<I: Clone> GridItems for Repeat<I> {
 
 /// Creates a grid that repeats elements of type `I` all over a [`Size`](Size)
 /// by applying the provided closure.
-pub fn repeat_with<I, F: FnMut(Size) -> I>(size: Size, fun: F) -> RepeatWith<F> {
+pub fn repeat_with<I, F: FnMut(Point) -> I>(size: Size, fun: F) -> RepeatWith<F> {
     RepeatWith { size, fun }
 }
 
