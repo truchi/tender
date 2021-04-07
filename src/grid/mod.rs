@@ -7,6 +7,7 @@
 //! iteration and integrates well with `std::iter`.
 //!
 //! - [Organization](#organization)
+//! - [Indexes](#indexes)
 //! - [Grid](#grid)
 //!   - [GridCol and GridRow](#gridcol-and-gridrow)
 //!   - [GridItems](#griditems)
@@ -20,6 +21,48 @@
 //! and adapters are found in submodules (and their iterators in that
 //! submodule's iter module), although being re-exported at the root for
 //! convenience.
+//!
+//! # Indexes
+//!
+//! Let's talk about indexes to introduce how things work.
+//!
+//! In a 2D world, you can get an item with an x/y-pair coordinate. This crate
+//! provides a [`Coord`] type with [`Point`] (and [`Size`]) aliases and `(x, y)`
+//! conversion.  
+//! When you need a column or a row from your grids, you could just
+//! use a `usize`. Yet we go one step further: we allow  `(usize, Range<usize>)`
+//! as well in order to only get a section of that column or row.  
+//! You want to get a rectangular view of that grid? Here is [`Rect`]:
+//! `Size<Range<usize>>`, an x/y-pair of `Range`s.
+//!
+//! We use the [`Index0D`], [`Index1D`] and [`Index2D`] traits to convert to
+//! theses index types and check against grid sizes. We try our best at
+//! ergonomics: any [`Coord`] can be a `(x, y)`, any `Range` can be a
+//! `Range`-like (aka implementing [`std::ops::RangeBounds`]).
+//!
+//! Some examples:
+//!
+//! ```
+//! fn indexes_examples<T>(grid: &T)
+//! where
+//!     &T: GridCols, // See below
+//! {
+//!     let item = grid.item(Point { x: 1, y: 1 });
+//!     let item = grid.item((1, 1)); // same as above
+//!
+//!     let col = grid.col(1);
+//!     let col = grid.col((1, ..)); // same as above
+//!     let col = grid.col((1, ..5));
+//!     let col = grid.col((1, ..=5));
+//!     let col = grid.col((1, 1..=5)); // etc...
+//!
+//!     let cols = grid.cropped_cols(Size { x: 0..10, y: 2..5 });
+//!     let cols = grid.cropped_cols((..10, 2..=4)); // same as above, etc...
+//!
+//!     let cols = grid.cropped_cols((.., ..));
+//!     let cols = grid.cols(); // same as above, no checks
+//! }
+//! ```
 //!
 //! # Grid
 //!
@@ -46,7 +89,7 @@
 //!
 //! A type implementing [`Grid`] can also implement [`GridCol`] and [`GridRow`]
 //! to query [`col()`](GridCol::col)s and [`row()`](GridRow::row)s through an
-//! [`Index1D`] (e.g. `usize`). Let's look at what [`GridCol`] looks
+//! [`Index1D`] (e.g. a `usize`). Let's look at what [`GridCol`] looks
 //! like:
 //!
 //! ```
