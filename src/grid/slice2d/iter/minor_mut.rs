@@ -1,6 +1,8 @@
 use super::*;
 use std::{marker::PhantomData, ops::Range, slice::from_raw_parts_mut};
 
+/// A mutable 1D iterator along the minor axis of a [`Slice2D`].
+#[derive(Debug)]
 pub struct MinorMut<'a, M, I, T> {
     items:    &'a mut [I],
     i:        usize,

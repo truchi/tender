@@ -7,11 +7,11 @@ use std::{
 pub struct Canvas {
     first:  bool,
     styles: Styles<Rgb>,
-    grid:   RowGrid1D<DamageCell, Vec<DamageCell>>,
+    grid:   RowVec2D<DamageCell>,
 }
 
 impl Deref for Canvas {
-    type Target = RowGrid1D<DamageCell, Vec<DamageCell>>;
+    type Target = RowVec2D<DamageCell>;
 
     fn deref(&self) -> &Self::Target {
         &self.grid
@@ -33,7 +33,7 @@ impl Canvas {
         cells.resize(len, DamageCell::from(Cell { char: ' ', styles }).into());
 
         // SAFETY: len == x * y
-        let grid = unsafe { RowGrid1D::new_unchecked(size, cells) };
+        let grid = unsafe { RowVec2D::new_unchecked(size, cells) };
 
         Self {
             first: true.into(),

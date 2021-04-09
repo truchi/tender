@@ -1,5 +1,7 @@
 use super::*;
 
+/// A 2D iterator along the minor axis of a [`Slice2D`].
+#[derive(Debug)]
 pub struct Minors<'a, M, I, T> {
     grid:  &'a Slice2D<M, I, T>,
     index: Rect,

@@ -1,6 +1,7 @@
 use super::*;
 use std::{marker::PhantomData, ops::Range};
 
+/// A 1D iterator along the minor axis of a [`Slice2D`].
 #[derive(Debug)]
 pub struct Minor<'a, M, I, T> {
     items:    &'a [I],

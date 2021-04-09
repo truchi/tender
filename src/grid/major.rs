@@ -2,8 +2,8 @@ use super::*;
 
 /// Type-level memory layout.
 ///
-/// A `Major` is a [`Size`] which knows its *major* and *minor* axis, and can be
-/// constructed from thoses.
+/// A [`Major`] is a [`Size`] which knows its *major* and *minor* axis, and can
+/// be constructed from thoses.
 ///
 /// See [`ColMajor`], [`RowMajor`].
 pub trait Major: Copy + From<Coord> + Into<Coord> {

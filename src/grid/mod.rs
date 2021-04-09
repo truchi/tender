@@ -107,7 +107,7 @@
 //!
 //! Theses traits ensure the types [`Col`](GridCol::Col) and
 //! [`Row`](GridRow::Row) are iterable over [`Item`](Grid::Item)s. Notice that
-//! [`Index1D`] can also be both an `usize` and a range to further crop the
+//! [`Index1D`] can also be both an `usize` and a `Range` to further crop the
 //! returned column/row.
 //!
 //! ## GridItems

@@ -1,3 +1,21 @@
+//! 2-dimensional slices.
+//!
+//! This module provides the [`Slice2D`] type, which wraps slices to elevate
+//! into 2D. A [`Slice2D`] is effectively a slice storing grid items either
+//! column by column (column major) or row by row (row major).
+//!
+//! Since [`Slice2D`] wraps collections that `AsRef<[Item]>`, we can use it with
+//! a variety of collections. See our [`Vec2D`] alias.
+//!
+//! Though you can use all of the `Grid*` traits immutably, it is impossible to
+//! get a mutable 2D iterator along the minor axis: `&mut ColSlice2D` does not
+//! implement [`GridRows`] nor `&mut RowSlice2D` does not implement
+//! [`GridCols`].
+//!
+//! Know that iterating along the minor axis is **not CPU cache friendly** and
+//! should be avoided. See the excellent
+//! [Scott Meyers' talk](https://www.youtube.com/watch?v=WDIkqP4JbkE).
+
 mod index;
 pub mod iter;
 
@@ -59,8 +77,9 @@ pub type RowSlice2D<I, T> = Slice2D<RowMajor, I, T>;
 
 /// A grid from a slice.
 ///
-/// A `Slice2D` has a layout type `M` ([`ColMajor`]/[`RowMajor`]), an item type
-/// `I` and a collection type `T` (which is `AsRef<[I]>`/`AsMut<[I]>`).
+/// A [`Slice2D<M, I, T>`] has a layout type `M` ([`ColMajor`]/[`RowMajor`]), an
+/// item type `I` and a collection type `T` (which is
+/// `AsRef<[I]>`/`AsMut<[I]>`).
 ///
 /// You can get an [`Item`](Grid::Item) through the [`Grid`] trait, both
 /// immutably and mutably.

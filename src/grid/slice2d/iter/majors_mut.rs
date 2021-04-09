@@ -1,6 +1,8 @@
 use super::*;
 use std::{marker::PhantomData, ops::Range, slice::from_raw_parts_mut};
 
+/// A mutable 2D iterator along the major axis of a [`Slice2D`].
+#[derive(Debug)]
 pub struct MajorsMut<'a, M, I, T> {
     items:    &'a mut [I],
     range:    Range<usize>,
