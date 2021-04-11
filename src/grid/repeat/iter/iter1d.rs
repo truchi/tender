@@ -1,14 +1,15 @@
 use super::*;
 use std::{marker::PhantomData, ops::Range};
 
-pub struct Iter1D<M, F> {
-    fun:      F,
+#[derive(Clone, Eq, PartialEq, Hash, Debug)]
+pub struct Iter1D<M, I> {
+    fun:      fn(Point) -> I,
     index:    (usize, Range<usize>),
     _phantom: PhantomData<M>,
 }
 
-impl<M, F> Iter1D<M, F> {
-    pub(crate) fn new(fun: F, index: (usize, Range<usize>)) -> Self {
+impl<M, I> Iter1D<M, I> {
+    pub(crate) fn new(fun: fn(Point) -> I, index: (usize, Range<usize>)) -> Self {
         Self {
             fun,
             index,
@@ -17,7 +18,7 @@ impl<M, F> Iter1D<M, F> {
     }
 }
 
-impl<M: Major, I, F: FnMut(Point) -> I> Iterator for Iter1D<M, F> {
+impl<M: Major, I> Iterator for Iter1D<M, I> {
     type Item = I;
 
     fn next(&mut self) -> Option<Self::Item> {

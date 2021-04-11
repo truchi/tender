@@ -1,14 +1,15 @@
 use super::*;
 use std::marker::PhantomData;
 
-pub struct Iter2D<M, F> {
-    fun:      F,
+#[derive(Clone, Eq, PartialEq, Hash, Debug)]
+pub struct Iter2D<M, I> {
+    fun:      fn(Point) -> I,
     index:    Rect,
     _phantom: PhantomData<M>,
 }
 
-impl<M, F> Iter2D<M, F> {
-    pub(crate) fn new(fun: F, index: Rect) -> Self {
+impl<M, I> Iter2D<M, I> {
+    pub(crate) fn new(fun: fn(Point) -> I, index: Rect) -> Self {
         Self {
             fun,
             index,
@@ -17,23 +18,23 @@ impl<M, F> Iter2D<M, F> {
     }
 }
 
-impl<I, F: Clone + Fn(Point) -> I> Iterator for Iter2D<RowMajor, F> {
-    type Item = super::Iter1D<RowMajor, F>;
+impl<I> Iterator for Iter2D<RowMajor, I> {
+    type Item = super::Iter1D<RowMajor, I>;
 
     fn next(&mut self) -> Option<Self::Item> {
         Some(Self::Item::new(
-            self.fun.clone(),
+            self.fun,
             (self.index.y.next()?, self.index.x.clone()),
         ))
     }
 }
 
-impl<I, F: Clone + Fn(Point) -> I> Iterator for Iter2D<ColMajor, F> {
-    type Item = super::Iter1D<ColMajor, F>;
+impl<I> Iterator for Iter2D<ColMajor, I> {
+    type Item = super::Iter1D<ColMajor, I>;
 
     fn next(&mut self) -> Option<Self::Item> {
         Some(Self::Item::new(
-            self.fun.clone(),
+            self.fun,
             (self.index.x.next()?, self.index.y.clone()),
         ))
     }

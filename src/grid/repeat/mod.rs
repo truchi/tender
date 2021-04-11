@@ -14,6 +14,19 @@ use std::{iter::Take, ops::Range};
 /// Creates a grid that repeats an element.
 ///
 /// See [`repeat_with()`].
+///
+/// # Example
+///
+/// ```
+/// # use tender::grid::*;
+/// let rows = repeat((2, 2), "hello").rows();
+///
+/// for row in rows {
+///     for item in row {
+///         assert_eq!(item, "hello");
+///     }
+/// }
+/// ```
 pub fn repeat<I: Clone>(size: impl Into<Size>, item: I) -> Repeat<I> {
     Repeat {
         size: size.into(),
@@ -23,7 +36,7 @@ pub fn repeat<I: Clone>(size: impl Into<Size>, item: I) -> Repeat<I> {
 
 /// A grid that repeats an element.
 ///
-/// See [`repeat()`].
+/// See [`repeat()`], [`repeat_with()`].
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
 pub struct Repeat<I> {
     size: Size,
@@ -105,7 +118,27 @@ impl<I: Clone> GridItems for Repeat<I> {
 /// Creates a grid that repeats elements by applying the provided closure.
 ///
 /// See [`repeat()`].
-pub fn repeat_with<F>(size: impl Into<Size>, fun: F) -> RepeatWith<F> {
+///
+/// # Example
+///
+/// ```
+/// # use tender::geometry::*;
+/// # use tender::grid::*;
+/// let mut rows = repeat_with((2, 2), |Point { x, y }| if x == y { 1 } else { 0 }).rows();
+///
+/// let mut row1 = rows.next().unwrap();
+/// assert_eq!(row1.next(), Some(1));
+/// assert_eq!(row1.next(), Some(0));
+/// assert_eq!(row1.next(), None);
+///
+/// let mut row2 = rows.next().unwrap();
+/// assert_eq!(row2.next(), Some(0));
+/// assert_eq!(row2.next(), Some(1));
+/// assert_eq!(row2.next(), None);
+///
+/// assert_eq!(rows.next(), None);
+/// ```
+pub fn repeat_with<I>(size: impl Into<Size>, fun: fn(Point) -> I) -> RepeatWith<I> {
     RepeatWith {
         size: size.into(),
         fun,
@@ -114,11 +147,11 @@ pub fn repeat_with<F>(size: impl Into<Size>, fun: F) -> RepeatWith<F> {
 
 /// A grid that repeats elements by applying the provided closure.
 ///
-/// See [`repeat_with()`].
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
-pub struct RepeatWith<F> {
+/// See [`repeat_with()`], [`repeat()`].
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+pub struct RepeatWith<I> {
     size: Size,
-    fun:  F,
+    fun:  fn(Point) -> I,
 }
 
 impl<F> WithSize for RepeatWith<F> {
@@ -127,18 +160,18 @@ impl<F> WithSize for RepeatWith<F> {
     }
 }
 
-impl<I, F: FnMut(Point) -> I> Grid for RepeatWith<F> {
+impl<I> Grid for RepeatWith<I> {
     type Item = I;
 
-    unsafe fn item_unchecked(mut self, index: impl Index0D) -> Self::Item {
+    unsafe fn item_unchecked(self, index: impl Index0D) -> Self::Item {
         (self.fun)(index.unchecked())
     }
 }
 
 macro_rules! grid1d {
     ($($Trait:ident<$M:ident> $Assoc:ident $fn:ident)*) => { $(
-        impl<I, F: FnMut(Point) -> I> $Trait for RepeatWith<F> {
-            type $Assoc = iter::Iter1D<$M, F>;
+        impl<I> $Trait for RepeatWith<I> {
+            type $Assoc = iter::Iter1D<$M, I>;
 
             unsafe fn $fn(self, index: impl Index1D) -> Self::$Assoc {
                 Self::$Assoc::new(self.fun, index.$fn(self.size))
@@ -149,8 +182,8 @@ macro_rules! grid1d {
 
 macro_rules! grid2d {
     ($($Trait:ident<$M:ident> $Assoc:ident $fn:ident)*) => { $(
-        impl<I, F: Clone + Fn(Point) -> I> $Trait for RepeatWith<F> {
-            type $Assoc = iter::Iter2D<$M, F>;
+        impl<I> $Trait for RepeatWith<I> {
+            type $Assoc = iter::Iter2D<$M, I>;
 
             unsafe fn $fn(self, index: impl Index2D) -> Self::$Assoc {
                 Self::$Assoc::new(self.fun, index.unchecked(self.size))
@@ -169,8 +202,8 @@ grid2d!(
     GridRows<RowMajor> Rows cropped_rows_unchecked
 );
 
-impl<I, F: FnMut(Point) -> I> GridItems for RepeatWith<F> {
-    type Items = iter::Items<F>;
+impl<I> GridItems for RepeatWith<I> {
+    type Items = iter::Items<I>;
 
     unsafe fn cropped_items_unchecked(self, index: impl Index2D) -> Self::Items {
         Self::Items::new(self.fun, index.unchecked(self.size))

@@ -1,8 +1,9 @@
 use super::*;
 use std::ops::Range;
 
-pub struct Items<F> {
-    fun:    F,
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+pub struct Items<I> {
+    fun:    fn(Point) -> I,
     xstart: usize,
     xend:   usize,
     yend:   usize,
@@ -10,8 +11,8 @@ pub struct Items<F> {
     y:      usize,
 }
 
-impl<F> Items<F> {
-    pub(crate) fn new(fun: F, index: Rect) -> Self {
+impl<I> Items<I> {
+    pub(crate) fn new(fun: fn(Point) -> I, index: Rect) -> Self {
         let Point {
             x: Range {
                 start: x,
@@ -34,7 +35,7 @@ impl<F> Items<F> {
     }
 }
 
-impl<I, F: FnMut(Point) -> I> Iterator for Items<F> {
+impl<I> Iterator for Items<I> {
     type Item = I;
 
     fn next(&mut self) -> Option<Self::Item> {

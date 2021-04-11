@@ -49,9 +49,11 @@
 //! Some examples:
 //!
 //! ```
-//! fn indexes_examples<T>(grid: &T)
+//! # use tender::geometry::*;
+//! # use tender::grid::*;
+//! fn indexes_examples<'a, T>(grid: &'a T)
 //! where
-//!     &T: GridCols, // See below
+//!     &'a T: GridCols, // See below
 //! {
 //!     let item = grid.item(Point { x: 1, y: 1 });
 //!     let item = grid.item((1, 1)); // same as above
@@ -76,6 +78,7 @@
 //! [`Grid`] looks like this:
 //!
 //! ```
+//! # use tender::grid::*;
 //! trait Grid: WithSize {
 //!     type Item;
 //!     fn item(self, index: impl Index0D) -> Option<Self::Item>;
@@ -99,6 +102,7 @@
 //! like:
 //!
 //! ```
+//! # use tender::grid::*;
 //! trait GridCol: Grid {
 //!     type Col: IntoIterator<Item = Self::Item>;
 //!     fn col(self, index: impl Index1D) -> Option<Self::Col>;
@@ -115,6 +119,7 @@
 //! The [`GridItems`] trait lets you get [`items()`](GridItems::items):
 //!
 //! ```
+//! # use tender::grid::*;
 //! trait GridItems: Grid {
 //!     type Items: IntoIterator<Item = Self::Item>;
 //!     fn cropped_items(self, index: impl Index2D) -> Option<Self::Items>;
@@ -137,6 +142,7 @@
 //! [`Cols`](GridCols::Cols) and [`Rows`](GridRows::Rows):
 //!
 //! ```
+//! # use tender::grid::*;
 //! trait GridCols: GridCol {
 //!     type Cols: IntoIterator<Item = Self::Col>;
 //!     fn cropped_cols(self, index: impl Index2D) -> Option<Self::Cols>;
