@@ -1,8 +1,10 @@
+//! Grids that iterate in a [`Rect`].
+
 use crate::grid::*;
 
-/// A grid that only iterates over a [`Rect`](Rect).
+/// A grid that only iterates in a [`Rect`].
 ///
-/// This `struct` is created by [`Grid::crop`](Grid::crop).
+/// See [`Grid::crop()`].
 pub struct Crop<T> {
     rect: Rect,
     grid: T,
