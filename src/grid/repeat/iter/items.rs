@@ -1,4 +1,4 @@
-use crate::grid::*;
+use super::*;
 use std::ops::Range;
 
 pub struct Items<F> {
@@ -11,7 +11,7 @@ pub struct Items<F> {
 }
 
 impl<F> Items<F> {
-    pub fn new(fun: F, index: Rect) -> Self {
+    pub(crate) fn new(fun: F, index: Rect) -> Self {
         let Point {
             x: Range {
                 start: x,

@@ -1,25 +1,29 @@
+//! Grids that repeat elements.
+
 pub mod iter;
 
 use super::*;
-use std::{
-    iter::{repeat as std_repeat, Repeat as StdRepeat, Take},
-    ops::Range,
-};
+use std::{iter::Take, ops::Range};
 
-// -------------------------- //
-//                            //
-// ********* REPEAT ********* //
-//                            //
-// -------------------------- //
+// -------------------------------------------------------------- //
+//                                                                //
+// *************************** REPEAT *************************** //
+//                                                                //
+// -------------------------------------------------------------- //
 
-/// Creates a grid that repeats an element all over a [`Size`](Size).
-pub fn repeat<I: Clone>(size: Size, item: I) -> Repeat<I> {
-    Repeat { size, item }
+/// Creates a grid that repeats an element.
+///
+/// See [`repeat_with()`].
+pub fn repeat<I: Clone>(size: impl Into<Size>, item: I) -> Repeat<I> {
+    Repeat {
+        size: size.into(),
+        item,
+    }
 }
 
-/// A grid that repeats an element all over a [`Size`](Size).
+/// A grid that repeats an element.
 ///
-/// This `struct` is created by [`repeat`](repeat::repeat()).
+/// See [`repeat()`].
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
 pub struct Repeat<I> {
     size: Size,
@@ -43,12 +47,12 @@ impl<I: Clone> Grid for Repeat<I> {
 macro_rules! grid1d {
     ($($Trait:ident $Assoc:ident $fn:ident)*) => { $(
         impl<I: Clone> $Trait for Repeat<I> {
-            type $Assoc = Take<StdRepeat<I>>;
+            type $Assoc = Take<std::iter::Repeat<Self::Item>>;
 
             unsafe fn $fn(self, index: impl Index1D) -> Self::$Assoc {
                 let (_, Range { start, end }) = index.$fn(self.size);
 
-                std_repeat(self.item).take(end - start)
+                std::iter::repeat(self.item).take(end - start)
             }
         }
     )* };
@@ -61,12 +65,12 @@ macro_rules! grid2d {
         $main:ident $cross:ident
     )*) => { $(
         impl<I: Clone> $Trait for Repeat<I> {
-            type $Assoc = Take<StdRepeat<Self::$Item>>;
+            type $Assoc = Take<std::iter::Repeat<Self::$Item>>;
 
             unsafe fn $fn(self, index: impl Index2D) -> Self::$Assoc {
                 let Point { $x, $y } = index.unchecked(self.size);
 
-                std_repeat(self.$item((0, $main))).take($cross.end - $cross.start)
+                std::iter::repeat(self.$item((0, $main))).take($cross.end - $cross.start)
             }
         }
     )* };
@@ -83,30 +87,35 @@ grid2d!(x y
 );
 
 impl<I: Clone> GridItems for Repeat<I> {
-    type Items = Take<StdRepeat<Self::Item>>;
+    type Items = Take<std::iter::Repeat<Self::Item>>;
 
     unsafe fn cropped_items_unchecked(self, index: impl Index2D) -> Self::Items {
         let Point { x, y } = index.unchecked(self.size);
 
-        std_repeat(self.item).take((x.end - x.start) * (y.end - y.start))
+        std::iter::repeat(self.item).take((x.end - x.start) * (y.end - y.start))
     }
 }
 
-// ------------------------------- //
-//                                 //
-// ********* REPEAT WITH ********* //
-//                                 //
-// ------------------------------- //
+// ------------------------------------------------------------------- //
+//                                                                     //
+// *************************** REPEAT WITH *************************** //
+//                                                                     //
+// ------------------------------------------------------------------- //
 
-/// Creates a grid that repeats elements of type `I` all over a [`Size`](Size)
-/// by applying the provided closure.
-pub fn repeat_with<I, F: FnMut(Point) -> I>(size: Size, fun: F) -> RepeatWith<F> {
-    RepeatWith { size, fun }
+/// Creates a grid that repeats elements by applying the provided closure.
+///
+/// See [`repeat()`].
+pub fn repeat_with<F>(size: impl Into<Size>, fun: F) -> RepeatWith<F> {
+    RepeatWith {
+        size: size.into(),
+        fun,
+    }
 }
 
-/// A grid that repeats elements of type `I` all over a [`Size`](Size)
-/// by applying the provided closure.
-#[derive(Copy, Clone, PartialOrd, Eq, PartialEq, Default, Debug)]
+/// A grid that repeats elements by applying the provided closure.
+///
+/// See [`repeat_with()`].
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
 pub struct RepeatWith<F> {
     size: Size,
     fun:  F,

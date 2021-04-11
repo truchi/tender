@@ -1,4 +1,4 @@
-use crate::grid::*;
+use super::*;
 use std::marker::PhantomData;
 
 pub struct Iter2D<M, F> {
@@ -8,7 +8,7 @@ pub struct Iter2D<M, F> {
 }
 
 impl<M, F> Iter2D<M, F> {
-    pub fn new(fun: F, index: Rect) -> Self {
+    pub(crate) fn new(fun: F, index: Rect) -> Self {
         Self {
             fun,
             index,

@@ -1,4 +1,4 @@
-use crate::grid::*;
+use super::*;
 use std::{marker::PhantomData, ops::Range};
 
 pub struct Iter1D<M, F> {
@@ -8,7 +8,7 @@ pub struct Iter1D<M, F> {
 }
 
 impl<M, F> Iter1D<M, F> {
-    pub fn new(fun: F, index: (usize, Range<usize>)) -> Self {
+    pub(crate) fn new(fun: F, index: (usize, Range<usize>)) -> Self {
         Self {
             fun,
             index,

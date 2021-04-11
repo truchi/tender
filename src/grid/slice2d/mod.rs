@@ -4,7 +4,7 @@
 //! into 2D. A [`Slice2D`] is effectively a slice storing grid items either
 //! column by column (column major) or row by row (row major).
 //!
-//! Since [`Slice2D`] wraps collections that `AsRef<[Item]>`, we can use it with
+//! Since [`Slice2D`] wraps collections that `AsRef<[I]>`, we can use it with
 //! a variety of collections. See our [`Vec2D`] alias.
 //!
 //! Though you can use all of the `Grid*` traits immutably, it is impossible to
