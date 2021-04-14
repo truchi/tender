@@ -1,3 +1,5 @@
+//! Grids that `Clone`/`Copy` the elements of a grid.
+
 use crate::grid::*;
 use std::{
     iter::{Cloned as StdCloned, Copied as StdCopied, Map},
@@ -82,12 +84,12 @@ macro_rules! cloned {
 }
 
 cloned!(
-    /// A grid yielding [`Clone`](std::clone::Clone)d items.
+    /// A grid yielding `Clone`d items.
     ///
-    /// This `struct` is created by [`Grid::cloned`](Grid::cloned).
+    /// See [`Grid::cloned()`].
     Cloned: Clone (StdCloned cloned)
-    /// A grid yielding [`Copy`](std::marker::Copy)d items.
+    /// A grid yielding `Copy`ed items.
     ///
-    /// This `struct` is created by [`Grid::copied`](Grid::copied).
+    /// See [`Grid::copied()`].
     Copied: Copy (StdCopied copied)
 );

@@ -1,3 +1,5 @@
+//! A grid that zips two grids.
+
 use crate::grid::*;
 use std::iter::{Map, Zip as StdZip};
 

@@ -1,4 +1,4 @@
-//! Grids that iterate in a [`Rect`].
+//! A grid that iterate in a [`Rect`] of itself.
 
 use crate::grid::*;
 
