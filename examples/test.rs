@@ -43,7 +43,7 @@ fn main() {
 
     let layer1 = GridLayer {
         position: (1, 1).into(),
-        grid:     repeat((40, 20).into(), Cell::<PreRgba> {
+        grid:     repeat((40, 20), Cell::<PreRgba> {
             char:   'a',
             styles: Styles {
                 foreground: Rgba(0, 255, 0, 255).into(),
@@ -54,7 +54,7 @@ fn main() {
     };
     let layer2 = GridLayer {
         position: (2, 2).into(),
-        grid:     repeat((40, 20).into(), Cell::<PreRgba> {
+        grid:     repeat((40, 20), Cell::<PreRgba> {
             char:   'b',
             styles: Styles {
                 foreground: Rgba(0, 0, 255, 255 / 2).into(),
