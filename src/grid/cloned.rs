@@ -2,14 +2,14 @@
 
 use crate::grid::*;
 use std::{
-    iter::{Cloned as StdCloned, Copied as StdCopied, Map},
+    iter::Map,
     ops::{Deref, DerefMut},
 };
 
 macro_rules! grid1d {
-    ($Type:ident: $Clone:ident ($Std:ident $cloned:ident) $($Trait:ident $Assoc:ident $fn:ident)*) => { $(
+    ($Type:ident: $Clone:ident ($Cloned:ident $cloned:ident) $($Trait:ident $Assoc:ident $fn:ident)*) => { $(
         impl<'a, I: 'a + $Clone, T: $Trait<Item = &'a I>> $Trait for $Type<T> {
-            type $Assoc = $Std<<T::$Assoc as IntoIterator>::IntoIter>;
+            type $Assoc = std::iter::$Cloned<<T::$Assoc as IntoIterator>::IntoIter>;
 
             unsafe fn $fn(self, index: impl Index1D) -> Self::$Assoc {
                 self.0.$fn(index).into_iter().$cloned()
@@ -36,7 +36,7 @@ macro_rules! grid2d {
 macro_rules! cloned {
     ($(
         $(#[$meta:meta])*
-        $Type:ident: $Clone:ident ($Std:ident $cloned:ident)
+        $Type:ident: $Clone:ident ($Cloned:ident $cloned:ident)
     )*) => { $(
         $(#[$meta])*
         pub struct $Type<T>(pub(crate) T);
@@ -63,7 +63,7 @@ macro_rules! cloned {
             }
         }
 
-        grid1d!($Type: $Clone ($Std $cloned)
+        grid1d!($Type: $Clone ($Cloned $cloned)
             GridRow Row row_unchecked
             GridCol Col col_unchecked
         );
@@ -74,7 +74,7 @@ macro_rules! cloned {
         );
 
         impl<'a, I: 'a + $Clone, T: GridItems<Item = &'a I>> GridItems for $Type<T> {
-            type Items = $Std<<T::Items as IntoIterator>::IntoIter>;
+            type Items = std::iter::$Cloned<<T::Items as IntoIterator>::IntoIter>;
 
             unsafe fn cropped_items_unchecked(self, index: impl Index2D) -> Self::Items {
                 self.0.cropped_items_unchecked(index).into_iter().$cloned()
@@ -87,9 +87,9 @@ cloned!(
     /// A grid yielding `Clone`d items.
     ///
     /// See [`Grid::cloned()`].
-    Cloned: Clone (StdCloned cloned)
+    Cloned: Clone (Cloned cloned)
     /// A grid yielding `Copy`ed items.
     ///
     /// See [`Grid::copied()`].
-    Copied: Copy (StdCopied copied)
+    Copied: Copy (Copied copied)
 );

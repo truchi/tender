@@ -1,7 +1,7 @@
 //! A grid that zips two grids.
 
 use crate::grid::*;
-use std::iter::{Map, Zip as StdZip};
+use std::iter::Map;
 
 /// ‘Zips up’ two grids into a single grid of pairs.
 #[derive(Copy, Clone, Default, Debug)]
@@ -47,7 +47,7 @@ impl<A: Grid, B: Grid> Grid for Zip<A, B> {
 macro_rules! grid1d {
     ($($Trait:ident $Assoc:ident $fn:ident)*) => { $(
         impl<A: $Trait, B: $Trait> $Trait for Zip<A, B> {
-            type $Assoc = StdZip<
+            type $Assoc = std::iter::Zip<
                 <A::$Assoc as IntoIterator>::IntoIter,
                 <B::$Assoc as IntoIterator>::IntoIter,
             >;
@@ -66,7 +66,7 @@ macro_rules! grid2d {
     ($($Trait:ident $Assoc:ident($Item:ident) $fn:ident)*) => { $(
         impl<A: $Trait, B: $Trait> $Trait for Zip<A, B> {
             type $Assoc = Map<
-                StdZip<
+                std::iter::Zip<
                     <A::$Assoc as IntoIterator>::IntoIter,
                     <B::$Assoc as IntoIterator>::IntoIter,
                 >,
@@ -95,7 +95,8 @@ grid2d!(
 );
 
 impl<A: GridItems, B: GridItems> GridItems for Zip<A, B> {
-    type Items = StdZip<<A::Items as IntoIterator>::IntoIter, <B::Items as IntoIterator>::IntoIter>;
+    type Items =
+        std::iter::Zip<<A::Items as IntoIterator>::IntoIter, <B::Items as IntoIterator>::IntoIter>;
 
     unsafe fn cropped_items_unchecked(self, index: impl Index2D) -> Self::Items {
         self.a
