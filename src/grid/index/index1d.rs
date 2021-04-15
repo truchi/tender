@@ -1,5 +1,5 @@
 use crate::grid::*;
-use std::ops::{Range, RangeBounds};
+use std::ops::Range;
 
 /// Indexes for [`GridCol::Col`]/[`GridRow::Row`].
 ///
@@ -7,8 +7,7 @@ use std::ops::{Range, RangeBounds};
 /// - `usize`: the index of the column/row,
 /// - `Range<usize>`: the range of items in that column/row.
 ///
-/// `usize` (implied `RangeFull`) and `(usize, T: RangeBounds<usize>)`
-/// are [`Index1D`]s.
+/// `usize` and `(usize, T: RangeBounds<usize>)` are [`Index1D`]s.
 ///
 /// See [`Index0D`], [`Index2D`].
 pub trait Index1D: Clone + Sized {
@@ -91,7 +90,7 @@ impl Index1D for usize {
     }
 }
 
-impl<T: RangeBounds<usize> + Clone> Index1D for (usize, T) {
+impl<T: ToRange + Clone> Index1D for (usize, T) {
     fn unchecked(self, max_end: usize) -> (usize, Range<usize>) {
         (self.0, ToRange::unchecked(self.1, max_end))
     }
@@ -106,3 +105,47 @@ impl<T: RangeBounds<usize> + Clone> Index1D for (usize, T) {
         }
     }
 }
+
+/*
+macro_rules! index1d {
+    ($($Type:ty)*) => { $(
+        impl Index1D for (usize, $Type) {
+            fn unchecked(self, max_end: usize) -> (usize, Range<usize>) {
+                (self.0, ToRange::unchecked(self.1, max_end))
+            }
+
+            fn checked(self, max_i: usize, max_end: usize) -> Option<(usize, Range<usize>)> {
+                let (i, range) = self;
+
+                if i < max_i {
+                    Some((i, ToRange::checked(range, max_end)?))
+                } else {
+                    None
+                }
+            }
+        }
+    )* };
+}
+*/
+
+// index1d!(
+// RangeFull RangeToInclusive<usize> RangeTo<usize>
+// RangeFrom<usize> RangeInclusive<usize> Range<usize>
+// (Bound<usize>, Bound<usize>)
+// );
+
+// impl<T: RangeBounds<usize> + Clone> Index1D for (usize, T) {
+// fn unchecked(self, max_end: usize) -> (usize, Range<usize>) {
+// (self.0, ToRange::unchecked(self.1, max_end))
+// }
+//
+// fn checked(self, max_i: usize, max_end: usize) -> Option<(usize,
+// Range<usize>)> { let (i, range) = self;
+//
+// if i < max_i {
+// Some((i, ToRange::checked(range, max_end)?))
+// } else {
+// None
+// }
+// }
+// }

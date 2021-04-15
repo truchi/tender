@@ -188,13 +188,13 @@ pub use zip::Zip;
 mod grid;
 mod index;
 mod major;
-mod utils;
+mod to_range;
 mod with_size;
 
 pub use self::grid::*;
 pub use index::*;
 pub use major::*;
+pub use to_range::*;
 pub use with_size::*;
 
 use crate::geometry::*;
-use utils::*;

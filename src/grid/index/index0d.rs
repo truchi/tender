@@ -4,7 +4,7 @@ use crate::grid::*;
 ///
 /// The underlying type to index an item is [`Point`].
 ///
-/// Anything that `Into<Point>` is an [`Index0D`].
+/// `T: Into<Point>` is an [`Index0D`].
 ///
 /// See [`Index1D`], [`Index2D`].
 pub trait Index0D: Clone {

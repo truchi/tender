@@ -9,7 +9,7 @@ use std::ops::{
     RangeToInclusive,
 };
 
-/// Converts `T: RangeBounds<usize>` to `Range<usize>`.
+/// Converts range-likes to `Range<usize>`s.
 pub trait ToRange: RangeBounds<usize> {
     /// Converts to `Range` without bounds checking.
     fn unchecked(self, len: usize) -> Range<usize>;

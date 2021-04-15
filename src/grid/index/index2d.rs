@@ -1,5 +1,4 @@
 use crate::grid::*;
-use std::ops::RangeBounds;
 
 /// Indexes for [`GridCols::Cols`]/[`GridRows::Rows`]/[`GridItems::Items`].
 ///
@@ -42,7 +41,7 @@ impl Index2D for std::ops::RangeFull {
     }
 }
 
-impl<X: RangeBounds<usize> + Clone, Y: RangeBounds<usize> + Clone> Index2D for Coord<X, Y> {
+impl<X: ToRange + Clone, Y: ToRange + Clone> Index2D for Coord<X, Y> {
     fn unchecked(self, size: Size) -> Rect {
         (self.x, self.y).unchecked(size)
     }
@@ -52,7 +51,7 @@ impl<X: RangeBounds<usize> + Clone, Y: RangeBounds<usize> + Clone> Index2D for C
     }
 }
 
-impl<X: RangeBounds<usize> + Clone, Y: RangeBounds<usize> + Clone> Index2D for (X, Y) {
+impl<X: ToRange + Clone, Y: ToRange + Clone> Index2D for (X, Y) {
     fn unchecked(self, size: Size) -> Rect {
         Point {
             x: ToRange::unchecked(self.0, size.x),
