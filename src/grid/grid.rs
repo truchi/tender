@@ -67,6 +67,14 @@ pub trait Grid: WithSize + Sized {
         Crop::new(rect, self)
     }
 
+    /// Creates a new grid by applying the provided function on each elements.
+    fn map<I>(self, f: fn(Self::Item) -> I) -> Map<Self, I> {
+        Map {
+            grid: self,
+            fun:  f,
+        }
+    }
+
     /// ‘Zips up’ two grids into a single grid of pairs.
     ///
     /// Yields elements from the overlapping area of both grids.

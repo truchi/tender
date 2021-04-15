@@ -115,7 +115,7 @@ impl<I: Clone> GridItems for Repeat<I> {
 //                                                                     //
 // ------------------------------------------------------------------- //
 
-/// Creates a grid that repeats elements by applying the provided closure.
+/// Creates a grid that repeats elements by applying the provided function.
 ///
 /// See [`repeat()`].
 ///
@@ -145,7 +145,7 @@ pub fn repeat_with<I>(size: impl Into<Size>, fun: fn(Point) -> I) -> RepeatWith<
     }
 }
 
-/// A grid that repeats elements by applying the provided closure.
+/// A grid that repeats elements by applying the provided function.
 ///
 /// See [`repeat_with()`], [`repeat()`].
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -154,7 +154,7 @@ pub struct RepeatWith<I> {
     fun:  fn(Point) -> I,
 }
 
-impl<F> WithSize for RepeatWith<F> {
+impl<I> WithSize for RepeatWith<I> {
     fn size(&self) -> Size {
         self.size
     }

@@ -176,12 +176,14 @@
 // pub and re-exported
 pub mod cloned;
 pub mod crop;
+pub mod map;
 pub mod repeat;
 pub mod slice2d;
 pub mod zip;
 
 pub use cloned::{Cloned, Copied};
 pub use crop::Crop;
+pub use map::Map;
 pub use repeat::{repeat, repeat_with, Repeat, RepeatWith};
 pub use slice2d::{ColSlice2D, ColVec2D, RowSlice2D, RowVec2D, Slice2D, Vec2D};
 pub use zip::Zip;

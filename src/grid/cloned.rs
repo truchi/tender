@@ -1,4 +1,4 @@
-//! Grids that `Clone`/`Copy` the elements of a grid.
+//! Grids that `Clone`/`Copy` elements.
 
 use crate::grid::*;
 use std::{
