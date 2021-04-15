@@ -173,6 +173,7 @@
 //   - [`Repeat`], [`RepeatWith`]
 //   - [`Zip`]
 
+// pub and re-exported
 pub mod cloned;
 pub mod crop;
 pub mod repeat;
@@ -185,16 +186,22 @@ pub use repeat::{repeat, repeat_with, Repeat, RepeatWith};
 pub use slice2d::{ColSlice2D, ColVec2D, RowSlice2D, RowVec2D, Slice2D, Vec2D};
 pub use zip::Zip;
 
+// re-exported
 mod grid;
-mod index;
+mod index0d;
+mod index1d;
+mod index2d;
 mod major;
 mod to_range;
 mod with_size;
 
 pub use self::grid::*;
-pub use index::*;
+pub use index0d::*;
+pub use index1d::*;
+pub use index2d::*;
 pub use major::*;
 pub use to_range::*;
 pub use with_size::*;
 
+// TODO
 use crate::geometry::*;
