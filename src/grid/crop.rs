@@ -26,12 +26,7 @@ impl<T: WithSize> Crop<T> {
 
 impl<I> WithSize for Crop<I> {
     fn size(&self) -> Size {
-        let Size { x, y } = self.rect.clone();
-
-        Size {
-            x: x.end - x.start,
-            y: y.end - y.start,
-        }
+        self.rect.size()
     }
 }
 

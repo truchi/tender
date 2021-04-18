@@ -13,17 +13,9 @@ pub struct Zip<A, B> {
 
 impl<A: WithSize, B: WithSize> Zip<A, B> {
     pub(crate) fn new(a: A, b: B) -> Self {
-        let Size { x: xa, y: ya } = a.size();
-        let Size { x: xb, y: yb } = b.size();
+        let size = a.size().min(b.size());
 
-        Self {
-            a,
-            b,
-            size: Size {
-                x: xa.min(xb),
-                y: ya.min(yb),
-            },
-        }
+        Self { a, b, size }
     }
 }
 
