@@ -9,7 +9,7 @@ pub struct Minors<'a, M, I, T> {
 
 impl<'a, M: Major, I, T> Minors<'a, M, I, T> {
     pub(crate) unsafe fn new_unchecked(grid: &'a Slice2D<M, I, T>, index: impl Index2D) -> Self {
-        let index = index.unchecked(grid.size());
+        let index = index.unchecked(grid.size);
 
         Self { grid, index }
     }

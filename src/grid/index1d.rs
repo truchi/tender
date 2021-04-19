@@ -34,7 +34,9 @@ pub trait Index1D: Clone + Sized {
     ///
     /// `Unbounded` start/end bounds will transform into `0`/`size.y`.  
     /// `Excluded` start bounds and `Included` end bounds may overflow.
-    fn col_unchecked(self, size: Size) -> (usize, Range<usize>) {
+    fn col_unchecked(self, size: impl Into<Size>) -> (usize, Range<usize>) {
+        let size = size.into();
+
         self.unchecked(size.y)
     }
 
@@ -48,7 +50,9 @@ pub trait Index1D: Clone + Sized {
     /// - `usize < size.x`
     /// - `range.start <= range.end`
     /// - `range.end <= size.y`
-    fn col(self, size: Size) -> Option<(usize, Range<usize>)> {
+    fn col(self, size: impl Into<Size>) -> Option<(usize, Range<usize>)> {
+        let size = size.into();
+
         self.checked(size.x, size.y)
     }
 
@@ -57,7 +61,9 @@ pub trait Index1D: Clone + Sized {
     ///
     /// `Unbounded` start/end bounds will transform into `0`/`size.x`.  
     /// `Excluded` start bounds and `Included` end bounds may overflow.
-    fn row_unchecked(self, size: Size) -> (usize, Range<usize>) {
+    fn row_unchecked(self, size: impl Into<Size>) -> (usize, Range<usize>) {
+        let size = size.into();
+
         self.unchecked(size.x)
     }
 
@@ -71,7 +77,9 @@ pub trait Index1D: Clone + Sized {
     /// - `usize < size.y`
     /// - `range.start <= range.end`
     /// - `range.end <= size.x`
-    fn row(self, size: Size) -> Option<(usize, Range<usize>)> {
+    fn row(self, size: impl Into<Size>) -> Option<(usize, Range<usize>)> {
+        let size = size.into();
+
         self.checked(size.y, size.x)
     }
 }
@@ -105,47 +113,3 @@ impl<T: ToRange + Clone> Index1D for (usize, T) {
         }
     }
 }
-
-/*
-macro_rules! index1d {
-    ($($Type:ty)*) => { $(
-        impl Index1D for (usize, $Type) {
-            fn unchecked(self, max_end: usize) -> (usize, Range<usize>) {
-                (self.0, ToRange::unchecked(self.1, max_end))
-            }
-
-            fn checked(self, max_i: usize, max_end: usize) -> Option<(usize, Range<usize>)> {
-                let (i, range) = self;
-
-                if i < max_i {
-                    Some((i, ToRange::checked(range, max_end)?))
-                } else {
-                    None
-                }
-            }
-        }
-    )* };
-}
-*/
-
-// index1d!(
-// RangeFull RangeToInclusive<usize> RangeTo<usize>
-// RangeFrom<usize> RangeInclusive<usize> Range<usize>
-// (Bound<usize>, Bound<usize>)
-// );
-
-// impl<T: RangeBounds<usize> + Clone> Index1D for (usize, T) {
-// fn unchecked(self, max_end: usize) -> (usize, Range<usize>) {
-// (self.0, ToRange::unchecked(self.1, max_end))
-// }
-//
-// fn checked(self, max_i: usize, max_end: usize) -> Option<(usize,
-// Range<usize>)> { let (i, range) = self;
-//
-// if i < max_i {
-// Some((i, ToRange::checked(range, max_end)?))
-// } else {
-// None
-// }
-// }
-// }

@@ -16,7 +16,7 @@ impl<'a, M: Major, I, T: AsMut<[I]>> MajorsMut<'a, M, I, T> {
         grid: &'a mut Slice2D<M, I, T>,
         index: impl Index2D,
     ) -> Self {
-        let index = index.unchecked(grid.size());
+        let index = index.unchecked(grid.size);
         let (range, minor) = major_index2d::<M>(index);
 
         // Splitting to the first col/row of interest

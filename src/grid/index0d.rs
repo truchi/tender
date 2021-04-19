@@ -16,7 +16,7 @@ pub trait Index0D: Clone {
     /// When `Some`, guaranties:
     /// - `point.x < size.x`
     /// - `point.y < size.y`
-    fn checked(self, size: Size) -> Option<Point>;
+    fn checked(self, size: impl Into<Size>) -> Option<Point>;
 }
 
 impl<T: Into<Point> + Clone> Index0D for T {
@@ -24,10 +24,10 @@ impl<T: Into<Point> + Clone> Index0D for T {
         self.into()
     }
 
-    fn checked(self, size: Size) -> Option<Point> {
+    fn checked(self, size: impl Into<Size>) -> Option<Point> {
         let point = self.into();
 
-        if point < size {
+        if point < size.into() {
             Some(point)
         } else {
             None

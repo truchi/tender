@@ -1,21 +1,21 @@
 use super::*;
 
-/// A 2D iterator along the major axis of a [`Slice2D`].
+/// A 2D iterator along the major axis of an [`Array2D`].
 #[derive(Debug)]
-pub struct Majors<'a, M, I, T> {
-    grid:  &'a Slice2D<M, I, T>,
+pub struct Majors<'a, M, I, T, U> {
+    grid:  &'a Array2D<M, I, T, U>,
     index: Rect,
 }
 
-impl<'a, M: Major, I, T> Majors<'a, M, I, T> {
-    pub(crate) unsafe fn new_unchecked(grid: &'a Slice2D<M, I, T>, index: impl Index2D) -> Self {
+impl<'a, M: Major, I, T, U> Majors<'a, M, I, T, U> {
+    pub(crate) unsafe fn new_unchecked(grid: &'a Array2D<M, I, T, U>, index: impl Index2D) -> Self {
         let index = index.unchecked(grid.size);
 
         Self { grid, index }
     }
 }
 
-impl<'a, I, T: AsRef<[I]>> Iterator for Majors<'a, RowMajor, I, T> {
+impl<'a, I, T: AsRef<[U]>, U: AsRef<[I]>> Iterator for Majors<'a, RowMajor, I, T, U> {
     type Item = &'a [I];
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -26,7 +26,7 @@ impl<'a, I, T: AsRef<[I]>> Iterator for Majors<'a, RowMajor, I, T> {
     }
 }
 
-impl<'a, I, T: AsRef<[I]>> Iterator for Majors<'a, ColMajor, I, T> {
+impl<'a, I, T: AsRef<[U]>, U: AsRef<[I]>> Iterator for Majors<'a, ColMajor, I, T, U> {
     type Item = &'a [I];
 
     fn next(&mut self) -> Option<Self::Item> {

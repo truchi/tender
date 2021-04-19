@@ -209,7 +209,7 @@ macro_rules! grid {
             type $Assoc = &'a $($mut)? [I];
 
             unsafe fn $fn(self, index: impl Index1D) -> Self::$Assoc {
-                let index = index1d(index.$fn(self.size()), self.size);
+                let index = index1d(index.$fn(self.size), self.size);
 
                 self.items.$as().$get(index)
             }

@@ -174,6 +174,7 @@
 //   - [`Zip`]
 
 // pub and re-exported
+pub mod array2d;
 pub mod cloned;
 pub mod crop;
 pub mod map;
@@ -181,6 +182,7 @@ pub mod repeat;
 pub mod slice2d;
 pub mod zip;
 
+pub use array2d::*;
 pub use cloned::{Cloned, Copied};
 pub use crop::Crop;
 pub use map::Map;
