@@ -67,6 +67,7 @@
 //!     let cols = grid.cols(Size { x: 0..10, y: 2..5 });
 //!     let cols = grid.cols((..10, 2..=4)); // same as above
 //!     let cols = grid.cols((.., ..)); // etc...
+//!     let cols = grid.cols(..); // same as above
 //! }
 //! ```
 //!
