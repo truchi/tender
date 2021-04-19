@@ -160,7 +160,7 @@
 // TODO: tests, docs, examples
 // #![warn(missing_docs)]
 // - Implementors:
-//   - [`Slice2D`]
+//   - [`Grid1D`]
 // - Adapters:
 //   - [`Cloned`], [`Copied`]
 //   - [`Crop`]
@@ -171,17 +171,30 @@
 pub mod array2d;
 pub mod cloned;
 pub mod crop;
+pub mod grid1d;
 pub mod map;
 pub mod repeat;
-pub mod slice2d;
 pub mod zip;
 
 pub use array2d::*;
 pub use cloned::{Cloned, Copied};
 pub use crop::Crop;
+pub use grid1d::{
+    Array1D,
+    ColArray1D,
+    ColGrid1D,
+    ColSlice1D,
+    ColVec1D,
+    Grid1D,
+    RowArray1D,
+    RowGrid1D,
+    RowSlice1D,
+    RowVec1D,
+    Slice1D,
+    Vec1D,
+};
 pub use map::Map;
 pub use repeat::{repeat, repeat_with, Repeat, RepeatWith};
-pub use slice2d::{ColSlice2D, ColVec2D, RowSlice2D, RowVec2D, Slice2D, Vec2D};
 pub use zip::Zip;
 
 // re-exported

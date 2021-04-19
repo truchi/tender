@@ -1,11 +1,11 @@
-//! Iterators for [`Slice2D`]'s `Grid*` implementations.
+//! Iterators for [`Grid1D`]'s `Grid*` implementations.
 //!
 //! You will not find here `Major`/`MajorMut` since we use regular slices for
 //! that. You won't find either `MinorsMut` since there is no safe way to do
 //! this.
 //!
 //! Refer to these types through `Grid*`'s associated types (e.g.
-//! `&RowSlice2D::Cols`).
+//! `&RowGrid1D::Cols`).
 
 mod majors;
 mod majors_mut;

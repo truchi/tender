@@ -1,14 +1,14 @@
 use super::*;
 
-/// A 2D iterator along the major axis of a [`Slice2D`].
+/// A 2D iterator along the major axis of a [`Grid1D`].
 #[derive(Debug)]
 pub struct Majors<'a, M, I, T> {
-    grid:  &'a Slice2D<M, I, T>,
+    grid:  &'a Grid1D<M, I, T>,
     index: Rect,
 }
 
 impl<'a, M: Major, I, T> Majors<'a, M, I, T> {
-    pub(crate) unsafe fn new_unchecked(grid: &'a Slice2D<M, I, T>, index: impl Index2D) -> Self {
+    pub(crate) unsafe fn new_unchecked(grid: &'a Grid1D<M, I, T>, index: impl Index2D) -> Self {
         let index = index.unchecked(grid.size);
 
         Self { grid, index }

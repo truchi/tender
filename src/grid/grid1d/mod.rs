@@ -1,15 +1,15 @@
-//! 2-dimensional slices.
+//! A grid from a 1-dimensional collection.
 //!
-//! This module provides the [`Slice2D`] type, which wraps slices to elevate
-//! into 2D. A [`Slice2D`] is effectively a slice storing grid items either
+//! This module provides the [`Grid1D`] type, which wraps slices to elevate
+//! into 2D. A [`Grid1D`] is effectively a slice storing grid items either
 //! column by column (column major) or row by row (row major).
 //!
-//! Since [`Slice2D`] wraps collections that `AsRef<[I]>`, we can use it with
+//! Since [`Grid1D`] wraps collections that `AsRef<[I]>`, we can use it with
 //! a variety of collections. See our [`Vec2D`] alias.
 //!
 //! Though you can use all of the `Grid*` traits immutably, it is impossible to
-//! get a mutable 2D iterator along the minor axis: `&mut ColSlice2D` does not
-//! implement [`GridRows`] nor `&mut RowSlice2D` does not implement
+//! get a mutable 2D iterator along the minor axis: `&mut ColGrid1D` does not
+//! implement [`GridRows`] nor `&mut RowGrid1D` does not implement
 //! [`GridCols`].
 //!
 //! Know that iterating along the minor axis is **not CPU cache friendly** and
@@ -23,25 +23,66 @@ use crate::grid::*;
 use index::*;
 use std::{iter::Flatten, marker::PhantomData};
 
-/// A grid from a `Vec`. Alias of [`Slice2D<M, I, Vec<T>>`].
+/// A grid from an `array`. Alias of [`Grid1D<M, I, [I; L]>`](Grid1D).
 ///
-/// See [`Slice2D`].  
+/// See [`Grid1D`].  
+/// See [`ColArray2D`], [`RowArray2D`].
+pub type Array1D<M, I, const L: usize> = Grid1D<M, I, [I; L]>;
+
+/// A grid from a *column-major* `array`.
+/// Alias of [`Array1D<ColMajor, I, L>`](Array1D).
+///
+/// See [`Grid1D`].  
+/// See [`Array1D`], [`RowArray1D`].
+pub type ColArray1D<I, const L: usize> = Array1D<ColMajor, I, L>;
+
+/// A grid from a *row-major* `array`.
+/// Alias of [`Array1D<RowMajor, I, L>`](Array1D).
+///
+/// See [`Grid1D`].  
+/// See [`Array1D`], [`ColArray1D`].
+pub type RowArray1D<I, const L: usize> = Array1D<RowMajor, I, L>;
+
+/// A grid from a `slice`. Alias of [`Grid1D<'a, M, I, &'a [I]>`](Grid1D).
+///
+/// See [`Grid1D`].  
+/// See [`ColSlice2D`], [`RowSlice2D`].
+pub type Slice1D<'a, M, I> = Grid1D<M, I, &'a [I]>;
+
+/// A grid from a *column-major* `slice`.
+/// Alias of [`Slice1D<'a, ColMajor, I>`](Slice1D).
+///
+/// See [`Grid1D`].  
+/// See [`Slice1D`], [`RowSlice1D`].
+pub type ColSlice1D<'a, I> = Slice1D<'a, ColMajor, I>;
+
+/// A grid from a *row-major* `slice`.
+/// Alias of [`Slice1D<'a, RowMajor, I>`](Slice1D).
+///
+/// See [`Grid1D`].  
+/// See [`Slice1D`], [`ColSlice1D`].
+pub type RowSlice1D<'a, I> = Slice1D<'a, RowMajor, I>;
+
+/// A grid from a `Vec`. Alias of [`Grid1D<M, I, Vec<T>>`].
+///
+/// See [`Grid1D`].  
 /// See [`ColVec2D`], [`RowVec2D`].
-pub type Vec2D<M, I> = Slice2D<M, I, Vec<I>>;
+pub type Vec1D<M, I> = Grid1D<M, I, Vec<I>>;
 
-/// A grid from a column-major `Vec`. Alias of [`Vec2D<ColMajor, I>`].
+/// A grid from a *column-major* `Vec`. Alias of [`Vec1D<ColMajor, I>`].
 ///
-/// See [`Slice2D`].  
+/// See [`Grid1D`].  
 /// See [`Vec2D`], [`RowVec2D`].
-pub type ColVec2D<I> = Slice2D<ColMajor, I, Vec<I>>;
+pub type ColVec1D<I> = Vec1D<ColMajor, I>;
 
-/// A grid from a row-major `Vec`. Alias of [`Vec2D<RowMajor, I>`].
+/// A grid from a *row-major* `Vec`. Alias of [`Vec1D<RowMajor, I>`].
 ///
-/// See [`Slice2D`].  
-/// See [`Vec2D`], [`ColVec2D`].
-pub type RowVec2D<I> = Slice2D<RowMajor, I, Vec<I>>;
+/// See [`Grid1D`].  
+/// See [`Vec1D`], [`ColVec1D`].
+pub type RowVec1D<I> = Vec1D<RowMajor, I>;
 
-/// A grid from a column-major slice. Alias of [`Slice2D<ColMajor, I, T>`].
+/// A grid from a *column-major* 1-dimensional collection.
+/// Alias of [`Grid1D<ColMajor, I, T>`].
 ///
 /// You can get a [`Col`](GridCol::Col)/[`Cols`](GridCols::Cols) through the
 /// [`GridCol`]/[`GridCols`] traits, both immutably and mutably.
@@ -55,10 +96,11 @@ pub type RowVec2D<I> = Slice2D<RowMajor, I, Vec<I>>;
 /// You can get [`Items`](GridItems::Items) through the [`GridItems`] trait,
 /// both immutably and mutably. Items will be yielded in a column-major fashion.
 ///
-/// See [`Slice2D`], [`RowSlice2D`].
-pub type ColSlice2D<I, T> = Slice2D<ColMajor, I, T>;
+/// See [`Grid1D`], [`RowGrid1D`].
+pub type ColGrid1D<I, T> = Grid1D<ColMajor, I, T>;
 
-/// A grid from a row-major slice. Alias of [`Slice2D<RowMajor, I, T>`].
+/// A grid from a *row-major* 1-dimensional collection.
+/// Alias of [`Grid1D<RowMajor, I, T>`].
 ///
 /// You can get a [`Row`](GridRow::Row)/[`Rows`](GridRows::Rows) through the
 /// [`GridRow`]/[`GridRows`] traits, both immutably and mutably.
@@ -72,29 +114,29 @@ pub type ColSlice2D<I, T> = Slice2D<ColMajor, I, T>;
 /// You can get [`Items`](GridItems::Items) through the [`GridItems`] trait,
 /// both immutably and mutably. Items will be yielded in a row-major fashion.
 ///
-/// See [`Slice2D`], [`ColSlice2D`].
-pub type RowSlice2D<I, T> = Slice2D<RowMajor, I, T>;
+/// See [`Grid1D`], [`ColGrid1D`].
+pub type RowGrid1D<I, T> = Grid1D<RowMajor, I, T>;
 
-/// A grid from a slice.
+/// A grid from a 1-dimensional collection.
 ///
-/// A [`Slice2D<M, I, T>`] has a layout type `M` ([`ColMajor`]/[`RowMajor`]), an
+/// A [`Grid1D<M, I, T>`] has a layout type `M` ([`ColMajor`]/[`RowMajor`]), an
 /// item type `I` and a collection type `T` (which is
 /// `AsRef<[I]>`/`AsMut<[I]>`).
 ///
 /// You can get an [`Item`](Grid::Item) through the [`Grid`] trait, both
 /// immutably and mutably.
 ///
-/// See [`ColSlice2D`], [`RowSlice2D`].  
+/// See [`ColGrid1D`], [`RowGrid1D`].  
 /// See [`Vec2D`], [`ColVec2D`], [`RowVec2D`].
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
-pub struct Slice2D<M, I, T> {
+pub struct Grid1D<M, I, T> {
     size:    M,
     items:   T,
     phantom: PhantomData<I>,
 }
 
-impl<M: Major, I, T> Slice2D<M, I, T> {
-    /// Creates a new [`Slice2D`], without checking size.
+impl<M: Major, I, T> Grid1D<M, I, T> {
+    /// Creates a new [`Grid1D`], without checking size.
     ///
     /// ### Safety
     ///
@@ -107,7 +149,7 @@ impl<M: Major, I, T> Slice2D<M, I, T> {
         }
     }
 
-    /// Creates a new [`Slice2D`] if `len == x * y`, `None` otherwise.
+    /// Creates a new [`Grid1D`] if `len == x * y`, `None` otherwise.
     pub fn new<S: Into<Size>>(size: S, items: T) -> Option<Self>
     where
         T: AsRef<[I]>,
@@ -122,7 +164,7 @@ impl<M: Major, I, T> Slice2D<M, I, T> {
         }
     }
 
-    /// Creates a new [`Slice2D`] if `len == x * y`, `None` otherwise.
+    /// Creates a new [`Grid1D`] if `len == x * y`, `None` otherwise.
     pub fn new_mut<S: Into<Size>>(size: S, mut items: T) -> Option<Self>
     where
         T: AsMut<[I]>,
@@ -143,19 +185,19 @@ impl<M: Major, I, T> Slice2D<M, I, T> {
     }
 }
 
-impl<M, I, T: AsRef<[I]>> AsRef<[I]> for Slice2D<M, I, T> {
+impl<M, I, T: AsRef<[I]>> AsRef<[I]> for Grid1D<M, I, T> {
     fn as_ref(&self) -> &[I] {
         self.items.as_ref()
     }
 }
 
-impl<M, I, T: AsMut<[I]>> AsMut<[I]> for Slice2D<M, I, T> {
+impl<M, I, T: AsMut<[I]>> AsMut<[I]> for Grid1D<M, I, T> {
     fn as_mut(&mut self) -> &mut [I] {
         self.items.as_mut()
     }
 }
 
-impl<M: Major, I, T> WithSize for Slice2D<M, I, T> {
+impl<M: Major, I, T> WithSize for Grid1D<M, I, T> {
     fn size(&self) -> Size {
         self.size.into()
     }
@@ -194,7 +236,7 @@ macro_rules! grid {
         )*
     };
     (impl [ITEM] $As:ident $as:ident $get:ident $(($mut:ident))?) => {
-        impl<'a, M: Major, I, T: $As<[I]>> Grid for &'a $($mut)? Slice2D<M, I, T> {
+        impl<'a, M: Major, I, T: $As<[I]>> Grid for &'a $($mut)? Grid1D<M, I, T> {
             type Item = &'a $($mut)? I;
 
             unsafe fn item_unchecked(self, index: impl Index0D) -> Self::Item {
@@ -247,12 +289,12 @@ macro_rules! grid {
 }
 
 grid!(
-    RowSlice2D<RowMajor>
+    RowGrid1D<RowMajor>
         GridRow<Row> (row_unchecked)
         GridCol<Col> (col_unchecked)
         GridRows<Rows> (rows_unchecked)
         GridCols<Cols> (cols_unchecked)
-    ColSlice2D<ColMajor>
+    ColGrid1D<ColMajor>
         GridCol<Col> (col_unchecked)
         GridRow<Row> (row_unchecked)
         GridCols<Cols> (cols_unchecked)
