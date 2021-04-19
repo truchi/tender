@@ -95,14 +95,14 @@ grid1d!(
 );
 
 grid2d!(x y
-    GridCols Cols cropped_cols_unchecked (Col col_unchecked) y x
-    GridRows Rows cropped_rows_unchecked (Row row_unchecked) x y
+    GridCols Cols cols_unchecked (Col col_unchecked) y x
+    GridRows Rows rows_unchecked (Row row_unchecked) x y
 );
 
 impl<I: Clone> GridItems for Repeat<I> {
     type Items = Take<std::iter::Repeat<Self::Item>>;
 
-    unsafe fn cropped_items_unchecked(self, index: impl Index2D) -> Self::Items {
+    unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items {
         let Point { x, y } = index.unchecked(self.size);
 
         std::iter::repeat(self.item).take((x.end - x.start) * (y.end - y.start))
@@ -198,14 +198,14 @@ grid1d!(
 );
 
 grid2d!(
-    GridCols<ColMajor> Cols cropped_cols_unchecked
-    GridRows<RowMajor> Rows cropped_rows_unchecked
+    GridCols<ColMajor> Cols cols_unchecked
+    GridRows<RowMajor> Rows rows_unchecked
 );
 
 impl<I> GridItems for RepeatWith<I> {
     type Items = iter::Items<I>;
 
-    unsafe fn cropped_items_unchecked(self, index: impl Index2D) -> Self::Items {
+    unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items {
         Self::Items::new(self.fun, index.unchecked(self.size))
     }
 }

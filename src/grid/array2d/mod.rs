@@ -110,7 +110,7 @@ impl<'a, I, T: AsRef<[U]>, U: AsRef<[I]>> GridRow for &'a ColArray2D<I, T, U> {
 impl<'a, I, T: AsRef<[U]>, U: AsRef<[I]>> GridCols for &'a ColArray2D<I, T, U> {
     type Cols = iter::Majors<'a, ColMajor, I, T, U>;
 
-    unsafe fn cropped_cols_unchecked(self, index: impl Index2D) -> Self::Cols {
+    unsafe fn cols_unchecked(self, index: impl Index2D) -> Self::Cols {
         Self::Cols::new_unchecked(self, index)
     }
 }
@@ -118,7 +118,7 @@ impl<'a, I, T: AsRef<[U]>, U: AsRef<[I]>> GridCols for &'a ColArray2D<I, T, U> {
 impl<'a, I, T: AsRef<[U]>, U: AsRef<[I]>> GridRows for &'a RowArray2D<I, T, U> {
     type Rows = iter::Majors<'a, RowMajor, I, T, U>;
 
-    unsafe fn cropped_rows_unchecked(self, index: impl Index2D) -> Self::Rows {
+    unsafe fn rows_unchecked(self, index: impl Index2D) -> Self::Rows {
         Self::Rows::new_unchecked(self, index)
     }
 }
@@ -168,7 +168,7 @@ impl<'a, I, T: AsMut<[U]>, U: AsMut<[I]>> GridRow for &'a mut RowArray2D<I, T, U
 impl<'a, I, T: AsMut<[U]>, U: AsMut<[I]>> GridCols for &'a mut ColArray2D<I, T, U> {
     type Cols = iter::MajorsMut<'a, ColMajor, I, T, U>;
 
-    unsafe fn cropped_cols_unchecked(self, index: impl Index2D) -> Self::Cols {
+    unsafe fn cols_unchecked(self, index: impl Index2D) -> Self::Cols {
         Self::Cols::cols_unchecked(self, index)
     }
 }
@@ -176,7 +176,7 @@ impl<'a, I, T: AsMut<[U]>, U: AsMut<[I]>> GridCols for &'a mut ColArray2D<I, T, 
 impl<'a, I, T: AsMut<[U]>, U: AsMut<[I]>> GridRows for &'a mut RowArray2D<I, T, U> {
     type Rows = iter::MajorsMut<'a, RowMajor, I, T, U>;
 
-    unsafe fn cropped_rows_unchecked(self, index: impl Index2D) -> Self::Rows {
+    unsafe fn rows_unchecked(self, index: impl Index2D) -> Self::Rows {
         Self::Rows::rows_unchecked(self, index)
     }
 }

@@ -61,17 +61,14 @@ grid1d!(
 );
 
 grid2d!(
-    GridCols Cols cropped_cols_unchecked
-    GridRows Rows cropped_rows_unchecked
+    GridCols Cols cols_unchecked
+    GridRows Rows rows_unchecked
 );
 
 impl<T: GridItems, I> GridItems for Map<T, I> {
     type Items = std::iter::Map<<T::Items as IntoIterator>::IntoIter, fn(T::Item) -> I>;
 
-    unsafe fn cropped_items_unchecked(self, index: impl Index2D) -> Self::Items {
-        self.grid
-            .cropped_items_unchecked(index)
-            .into_iter()
-            .map(self.fun)
+    unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items {
+        self.grid.items_unchecked(index).into_iter().map(self.fun)
     }
 }

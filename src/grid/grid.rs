@@ -123,8 +123,6 @@ macro_rules! grid2d {
         $unchecked:ident
         $(#[$checked_meta:meta])*
         $checked:ident
-        $(#[$full_meta:meta])*
-        $full:ident
     )*) => { $(
         $(#[$meta])*
         pub trait $Trait: $Parent {
@@ -140,12 +138,6 @@ macro_rules! grid2d {
 
                 // SAFETY: index is checked
                 Some(unsafe { self.$unchecked(index) })
-            }
-
-            $(#[$full_meta])*
-            fn $full(self) -> Self::$Assoc {
-                // SAFETY: RangeFull must be safe
-                unsafe { self.$unchecked(..) }
             }
         }
     )* };
@@ -197,10 +189,8 @@ grid2d!(
         ///
         /// Calling this method with an out-of-bounds `index`
         /// is *undefined behavior*.
-        cropped_cols_unchecked
+        cols_unchecked
         /// Returns the columns at `index`, or `None` if out of bounds.
-        cropped_cols
-        /// Returns the columns.
         cols
     /// Provides a [`Rows`](GridRows::Rows) 2D [`IntoIterator`].
     GridRows (GridRow Row)
@@ -214,10 +204,8 @@ grid2d!(
         ///
         /// Calling this method with an out-of-bounds `index`
         /// is *undefined behavior*.
-        cropped_rows_unchecked
+        rows_unchecked
         /// Returns the rows at `index`, or `None` if out of bounds.
-        cropped_rows
-        /// Returns the rows.
         rows
     /// Provides an [`Items`](GridItems::Items) 2D [`IntoIterator`].
     GridItems (Grid Item)
@@ -231,9 +219,7 @@ grid2d!(
         ///
         /// Calling this method with an out-of-bounds `index`
         /// is *undefined behavior*.
-        cropped_items_unchecked
+        items_unchecked
         /// Returns the items at `index`, or `None` if out of bounds.
-        cropped_items
-        /// Returns the items.
         items
 );

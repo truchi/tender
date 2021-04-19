@@ -51,7 +51,9 @@ impl Canvas {
             let layer = unsafe { layer.crop_unchecked(layer_rect) };
             let zip = canvas.zip(layer);
 
-            zip.rows().flatten().for_each(DamageCell::over)
+            unsafe { zip.rows_unchecked((.., ..)) }
+                .flatten()
+                .for_each(DamageCell::over)
         }
     }
 
@@ -65,7 +67,7 @@ impl Canvas {
     }
 
     pub fn render_initial<T: Write>(&mut self, w: &mut T) {
-        let mut items = (&mut self.grid).items();
+        let mut items = unsafe { (&mut self.grid).items_unchecked((.., ..)) };
 
         if let Some(cell) = items.next() {
             Self::render_first_cell(w, cell, &mut self.styles);
@@ -78,7 +80,7 @@ impl Canvas {
 
     pub fn render_damage<T: Write>(&mut self, w: &mut T) {
         let mut move_to = MoveTo::new(self.grid.size());
-        let mut items = (&mut self.grid).items();
+        let mut items = unsafe { (&mut self.grid).items_unchecked((.., ..)) };
         let mut rendered = false;
 
         while let Some(cell) = items.next() {
