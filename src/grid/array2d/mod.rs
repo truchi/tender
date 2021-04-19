@@ -45,7 +45,7 @@ impl<M: Major, I, T, U> WithSize for Array2D<M, I, T, U> {
 // Grid (ref) //
 // ========== //
 
-// Grid
+// Grid (ref)
 
 impl<'a, M: Major, I, T: AsRef<[U]>, U: AsRef<[I]>> Grid for &'a Array2D<M, I, T, U> {
     type Item = &'a I;
@@ -57,7 +57,7 @@ impl<'a, M: Major, I, T: AsRef<[U]>, U: AsRef<[I]>> Grid for &'a Array2D<M, I, T
     }
 }
 
-// Major
+// Major (ref)
 
 impl<'a, I, T: AsRef<[U]>, U: AsRef<[I]>> GridCol for &'a ColArray2D<I, T, U> {
     type Col = &'a [I];
@@ -87,7 +87,7 @@ impl<'a, I, T: AsRef<[U]>, U: AsRef<[I]>> GridRow for &'a RowArray2D<I, T, U> {
     }
 }
 
-// Minor
+// Minor (ref)
 
 impl<'a, I, T: AsRef<[U]>, U: AsRef<[I]>> GridCol for &'a RowArray2D<I, T, U> {
     type Col = iter::Minor<'a, RowMajor, I, T, U>;
@@ -105,7 +105,7 @@ impl<'a, I, T: AsRef<[U]>, U: AsRef<[I]>> GridRow for &'a ColArray2D<I, T, U> {
     }
 }
 
-// Majors
+// Majors (ref)
 
 impl<'a, I, T: AsRef<[U]>, U: AsRef<[I]>> GridCols for &'a ColArray2D<I, T, U> {
     type Cols = iter::Majors<'a, ColMajor, I, T, U>;
@@ -123,7 +123,7 @@ impl<'a, I, T: AsRef<[U]>, U: AsRef<[I]>> GridRows for &'a RowArray2D<I, T, U> {
     }
 }
 
-// Minors
+// Minors (ref)
 
 impl<'a, I, T: AsRef<[U]>, U: AsRef<[I]>> GridCols for &'a RowArray2D<I, T, U> {
     type Cols = iter::Minors<'a, RowMajor, I, T, U>;
@@ -141,7 +141,7 @@ impl<'a, I, T: AsRef<[U]>, U: AsRef<[I]>> GridRows for &'a ColArray2D<I, T, U> {
     }
 }
 
-// Items
+// Items (ref)
 
 impl<'a, I, T: AsRef<[U]>, U: AsRef<[I]>> GridItems for &'a ColArray2D<I, T, U> {
     type Items = Flatten<<Self as GridCols>::Cols>;
@@ -163,7 +163,7 @@ impl<'a, I, T: AsRef<[U]>, U: AsRef<[I]>> GridItems for &'a RowArray2D<I, T, U> 
 // Grid (mut) //
 // ========== //
 
-// Grid
+// Grid (mut)
 
 impl<'a, M: Major, I, T: AsMut<[U]>, U: AsMut<[I]>> Grid for &'a mut Array2D<M, I, T, U> {
     type Item = &'a mut I;
@@ -175,7 +175,7 @@ impl<'a, M: Major, I, T: AsMut<[U]>, U: AsMut<[I]>> Grid for &'a mut Array2D<M, 
     }
 }
 
-// Major
+// Major (mut)
 
 impl<'a, I, T: AsMut<[U]>, U: AsMut<[I]>> GridCol for &'a mut ColArray2D<I, T, U> {
     type Col = &'a mut [I];
@@ -205,7 +205,7 @@ impl<'a, I, T: AsMut<[U]>, U: AsMut<[I]>> GridRow for &'a mut RowArray2D<I, T, U
     }
 }
 
-// Minor
+// Minor (mut)
 
 impl<'a, I, T: AsMut<[U]>, U: AsMut<[I]>> GridCol for &'a mut RowArray2D<I, T, U> {
     type Col = iter::MinorMut<'a, RowMajor, I, T, U>;
@@ -223,7 +223,7 @@ impl<'a, I, T: AsMut<[U]>, U: AsMut<[I]>> GridRow for &'a mut ColArray2D<I, T, U
     }
 }
 
-// Majors
+// Majors (mut)
 
 impl<'a, I, T: AsMut<[U]>, U: AsMut<[I]>> GridCols for &'a mut ColArray2D<I, T, U> {
     type Cols = iter::MajorsMut<'a, ColMajor, I, T, U>;
@@ -238,5 +238,23 @@ impl<'a, I, T: AsMut<[U]>, U: AsMut<[I]>> GridRows for &'a mut RowArray2D<I, T, 
 
     unsafe fn rows_unchecked(self, index: impl Index2D) -> Self::Rows {
         Self::Rows::rows_unchecked(self, index)
+    }
+}
+
+// Items (mut)
+
+impl<'a, I, T: AsMut<[U]>, U: AsMut<[I]>> GridItems for &'a mut ColArray2D<I, T, U> {
+    type Items = Flatten<<Self as GridCols>::Cols>;
+
+    unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items {
+        self.cols_unchecked(index).flatten()
+    }
+}
+
+impl<'a, I, T: AsMut<[U]>, U: AsMut<[I]>> GridItems for &'a mut RowArray2D<I, T, U> {
+    type Items = Flatten<<Self as GridRows>::Rows>;
+
+    unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items {
+        self.rows_unchecked(index).flatten()
     }
 }
