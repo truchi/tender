@@ -1,14 +1,14 @@
 use super::*;
 
-/// A 2D iterator along the minor axis of an [`Array2D`].
+/// A 2D iterator along the minor axis of an [`Grid2D`].
 #[derive(Debug)]
 pub struct Minors<'a, M, I, T, U> {
-    grid:  &'a Array2D<M, I, T, U>,
+    grid:  &'a Grid2D<M, I, T, U>,
     index: Rect,
 }
 
 impl<'a, M: Major, I, T: AsRef<[U]>, U> Minors<'a, M, I, T, U> {
-    pub(crate) unsafe fn new_unchecked(grid: &'a Array2D<M, I, T, U>, index: impl Index2D) -> Self {
+    pub(crate) unsafe fn new_unchecked(grid: &'a Grid2D<M, I, T, U>, index: impl Index2D) -> Self {
         let index = index.unchecked(grid.size);
 
         Self { grid, index }

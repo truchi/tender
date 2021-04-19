@@ -1,7 +1,7 @@
 use super::*;
 use std::{marker::PhantomData, ops::Range, slice::from_raw_parts_mut};
 
-/// A mutable 1D iterator along the minor axis of an [`Array2D`].
+/// A mutable 1D iterator along the minor axis of an [`Grid2D`].
 #[derive(Debug)]
 pub struct MinorMut<'a, M, I, T, U> {
     items:   &'a mut [U],
@@ -11,7 +11,7 @@ pub struct MinorMut<'a, M, I, T, U> {
 
 impl<'a, M: Major, I, T: AsMut<[U]>, U> MinorMut<'a, M, I, T, U> {
     pub(crate) unsafe fn new_unchecked(
-        grid: &'a mut Array2D<M, I, T, U>,
+        grid: &'a mut Grid2D<M, I, T, U>,
         index: impl Index1D,
     ) -> Self {
         let size = grid.size;

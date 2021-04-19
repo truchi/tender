@@ -1,7 +1,7 @@
 use super::*;
 use std::{marker::PhantomData, ops::Range};
 
-/// A 1D iterator along the minor axis of an [`Array2D`].
+/// A 1D iterator along the minor axis of an [`Grid2D`].
 #[derive(Debug)]
 pub struct Minor<'a, M, I, T, U> {
     items:   &'a [U],
@@ -11,7 +11,7 @@ pub struct Minor<'a, M, I, T, U> {
 }
 
 impl<'a, M: Major, I, T: AsRef<[U]>, U> Minor<'a, M, I, T, U> {
-    pub(crate) unsafe fn new_unchecked(grid: &'a Array2D<M, I, T, U>, index: impl Index1D) -> Self {
+    pub(crate) unsafe fn new_unchecked(grid: &'a Grid2D<M, I, T, U>, index: impl Index1D) -> Self {
         let size = grid.size;
         let (index, range) = index.unchecked(size.minor());
 

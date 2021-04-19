@@ -1,4 +1,4 @@
-//! Iterators for [`Array2D`]'s `Grid*` implementations.
+//! Iterators for [`Grid2D`]'s `Grid*` implementations.
 
 mod majors;
 mod majors_mut;

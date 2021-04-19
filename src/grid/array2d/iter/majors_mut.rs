@@ -1,7 +1,7 @@
 pub use super::*;
 use std::{marker::PhantomData, ops::Range, slice::from_raw_parts_mut};
 
-/// A mutable 2D iterator along the major axis of an [`Array2D`].
+/// A mutable 2D iterator along the major axis of an [`Grid2D`].
 #[derive(Debug)]
 pub struct MajorsMut<'a, M, I, T, U> {
     items:   &'a mut [U],
@@ -11,7 +11,7 @@ pub struct MajorsMut<'a, M, I, T, U> {
 
 impl<'a, M: Major, I, T: AsMut<[U]>, U: AsMut<[I]>> MajorsMut<'a, M, I, T, U> {
     pub(crate) unsafe fn rows_unchecked(
-        grid: &'a mut Array2D<M, I, T, U>,
+        grid: &'a mut Grid2D<M, I, T, U>,
         index: impl Index2D,
     ) -> Self {
         let index = index.unchecked(grid.size);
@@ -25,7 +25,7 @@ impl<'a, M: Major, I, T: AsMut<[U]>, U: AsMut<[I]>> MajorsMut<'a, M, I, T, U> {
     }
 
     pub(crate) unsafe fn cols_unchecked(
-        grid: &'a mut Array2D<M, I, T, U>,
+        grid: &'a mut Grid2D<M, I, T, U>,
         index: impl Index2D,
     ) -> Self {
         let index = index.unchecked(grid.size);

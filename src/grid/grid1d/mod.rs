@@ -2,7 +2,7 @@
 //!
 //! This module provides the [`Grid1D`] type, which wraps a 1D collection to
 //! elevate into 2D. A [`Grid1D`] is effectively a slice storing items either
-//! column by column (column major) or row by row (row major).
+//! column by column (*column-major*) or row by row (*row-major*).
 //!
 //! Since [`Grid1D`] wraps collections that `AsRef<[I]>`, we can use it with
 //! a variety of collections. See our [`Slice1D`], [`Array1D`] and [`Vec1D`]
