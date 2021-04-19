@@ -1,5 +1,5 @@
 use super::*;
-use std::marker::PhantomData;
+use std::{iter::Flatten, marker::PhantomData};
 
 pub mod iter;
 
@@ -123,9 +123,29 @@ impl<'a, I, T: AsRef<[U]>, U: AsRef<[I]>> GridRows for &'a RowArray2D<I, T, U> {
     }
 }
 
+// Items
+
+impl<'a, I, T: AsRef<[U]>, U: AsRef<[I]>> GridItems for &'a ColArray2D<I, T, U> {
+    type Items = Flatten<<Self as GridCols>::Cols>;
+
+    unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items {
+        self.cols_unchecked(index).flatten()
+    }
+}
+
+impl<'a, I, T: AsRef<[U]>, U: AsRef<[I]>> GridItems for &'a RowArray2D<I, T, U> {
+    type Items = Flatten<<Self as GridRows>::Rows>;
+
+    unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items {
+        self.rows_unchecked(index).flatten()
+    }
+}
+
 // ========== //
 // Grid (mut) //
 // ========== //
+
+// Grid
 
 impl<'a, M: Major, I, T: AsMut<[U]>, U: AsMut<[I]>> Grid for &'a mut Array2D<M, I, T, U> {
     type Item = &'a mut I;
@@ -136,6 +156,8 @@ impl<'a, M: Major, I, T: AsMut<[U]>, U: AsMut<[I]>> Grid for &'a mut Array2D<M, 
         &mut self.items.as_mut()[index.minor()].as_mut()[index.major()]
     }
 }
+
+// Major
 
 impl<'a, I, T: AsMut<[U]>, U: AsMut<[I]>> GridCol for &'a mut ColArray2D<I, T, U> {
     type Col = &'a mut [I];
@@ -164,6 +186,26 @@ impl<'a, I, T: AsMut<[U]>, U: AsMut<[I]>> GridRow for &'a mut RowArray2D<I, T, U
             .get_unchecked_mut(range)
     }
 }
+
+// Minor
+
+impl<'a, I, T: AsMut<[U]>, U: AsMut<[I]>> GridCol for &'a mut RowArray2D<I, T, U> {
+    type Col = iter::MinorMut<'a, RowMajor, I, T, U>;
+
+    unsafe fn col_unchecked(self, index: impl Index1D) -> Self::Col {
+        Self::Col::new_unchecked(self, index)
+    }
+}
+
+impl<'a, I, T: AsMut<[U]>, U: AsMut<[I]>> GridRow for &'a mut ColArray2D<I, T, U> {
+    type Row = iter::MinorMut<'a, ColMajor, I, T, U>;
+
+    unsafe fn row_unchecked(self, index: impl Index1D) -> Self::Row {
+        Self::Row::new_unchecked(self, index)
+    }
+}
+
+// Majors
 
 impl<'a, I, T: AsMut<[U]>, U: AsMut<[I]>> GridCols for &'a mut ColArray2D<I, T, U> {
     type Cols = iter::MajorsMut<'a, ColMajor, I, T, U>;

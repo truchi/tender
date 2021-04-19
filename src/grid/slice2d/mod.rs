@@ -21,7 +21,7 @@ pub mod iter;
 
 use crate::grid::*;
 use index::*;
-use std::marker::PhantomData;
+use std::{iter::Flatten, marker::PhantomData};
 
 /// A grid from a `Vec`. Alias of [`Slice2D<M, I, Vec<T>>`].
 ///
@@ -237,7 +237,7 @@ macro_rules! grid {
         $As:ident $(($mut:ident))?
     ) => {
         impl<'a, I, T: $As<[I]>> GridItems for &'a $($mut)? $Type<I, T> {
-            type Items = std::iter::Flatten<<Self as $GridMajors>::$Majors>;
+            type Items = Flatten<<Self as $GridMajors>::$Majors>;
 
             unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items {
                 self.$majors(index).flatten()
