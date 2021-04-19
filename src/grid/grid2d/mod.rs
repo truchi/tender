@@ -60,10 +60,34 @@ pub type RowVec2D<I> = Vec2D<RowMajor, I>;
 
 /// A grid from a *column-major* 2-dimensional collection.
 ///
+/// You can get a [`Col`](GridCol::Col)/[`Cols`](GridCols::Cols) through the
+/// [`GridCol`]/[`GridCols`] traits, both immutably and mutably.
+///
+/// You can get a [`Row`](GridRow::Row) through the [`GridRow`] trait, though
+/// this is **not CPU cache friendly**, both immutably and mutably.
+///
+/// You can get [`Rows`](GridRows::Rows) through the [`GridRows`] trait, though
+/// this is **not CPU cache friendly**, but only immutably.
+///
+/// You can get [`Items`](GridItems::Items) through the [`GridItems`] trait,
+/// both immutably and mutably. Items will be yielded in a column-major fashion.
+///
 /// See [`Grid2D`], [`RowGrid2D`].
 pub type ColGrid2D<I, T, U> = Grid2D<ColMajor, I, T, U>;
 
 /// A grid from a *row-major* 2-dimensional collection.
+///
+/// You can get a [`Row`](GridRow::Row)/[`Rows`](GridRows::Rows) through the
+/// [`GridRow`]/[`GridRows`] traits, both immutably and mutably.
+///
+/// You can get a [`Col`](GridCol::Col) through the [`GridCol`] trait, though
+/// this is **not CPU cache friendly**, both immutably and mutably.
+///
+/// You can get [`Cols`](GridCols::Cols) through the [`GridCols`] trait, though
+/// this is **not CPU cache friendly**, but only immutably.
+///
+/// You can get [`Items`](GridItems::Items) through the [`GridItems`] trait,
+/// both immutably and mutably. Items will be yielded in a row-major fashion.
 ///
 /// See [`Grid2D`], [`ColGrid2D`].
 pub type RowGrid2D<I, T, U> = Grid2D<RowMajor, I, T, U>;
