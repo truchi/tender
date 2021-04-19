@@ -123,6 +123,24 @@ impl<'a, I, T: AsRef<[U]>, U: AsRef<[I]>> GridRows for &'a RowArray2D<I, T, U> {
     }
 }
 
+// Minors
+
+impl<'a, I, T: AsRef<[U]>, U: AsRef<[I]>> GridCols for &'a RowArray2D<I, T, U> {
+    type Cols = iter::Minors<'a, RowMajor, I, T, U>;
+
+    unsafe fn cols_unchecked(self, index: impl Index2D) -> Self::Cols {
+        Self::Cols::new_unchecked(self, index)
+    }
+}
+
+impl<'a, I, T: AsRef<[U]>, U: AsRef<[I]>> GridRows for &'a ColArray2D<I, T, U> {
+    type Rows = iter::Minors<'a, ColMajor, I, T, U>;
+
+    unsafe fn rows_unchecked(self, index: impl Index2D) -> Self::Rows {
+        Self::Rows::new_unchecked(self, index)
+    }
+}
+
 // Items
 
 impl<'a, I, T: AsRef<[U]>, U: AsRef<[I]>> GridItems for &'a ColArray2D<I, T, U> {
