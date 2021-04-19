@@ -168,15 +168,14 @@
 //   - [`Zip`]
 
 // pub and re-exported
-pub mod array2d;
 pub mod cloned;
 pub mod crop;
 pub mod grid1d;
+pub mod grid2d;
 pub mod map;
 pub mod repeat;
 pub mod zip;
 
-pub use array2d::*;
 pub use cloned::{Cloned, Copied};
 pub use crop::Crop;
 pub use grid1d::{
@@ -192,6 +191,17 @@ pub use grid1d::{
     RowVec1D,
     Slice1D,
     Vec1D,
+};
+pub use grid2d::{
+    Array2D,
+    ColArray2D,
+    ColGrid2D,
+    ColVec2D,
+    Grid2D,
+    RowArray2D,
+    RowGrid2D,
+    RowVec2D,
+    Vec2D,
 };
 pub use map::Map;
 pub use repeat::{repeat, repeat_with, Repeat, RepeatWith};
