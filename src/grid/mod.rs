@@ -32,13 +32,13 @@
 //!
 //! Let's talk about indexes to introduce how things work.
 //!
-//! In a 2D world, you can get an item with an x/y-pair coordinate. This crate
-//! provides a [`Coord`] type with [`Point`] (and [`Size`]) aliases and `(x, y)`
-//! conversion.  
-//! When you need a column or a row from your grids, you could just
+//! 0. In a 2D world, you can get an item with an x/y-pair coordinate. This
+//! crate provides a [`Coord`] type with [`Point`] (and [`Size`]) aliases and
+//! `(x, y)` conversion.  
+//! 1. When you need a column or a row from your grids, you could just
 //! use a `usize`. Yet we go one step further: we allow  `(usize, Range<usize>)`
 //! as well in order to only get a section of that column or row.  
-//! You want to get a rectangular view of that grid? Here is [`Rect`]:
+//! 2. You want to get a rectangular view of that grid? Here is [`Rect`]:
 //! `Size<Range<usize>>`, an x/y-pair of `Range`s.
 //!
 //! We use the [`Index0D`], [`Index1D`] and [`Index2D`] traits to convert to
