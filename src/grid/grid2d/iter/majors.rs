@@ -13,6 +13,14 @@ impl<'a, M: Major, I, T, U> Majors<'a, M, I, T, U> {
 
         Self { grid, index }
     }
+
+    pub(crate) unsafe fn cols_unchecked(grid: &'a Grid2D<M, I, T, U>, index: impl Index2D) -> Self {
+        Self::new_unchecked(grid, index)
+    }
+
+    pub(crate) unsafe fn rows_unchecked(grid: &'a Grid2D<M, I, T, U>, index: impl Index2D) -> Self {
+        Self::new_unchecked(grid, index)
+    }
 }
 
 impl<'a, I, T: AsRef<[U]>, U: AsRef<[I]>> Iterator for Majors<'a, RowMajor, I, T, U> {
