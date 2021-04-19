@@ -19,7 +19,7 @@ use std::{iter::Take, ops::Range};
 ///
 /// ```
 /// # use tender::grid::*;
-/// let rows = repeat((2, 2), "hello").rows();
+/// let rows = repeat((2, 2), "hello").rows((.., ..)).unwrap();
 ///
 /// for row in rows {
 ///     for item in row {
@@ -124,7 +124,9 @@ impl<I: Clone> GridItems for Repeat<I> {
 /// ```
 /// # use tender::geometry::*;
 /// # use tender::grid::*;
-/// let mut rows = repeat_with((2, 2), |Point { x, y }| if x == y { 1 } else { 0 }).rows();
+/// let mut rows = repeat_with((2, 2), |Point { x, y }| if x == y { 1 } else { 0 })
+///     .rows((.., ..))
+///     .unwrap();
 ///
 /// let mut row1 = rows.next().unwrap();
 /// assert_eq!(row1.next(), Some(1));

@@ -64,11 +64,9 @@
 //!     let col = grid.col((1, ..=5));
 //!     let col = grid.col((1, 1..=5)); // etc...
 //!
-//!     let cols = grid.cropped_cols(Size { x: 0..10, y: 2..5 });
-//!     let cols = grid.cropped_cols((..10, 2..=4)); // same as above, etc...
-//!
-//!     let cols = grid.cropped_cols((.., ..));
-//!     let cols = grid.cols(); // same as above, no checks
+//!     let cols = grid.cols(Size { x: 0..10, y: 2..5 });
+//!     let cols = grid.cols((..10, 2..=4)); // same as above
+//!     let cols = grid.cols((.., ..)); // etc...
 //! }
 //! ```
 //!
@@ -122,15 +120,12 @@
 //! # use tender::grid::*;
 //! trait GridItems: Grid {
 //!     type Items: IntoIterator<Item = Self::Item>;
-//!     fn cropped_items(self, index: impl Index2D) -> Option<Self::Items>;
-//!     fn items(self) -> Self::Items;
+//!     fn items(self, index: impl Index2D) -> Option<Self::Items>;
 //! }
 //! ```
 //!
 //! We still get a 1D iterable over [`Item`](Grid::Item)s, however this time we
-//! query with an [`Index2D`] (e.g. a [`Rect`]). We distinguish between
-//! [`cropped_items()`](GridItems::cropped_items) and
-//! [`items()`](GridItems::items) since the former requires checking the index.
+//! query with an [`Index2D`] (e.g. a [`Rect`]).
 //!
 //! Note that there are no guaranties on the order in which the items are
 //! returned. It could be column-major or row-major (or anything custom,
@@ -145,8 +140,7 @@
 //! # use tender::grid::*;
 //! trait GridCols: GridCol {
 //!     type Cols: IntoIterator<Item = Self::Col>;
-//!     fn cropped_cols(self, index: impl Index2D) -> Option<Self::Cols>;
-//!     fn cols(self) -> Self::Cols;
+//!     fn cols(self, index: impl Index2D) -> Option<Self::Cols>;
 //! }
 //! ```
 //!
