@@ -10,32 +10,40 @@ pub struct MajorsMut<'a, M, I, T, U> {
 }
 
 impl<'a, M: Major, I, T: AsMut<[U]>, U: AsMut<[I]>> MajorsMut<'a, M, I, T, U> {
+    pub(crate) unsafe fn new_unchecked(
+        grid: &'a mut Grid2D<M, I, T, U>,
+        range: Range<usize>,
+        Range { start, end }: Range<usize>,
+    ) -> Self {
+        let items = grid.as_mut();
+
+        debug_assert!(start <= end, "Index out of bounds");
+        debug_assert!(end <= items.len(), "Index out of bounds");
+        let items = items.get_unchecked_mut(start..end);
+
+        Self {
+            items,
+            range,
+            phantom: PhantomData,
+        }
+    }
+
     pub(crate) unsafe fn rows_unchecked(
         grid: &'a mut Grid2D<M, I, T, U>,
         index: impl Index2D,
     ) -> Self {
-        let index = index.unchecked(grid.size);
-        let items = grid.as_mut().get_unchecked_mut(index.y);
+        let Coord { x, y } = index.unchecked(grid.size);
 
-        Self {
-            items,
-            range: index.x,
-            phantom: PhantomData,
-        }
+        Self::new_unchecked(grid, x, y)
     }
 
     pub(crate) unsafe fn cols_unchecked(
         grid: &'a mut Grid2D<M, I, T, U>,
         index: impl Index2D,
     ) -> Self {
-        let index = index.unchecked(grid.size);
-        let items = grid.as_mut().get_unchecked_mut(index.x);
+        let Coord { x, y } = index.unchecked(grid.size);
 
-        Self {
-            items,
-            range: index.y,
-            phantom: PhantomData,
-        }
+        Self::new_unchecked(grid, y, x)
     }
 }
 
