@@ -43,10 +43,8 @@ impl Canvas {
     }
 
     pub fn over<T: GridRows<Item = Cell<PreRgba>> + WithPosition>(&mut self, layer: T) {
-        let position = layer.position();
-
         (&mut self.grid)
-            .zip_at(layer, position)
+            .zip_at(layer.position(), layer)
             .for_each_row(DamageCell::over);
     }
 
