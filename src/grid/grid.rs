@@ -1,4 +1,5 @@
 use crate::grid::*;
+use std::iter::Flatten;
 
 /// Base trait for dealing with grids.
 ///
@@ -89,6 +90,24 @@ pub trait Grid: WithSize + Sized {
         Zip::at(self, other, position.into())
     }
 
+    /// Flatten the columns of a grid.
+    fn flatten_cols(self) -> Flatten<<Self::Cols as IntoIterator>::IntoIter>
+    where
+        Self: GridCols,
+    {
+        // SAFETY: .. is safe
+        unsafe { self.cols_unchecked(..) }.into_iter().flatten()
+    }
+
+    /// Flatten the rows of a grid.
+    fn flatten_rows(self) -> Flatten<<Self::Rows as IntoIterator>::IntoIter>
+    where
+        Self: GridRows,
+    {
+        // SAFETY: .. is safe
+        unsafe { self.rows_unchecked(..) }.into_iter().flatten()
+    }
+
     /// Calls `f` on each item.
     fn for_each<F: FnMut(Self::Item)>(self, f: F)
     where
@@ -96,30 +115,6 @@ pub trait Grid: WithSize + Sized {
     {
         // SAFETY: .. is safe
         unsafe { self.items_unchecked(..) }.into_iter().for_each(f)
-    }
-
-    /// Calls `f` on each item, iterating on rows.
-    fn for_each_row<F: FnMut(Self::Item)>(self, f: F)
-    where
-        Self: GridRows,
-    {
-        // SAFETY: .. is safe
-        unsafe { self.rows_unchecked(..) }
-            .into_iter()
-            .flatten()
-            .for_each(f)
-    }
-
-    /// Calls `f` on each item, iterating on columns.
-    fn for_each_col<F: FnMut(Self::Item)>(self, f: F)
-    where
-        Self: GridCols,
-    {
-        // SAFETY: .. is safe
-        unsafe { self.cols_unchecked(..) }
-            .into_iter()
-            .flatten()
-            .for_each(f)
     }
 }
 

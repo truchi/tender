@@ -45,7 +45,8 @@ impl Canvas {
     pub fn over<T: GridRows<Item = Cell<PreRgba>> + WithPosition>(&mut self, layer: T) {
         (&mut self.grid)
             .zip_at(layer.position(), layer)
-            .for_each_row(DamageCell::over);
+            .flatten_rows()
+            .for_each(DamageCell::over);
     }
 
     pub fn render<T: Write>(&mut self, w: &mut T) {
