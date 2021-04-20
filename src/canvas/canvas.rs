@@ -43,17 +43,11 @@ impl Canvas {
     }
 
     pub fn over<T: GridRows<Item = Cell<PreRgba>> + WithPosition>(&mut self, layer: T) {
-        let layer_rect = layer.position().rect(layer.size());
-        let canvas_rect = layer_rect.crop(self.size());
-        let layer_rect = Point::ZERO.rect(canvas_rect.size());
+        let position = layer.position();
+        let zip = (&mut self.grid).zip_at(layer, position);
 
-        // SAFETY: the above guaranties we are in bounds
-        debug_assert!(canvas_rect.clone().checked(self.size()).is_some());
-        debug_assert!(layer_rect.clone().checked(layer.size()).is_some());
-        let canvas = unsafe { (&mut self.grid).crop_unchecked(canvas_rect) };
-        let layer = unsafe { layer.crop_unchecked(layer_rect) };
-
-        unsafe { canvas.zip(layer).rows_unchecked(..) }
+        // SAFETY: .. is safe
+        unsafe { zip.rows_unchecked(..) }
             .flatten()
             .for_each(DamageCell::over);
     }

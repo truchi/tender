@@ -81,6 +81,13 @@ pub trait Grid: WithSize + Sized {
     fn zip<U: Grid>(self, other: U) -> Zip<Self, U> {
         Zip::new(self, other)
     }
+
+    /// ‘Zips up’ two relatively positioned grids into a single grid of pairs.
+    ///
+    /// Yields elements from the overlapping area of both grids.
+    fn zip_at<U: Grid>(self, other: U, position: impl Into<Point>) -> Zip<Crop<Self>, Crop<U>> {
+        Zip::at(self, other, position.into())
+    }
 }
 
 macro_rules! grid1d {

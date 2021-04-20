@@ -5,6 +5,7 @@ use crate::grid::*;
 /// A grid that only iterates in a [`Rect`].
 ///
 /// See [`Grid::crop()`].
+#[derive(Clone, Default, Debug)]
 pub struct Crop<T> {
     rect: Rect,
     grid: T,

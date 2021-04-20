@@ -4,6 +4,8 @@ use crate::grid::*;
 use std::iter::Map;
 
 /// ‘Zips up’ two grids into a single grid of pairs.
+///
+/// See [`Grid::zip`], [`Grid::zip_at`].
 #[derive(Copy, Clone, Default, Debug)]
 pub struct Zip<A, B> {
     a:    A,
@@ -16,6 +18,23 @@ impl<A: WithSize, B: WithSize> Zip<A, B> {
         let size = a.size().min(b.size());
 
         Self { a, b, size }
+    }
+}
+
+impl<A: Grid, B: Grid> Zip<Crop<A>, Crop<B>> {
+    pub(crate) fn at(a: A, b: B, position: Point) -> Self {
+        let rect_b = position.rect(b.size());
+        let rect_a = rect_b.crop(a.size());
+        let size = rect_a.size();
+        let rect_b = Point::ZERO.rect(size);
+
+        // SAFETY: the above guaranties we are in bounds
+        debug_assert!(rect_a.clone().checked(a.size()).is_some());
+        debug_assert!(rect_b.clone().checked(b.size()).is_some());
+        let a = unsafe { a.crop_unchecked(rect_a) };
+        let b = unsafe { b.crop_unchecked(rect_b) };
+
+        Zip { a, b, size }
     }
 }
 
