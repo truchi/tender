@@ -88,6 +88,39 @@ pub trait Grid: WithSize + Sized {
     fn zip_at<U: Grid>(self, other: U, position: impl Into<Point>) -> Zip<Crop<Self>, Crop<U>> {
         Zip::at(self, other, position.into())
     }
+
+    /// Calls `f` on each item.
+    fn for_each<F: FnMut(Self::Item)>(self, f: F)
+    where
+        Self: GridItems,
+    {
+        // SAFETY: .. is safe
+        unsafe { self.items_unchecked(..) }.into_iter().for_each(f)
+    }
+
+    /// Calls `f` on each item, iterating on rows.
+    fn for_each_row<F: FnMut(Self::Item)>(self, f: F)
+    where
+        Self: GridRows,
+    {
+        // SAFETY: .. is safe
+        unsafe { self.rows_unchecked(..) }
+            .into_iter()
+            .flatten()
+            .for_each(f)
+    }
+
+    /// Calls `f` on each item, iterating on columns.
+    fn for_each_col<F: FnMut(Self::Item)>(self, f: F)
+    where
+        Self: GridCols,
+    {
+        // SAFETY: .. is safe
+        unsafe { self.cols_unchecked(..) }
+            .into_iter()
+            .flatten()
+            .for_each(f)
+    }
 }
 
 macro_rules! grid1d {

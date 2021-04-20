@@ -44,12 +44,10 @@ impl Canvas {
 
     pub fn over<T: GridRows<Item = Cell<PreRgba>> + WithPosition>(&mut self, layer: T) {
         let position = layer.position();
-        let zip = (&mut self.grid).zip_at(layer, position);
 
-        // SAFETY: .. is safe
-        unsafe { zip.rows_unchecked(..) }
-            .flatten()
-            .for_each(DamageCell::over);
+        (&mut self.grid)
+            .zip_at(layer, position)
+            .for_each_row(DamageCell::over);
     }
 
     pub fn render<T: Write>(&mut self, w: &mut T) {
