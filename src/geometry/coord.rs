@@ -46,6 +46,13 @@ impl<X: Sub<U>, Y: Sub<V>, U, V> Sub<Coord<U, V>> for Coord<X, Y> {
 }
 
 impl Coord {
+    pub const MAX: Self = Point {
+        x: usize::MAX,
+        y: usize::MAX,
+    };
+    pub const ONE: Self = Point { x: 1, y: 1 };
+    pub const ZERO: Self = Point { x: 0, y: 0 };
+
     /// Creates a [`Rect`] from the [`Point`] `self` with `size`.
     pub fn rect(self, size: Size) -> Rect {
         Rect {

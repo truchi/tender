@@ -43,18 +43,19 @@ impl Canvas {
     }
 
     pub fn over<T: GridRows<Item = Cell<PreRgba>> + WithPosition>(&mut self, layer: T) {
-        let crop = crop(layer.position(), layer.size(), self.size());
+        let layer_rect = layer.position().rect(layer.size());
+        let canvas_rect = layer_rect.crop(self.size());
+        let layer_rect = Point::ZERO.rect(canvas_rect.size());
 
-        if let Some((canvas_rect, layer_rect)) = crop {
-            // SAFETY: crop guaranties we are in bounds
-            let canvas = unsafe { (&mut self.grid).crop_unchecked(canvas_rect) };
-            let layer = unsafe { layer.crop_unchecked(layer_rect) };
-            let zip = canvas.zip(layer);
+        // SAFETY: the above guaranties we are in bounds
+        debug_assert!(canvas_rect.clone().checked(self.size()).is_some());
+        debug_assert!(layer_rect.clone().checked(layer.size()).is_some());
+        let canvas = unsafe { (&mut self.grid).crop_unchecked(canvas_rect) };
+        let layer = unsafe { layer.crop_unchecked(layer_rect) };
 
-            unsafe { zip.rows_unchecked((.., ..)) }
-                .flatten()
-                .for_each(DamageCell::over)
-        }
+        unsafe { canvas.zip(layer).rows_unchecked(..) }
+            .flatten()
+            .for_each(DamageCell::over);
     }
 
     pub fn render<T: Write>(&mut self, w: &mut T) {
@@ -67,7 +68,7 @@ impl Canvas {
     }
 
     pub fn render_initial<T: Write>(&mut self, w: &mut T) {
-        let mut items = unsafe { (&mut self.grid).items_unchecked((.., ..)) };
+        let mut items = unsafe { (&mut self.grid).items_unchecked(..) };
 
         if let Some(cell) = items.next() {
             Self::render_first_cell(w, cell, &mut self.styles);
@@ -80,7 +81,7 @@ impl Canvas {
 
     pub fn render_damage<T: Write>(&mut self, w: &mut T) {
         let mut move_to = MoveTo::new(self.grid.size());
-        let mut items = unsafe { (&mut self.grid).items_unchecked((.., ..)) };
+        let mut items = unsafe { (&mut self.grid).items_unchecked(..) };
         let mut rendered = false;
 
         while let Some(cell) = items.next() {
@@ -143,27 +144,4 @@ impl Display for MoveTo {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "\x1B[{};{}H", self.point.y + 1, self.point.x + 1)
     }
-}
-
-fn crop(point: Point, size: Size, at: Size) -> Option<(Rect, Rect)> {
-    if point.x >= at.x || point.y >= at.y {
-        return None;
-    }
-
-    let x = point.x.saturating_add(size.x).min(at.x);
-    let y = point.y.saturating_add(size.y).min(at.y);
-
-    debug_assert!(point.x <= x);
-    debug_assert!(point.y <= y);
-
-    Some((
-        Coord {
-            x: point.x..x,
-            y: point.y..y,
-        },
-        Coord {
-            x: 0..x - point.x,
-            y: 0..y - point.y,
-        },
-    ))
 }
