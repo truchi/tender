@@ -6,7 +6,8 @@ use std::fmt::{self, Display, Formatter};
 pub struct Rgb(pub u8, pub u8, pub u8);
 
 impl Color for Rgb {
-    color!( self
+    color!(self, color: T
+        from      { color.rgb() }
         red       { self.0 }
         green     { self.1 }
         blue      { self.2 }
@@ -14,19 +15,10 @@ impl Color for Rgb {
         pre_green { self.1 }
         pre_blue  { self.2 }
         alpha     { u8::MAX }
+        rgb       { self }
+        rgba      { Rgba(self.0, self.1, self.2, u8::MAX) }
+        pre_rgba  { PreRgba(self.0, self.1, self.2, u8::MAX) }
     );
-}
-
-impl From<Rgba> for Rgb {
-    fn from(color: Rgba) -> Rgb {
-        Self(color.red(), color.green(), color.blue())
-    }
-}
-
-impl From<PreRgba> for Rgb {
-    fn from(color: PreRgba) -> Rgb {
-        Rgba::from(color).into()
-    }
 }
 
 impl Display for Rgb {
@@ -34,3 +26,8 @@ impl Display for Rgb {
         write!(f, "2;{};{};{}", self.red(), self.green(), self.blue())
     }
 }
+
+from!(rgb: Rgb =>
+    rgba: Rgba
+    pre_rgba: PreRgba
+);

@@ -5,33 +5,29 @@ use super::*;
 pub struct Rgba(pub u8, pub u8, pub u8, pub u8);
 
 impl Color for Rgba {
-    color!(self
+    color!(self, color: T
+        from      { color.rgba() }
         red       { self.0 }
         green     { self.1 }
         blue      { self.2 }
         alpha     { self.3 }
-    );
-}
+        rgb       { Rgb(self.0, self.1, self.2) }
+        rgba      { self }
+        pre_rgba  {
+            let Self(red, green, blue, alpha) = self;
+            let ratio = alpha as f64 / u8::MAX as f64;
 
-impl From<Rgb> for Rgba {
-    fn from(color: Rgb) -> Self {
-        Self(color.red(), color.green(), color.blue(), u8::MAX)
-    }
-}
-
-impl From<PreRgba> for Rgba {
-    fn from(PreRgba(red, green, blue, alpha): PreRgba) -> Self {
-        if alpha == 0 {
-            Self(0, 0, 0, 0)
-        } else {
-            let ratio = u8::MAX as f64 / alpha as f64;
-
-            Self(
+            PreRgba(
                 (ratio * red as f64).round() as _,
                 (ratio * green as f64).round() as _,
                 (ratio * blue as f64).round() as _,
                 alpha,
             )
         }
-    }
+    );
 }
+
+from!(rgba: Rgba =>
+    rgb: Rgb
+    pre_rgba: PreRgba
+);

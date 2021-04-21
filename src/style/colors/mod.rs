@@ -3,7 +3,8 @@
 //! [`Rgba`](crate::style::Rgba), [`PreRgba`](crate::style::PreRgba)).
 
 macro_rules! color {
-    ($self:ident
+    ($self:ident,  $color:ident: $T:ident
+        from      $from:block
         red       $red:block
         green     $green:block
         blue      $blue:block
@@ -11,7 +12,11 @@ macro_rules! color {
         $(pre_green $pre_green:block)?
         $(pre_blue  $pre_blue:block)?
         alpha     $alpha:block
+        rgb       $rgb:block
+        rgba      $rgba:block
+        pre_rgba  $pre_rgba:block
     ) => {
+        fn from<$T: Color>($color: $T) -> Self $from
         fn red($self) -> u8 $red
         fn green($self) -> u8 $green
         fn blue($self) -> u8 $blue
@@ -19,7 +24,20 @@ macro_rules! color {
         $(fn pre_green($self) -> u8 $pre_green)?
         $(fn pre_blue($self) -> u8 $pre_blue)?
         fn alpha($self) -> u8 $alpha
+        fn rgb($self) -> Rgb $rgb
+        fn rgba($self) -> Rgba $rgba
+        fn pre_rgba($self) -> PreRgba $pre_rgba
     };
+}
+
+macro_rules! from {
+    ($self:ident: $Self:ident => $($from:ident: $From:ident)*) => { $(
+        impl From<$From> for $Self {
+            fn from($from: $From) -> Self {
+                $from.$self()
+            }
+        }
+    )* };
 }
 
 mod ground;
@@ -32,19 +50,11 @@ pub use pre_rgba::*;
 pub use rgb::*;
 pub use rgba::*;
 
-/// A trait for [`Foreground`](crate::style::Foreground),
-/// [`Background`](crate::style::Background), [`Rgb`](crate::style::Rgb),
-/// [`Rgba`](crate::style::Rgba), [`PreRgba`](crate::style::PreRgba).
-///
-/// Requires the convertions (with `C` in
-/// [[`Rgb`](crate::style::Rgb), [`Rgba`](crate::style::Rgba),
-/// [`PreRgba`](crate::style::PreRgba)]):
-///   - `Self` <-> `C`
-///   - `Self` <-> `Foreground<C>`
-///   - `Self` <-> `Background<C>`
-///
-/// `From` impls on thoses types are hidden in the documentation.
-pub trait Color: Copy {
+/// A trait for [`Foreground`], [`Background`], [`Rgb`], [`Rgba`], [`PreRgba`].
+pub trait Color: Copy + Default {
+    /// Converts `color` into `Self`.
+    fn from<T: Color>(color: T) -> Self;
+
     /// Returns the `red` component's value.
     fn red(self) -> u8;
 
@@ -75,35 +85,66 @@ pub trait Color: Copy {
         (self.alpha() as f64 / u8::MAX as f64 * self.blue() as f64).round() as _
     }
 
-    /// Returns true if `alpha` is `u8::MAX`.
+    /// Returns `true` if `alpha == u8::MAX`.
     fn is_opaque(self) -> bool {
         self.alpha() == u8::MAX
     }
 
-    /// Returns true if `alpha` is not `u8::MAX`.
+    /// Returns `true` if `alpha != u8::MAX`.
     fn is_transparent(self) -> bool {
-        !self.is_opaque()
+        self.alpha() != u8::MAX
     }
 
-    /// Returns true if `alpha` is not `0`.
+    /// Returns `true` if `alpha != 0`.
     fn is_visible(self) -> bool {
-        !self.is_invisible()
+        self.alpha() != 0
     }
 
-    /// Returns true if `alpha` is `0`.
+    /// Returns `true` if `alpha == 0`.
     fn is_invisible(self) -> bool {
         self.alpha() == 0
     }
 
-    /// Places `self` over `other`.
-    fn over(self, other: Rgb) -> Rgb {
-        let ratio = (u8::MAX as f64 - self.alpha() as f64) / u8::MAX as f64;
-        let over = |a: u8, b: u8| a + (b as f64 * ratio) as u8;
+    /// Converts `self` into `T`.
+    fn into<T: Color>(self) -> T {
+        T::from(self)
+    }
 
-        Rgb(
-            over(self.pre_red(), other.red()),
-            over(self.pre_green(), other.green()),
-            over(self.pre_blue(), other.blue()),
+    /// Converts `self` into [`Rgb`].
+    fn rgb(self) -> Rgb {
+        Rgb(self.red(), self.green(), self.blue())
+    }
+
+    /// Converts `self` into [`Rgba`].
+    fn rgba(self) -> Rgba {
+        Rgba(self.red(), self.green(), self.blue(), self.alpha())
+    }
+
+    /// Converts `self` into [`PreRgba`].
+    fn pre_rgba(self) -> PreRgba {
+        PreRgba(
+            self.pre_red(),
+            self.pre_green(),
+            self.pre_blue(),
+            self.alpha(),
         )
+    }
+
+    /// Places `self` over `below`.
+    fn over<U: Color>(self, below: impl Color) -> U {
+        let above = self.pre_rgba();
+        let below = below.pre_rgba();
+        let ratio = 1.0 - (above.3 as f64 / u8::MAX as f64);
+
+        fn over(above: u8, below: u8, ratio: f64) -> u8 {
+            above + (below as f64 * ratio) as u8
+        }
+
+        Color::from(Rgba(
+            over(above.0, below.0, ratio),
+            over(above.1, below.1, ratio),
+            over(above.2, below.2, ratio),
+            over(above.3, below.3, ratio),
+        ))
     }
 }

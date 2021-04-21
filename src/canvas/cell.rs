@@ -62,7 +62,8 @@ impl Cell<PreRgba> {
 
         // When self has opaque background, other is invisible
         if background.is_opaque() {
-            self.cast::<PreRgba, Rgb>().resolve()
+            // self.cast::<PreRgba, Rgb>().resolve()
+            todo!()
         }
         // Otherwise, we see through self's background
         else {

@@ -4,7 +4,8 @@ use std::fmt::{self, Display, Formatter};
 macro_rules! ground_color {
     ($Ground:ident) => {
         impl<T: Color> Color for $Ground<T> {
-            color!(self
+            color!(self, color: U
+                from      { Self(T::from(color)) }
                 red       { self.0.red() }
                 green     { self.0.green() }
                 blue      { self.0.blue() }
@@ -12,6 +13,9 @@ macro_rules! ground_color {
                 pre_green { self.0.pre_green() }
                 pre_blue  { self.0.pre_blue() }
                 alpha     { self.0.alpha() }
+                rgb       { self.0.rgb() }
+                rgba      { self.0.rgba() }
+                pre_rgba  { self.0.pre_rgba() }
             );
         }
     };
@@ -25,28 +29,25 @@ macro_rules! convert {
         convert!($(impl From<$Other<$A>> for $Ground<$B>)*);
     };
     ($(impl From<$FromColor:ident> for $Ground:ident<$IntoColor:ident>)*) => { $(
-        #[doc(hidden)]
         impl From<$FromColor> for $Ground<$IntoColor> {
             fn from(color: $FromColor) -> Self {
-                Self(color.into())
+                Self(Into::into(color))
             }
         }
     )* };
     ($(impl From<$Ground:ident<$FromColor:ident>> for $IntoColor:ident)*) => { $(
-        #[doc(hidden)]
         impl From<$Ground<$FromColor>> for $IntoColor {
             fn from(ground: $Ground<$FromColor>) -> Self {
-                ground.0.into()
+                Into::into(ground.0)
             }
         }
     )* };
     ($(
         impl From<$FromGround:ident<$FromColor:ident>> for $IntoGround:ident<$IntoColor:ident>
     )*) => { $(
-        #[doc(hidden)]
         impl From<$FromGround<$FromColor>> for $IntoGround<$IntoColor> {
             fn from(ground: $FromGround<$FromColor>) -> Self {
-                Self(ground.0.into())
+                Self(Into::into(ground.0))
             }
         }
     )* };
