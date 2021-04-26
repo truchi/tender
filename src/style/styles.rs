@@ -4,13 +4,11 @@ use std::{
     io::Write,
 };
 
-/// `Styles` ([`Foreground`](crate::style::Foreground),
-/// [`Background`](crate::style::Background),
-/// [`Attributes`](crate::style::Attributes)).
+/// `Styles`.
 #[derive(Copy, Clone, Eq, PartialEq, Default, Hash, Debug)]
 pub struct Styles<Fg, Bg = Fg> {
-    pub foreground: Foreground<Fg>,
-    pub background: Background<Bg>,
+    pub foreground: Fg,
+    pub background: Bg,
     pub attributes: Attributes,
 }
 
@@ -21,15 +19,15 @@ impl<Fg, Bg> Styles<Fg, Bg> {
         Bg: Into<NewBg>,
     {
         Styles {
-            foreground: Foreground(self.foreground.0.into()),
-            background: Background(self.background.0.into()),
+            foreground: self.foreground.into(),
+            background: self.background.into(),
             attributes: self.attributes,
         }
     }
 
     pub fn set_foreground<NewFg>(self, foreground: NewFg) -> Styles<NewFg, Bg> {
         Styles {
-            foreground: Foreground(foreground),
+            foreground,
             background: self.background,
             attributes: self.attributes,
         }
@@ -38,7 +36,7 @@ impl<Fg, Bg> Styles<Fg, Bg> {
     pub fn set_background<NewBg>(self, background: NewBg) -> Styles<Fg, NewBg> {
         Styles {
             foreground: self.foreground,
-            background: Background(background),
+            background,
             attributes: self.attributes,
         }
     }
@@ -47,8 +45,8 @@ impl<Fg, Bg> Styles<Fg, Bg> {
 impl Styles<Rgb> {
     /// Applies `color` over `Foreground` and `Background`.
     pub fn color(self, color: PreRgba) -> Self {
-        self.set_foreground(color.over(self.foreground.0))
-            .set_background(color.over(self.background.0))
+        self.set_foreground(color.over(self.foreground))
+            .set_background(color.over(self.background))
     }
 
     pub fn render_dedup<T: Write>(self, w: &mut T, prev: &Self) {
@@ -78,7 +76,7 @@ impl Styles<Rgb> {
 impl Styles<PreRgba, Rgb> {
     /// Resolves `Foreground` to `Rgb` from `Background`.
     pub fn resolve(self) -> Styles<Rgb> {
-        self.set_foreground(self.foreground.over(self.background.0))
+        self.set_foreground(self.foreground.over(self.background))
     }
 }
 
@@ -112,11 +110,11 @@ impl<Fg, Bg> Styler<Fg, Bg> for Styles<Fg, Bg> {
         get_border    set_border    border:    Border
     );
 
-    fn get_foreground(self) -> Foreground<Fg> {
+    fn get_foreground(self) -> Fg {
         self.foreground
     }
 
-    fn get_background(self) -> Background<Bg> {
+    fn get_background(self) -> Bg {
         self.background
     }
 
@@ -124,18 +122,12 @@ impl<Fg, Bg> Styler<Fg, Bg> for Styles<Fg, Bg> {
         self.attributes
     }
 
-    fn set_foreground(self, color: Fg) -> Self {
-        Self {
-            foreground: Foreground(color),
-            ..self
-        }
+    fn set_foreground(self, foreground: Fg) -> Self {
+        Self { foreground, ..self }
     }
 
-    fn set_background(self, color: Bg) -> Self {
-        Self {
-            background: Background(color),
-            ..self
-        }
+    fn set_background(self, background: Bg) -> Self {
+        Self { background, ..self }
     }
 
     fn set_attributes(self, attributes: Attributes) -> Self {

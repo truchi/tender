@@ -9,8 +9,8 @@ pub use colors::*;
 pub use styles::*;
 
 pub trait Styler<Fg, Bg> {
-    fn get_foreground(self) -> Foreground<Fg>;
-    fn get_background(self) -> Background<Bg>;
+    fn get_foreground(self) -> Fg;
+    fn get_background(self) -> Bg;
     fn get_attributes(self) -> Attributes;
     fn get_weight(self) -> Weight;
     fn get_slant(self) -> Slant;
@@ -21,8 +21,8 @@ pub trait Styler<Fg, Bg> {
     fn get_blink(self) -> Blink;
     fn get_border(self) -> Border;
 
-    fn set_foreground(self, color: Fg) -> Self;
-    fn set_background(self, color: Bg) -> Self;
+    fn set_foreground(self, foreground: Fg) -> Self;
+    fn set_background(self, background: Bg) -> Self;
     fn set_attributes(self, attributes: Attributes) -> Self;
     fn set_weight(self, weight: Weight) -> Self;
     fn set_slant(self, slant: Slant) -> Self;

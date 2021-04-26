@@ -70,12 +70,12 @@ impl Cell<PreRgba> {
             // If self's char is invisible
             if foreground.is_invisible() {
                 // Apply self's background over other
-                other.color(background.0)
+                other.color(background)
             }
             // If self's char is visible
             else {
                 // Merge backgrounds in self
-                let background = self.get_background().over(other.get_background().0);
+                let background = self.get_background().over(other.get_background());
                 self.set_background(background).resolve()
             }
         }
@@ -109,11 +109,11 @@ impl<Fg, Bg> Styler<Fg, Bg> for Cell<Fg, Bg> {
         get_border     set_border     border:     Border
     );
 
-    fn get_foreground(self) -> Foreground<Fg> {
+    fn get_foreground(self) -> Fg {
         self.styles.get_foreground()
     }
 
-    fn get_background(self) -> Background<Bg> {
+    fn get_background(self) -> Bg {
         self.styles.get_background()
     }
 
