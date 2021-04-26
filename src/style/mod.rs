@@ -8,6 +8,12 @@ pub use colors::*;
 // pub use cursor::*;
 pub use styles::*;
 
+pub trait Over<Bottom = Self> {
+    type Output;
+
+    fn over(self, bottom: Bottom) -> Self::Output;
+}
+
 pub trait Styler<Fg, Bg> {
     fn get_foreground(self) -> Fg;
     fn get_background(self) -> Bg;

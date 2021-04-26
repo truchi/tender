@@ -1,10 +1,8 @@
-//! Colors ([`Foreground`](crate::style::Foreground),
-//! [`Background`](crate::style::Background), [`Rgb`](crate::style::Rgb),
-//! [`Rgba`](crate::style::Rgba), [`PreRgba`](crate::style::PreRgba)).
+//! Colors ([`Rgb`], [`Rgba`], [`PreRgba`]).
 
 macro_rules! color {
     ($self:ident,  $color:ident: $T:ident
-        from      $from:block
+        from      $from:block // TODO remove
         red       $red:block
         green     $green:block
         blue      $blue:block
@@ -16,7 +14,7 @@ macro_rules! color {
         rgba      $rgba:block
         pre_rgba  $pre_rgba:block
     ) => {
-        fn from<$T: Color>($color: $T) -> Self $from
+        // fn from<$T: Color>($color: $T) -> Self $from
         fn red($self) -> u8 $red
         fn green($self) -> u8 $green
         fn blue($self) -> u8 $blue
@@ -40,20 +38,22 @@ macro_rules! from {
     )* };
 }
 
-mod ground;
+// mod ground;
 mod pre_rgba;
 mod rgb;
 mod rgba;
 
-pub use ground::*;
+// pub use ground::*;
 pub use pre_rgba::*;
 pub use rgb::*;
 pub use rgba::*;
 
-/// A trait for [`Foreground`], [`Background`], [`Rgb`], [`Rgba`], [`PreRgba`].
+use super::*;
+
+/// A trait for [`Rgb`], [`Rgba`], [`PreRgba`].
 pub trait Color: Copy + Default {
-    /// Converts `color` into `Self`.
-    fn from<T: Color>(color: T) -> Self;
+    // /// Converts `color` into `Self`.
+    // fn from<T: Color>(color: T) -> Self;
 
     /// Returns the `red` component's value.
     fn red(self) -> u8;
@@ -105,10 +105,10 @@ pub trait Color: Copy + Default {
         self.alpha() == 0
     }
 
-    /// Converts `self` into `T`.
-    fn into<T: Color>(self) -> T {
-        T::from(self)
-    }
+    // /// Converts `self` into `T`.
+    // fn into<T: Color>(self) -> T {
+    //     T::from(self)
+    // }
 
     /// Converts `self` into [`Rgb`].
     fn rgb(self) -> Rgb {
@@ -130,6 +130,7 @@ pub trait Color: Copy + Default {
         )
     }
 
+    /*
     /// Places `self` over `below`.
     fn over<U: Color>(self, below: impl Color) -> U {
         let above = self.pre_rgba();
@@ -147,4 +148,5 @@ pub trait Color: Copy + Default {
             over(above.3, below.3, ratio),
         ))
     }
+    */
 }

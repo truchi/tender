@@ -31,3 +31,27 @@ from!(rgba: Rgba =>
     rgb: Rgb
     pre_rgba: PreRgba
 );
+
+impl Over for Rgba {
+    type Output = PreRgba;
+
+    fn over(self, bottom: Rgba) -> PreRgba {
+        PreRgba::from(self).over(PreRgba::from(bottom))
+    }
+}
+
+impl Over<PreRgba> for Rgba {
+    type Output = PreRgba;
+
+    fn over(self, bottom: PreRgba) -> PreRgba {
+        PreRgba::from(self).over(bottom)
+    }
+}
+
+impl Over<Rgb> for Rgba {
+    type Output = Rgb;
+
+    fn over(self, bottom: Rgb) -> Rgb {
+        PreRgba::from(self).over(bottom)
+    }
+}
