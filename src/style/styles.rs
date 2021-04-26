@@ -5,12 +5,26 @@ use std::{
 };
 
 /// `Styles`.
-#[derive(Copy, Clone, Eq, PartialEq, Default, Hash, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
 pub struct Styles<Fg, Bg = Fg> {
     pub foreground: Fg,
     pub background: Bg,
     pub attributes: Attributes,
 }
+
+impl Styles<PreRgba> {
+    pub fn new(foreground: PreRgba, background: PreRgba, attributes: Attributes) -> Self {
+        Self {
+            foreground: foreground.over(background),
+            background,
+            attributes,
+        }
+    }
+}
+
+// impl Over for Styles
+
+// =====================================================================================
 
 impl<Fg, Bg> Styles<Fg, Bg> {
     pub fn cast<NewFg, NewBg>(self) -> Styles<NewFg, NewBg>
