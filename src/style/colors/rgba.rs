@@ -5,32 +5,33 @@ use super::*;
 pub struct Rgba(pub u8, pub u8, pub u8, pub u8);
 
 impl Color for Rgba {
-    color!(self, color: T
-        from      { color.rgba() }
-        red       { self.0 }
-        green     { self.1 }
-        blue      { self.2 }
-        alpha     { self.3 }
-        rgb       { Rgb(self.0, self.1, self.2) }
-        rgba      { self }
-        pre_rgba  {
-            let Self(red, green, blue, alpha) = self;
-            let ratio = alpha as f64 / u8::MAX as f64;
-
-            PreRgba(
-                (ratio * red as f64).round() as _,
-                (ratio * green as f64).round() as _,
-                (ratio * blue as f64).round() as _,
-                alpha,
-            )
-        }
-    );
+    fn alpha(self) -> u8 {
+        self.3
+    }
 }
 
-from!(rgba: Rgba =>
-    rgb: Rgb
-    pre_rgba: PreRgba
-);
+impl From<Rgb> for Rgba {
+    fn from(rgb: Rgb) -> Rgba {
+        Rgba(rgb.0, rgb.1, rgb.2, u8::MAX)
+    }
+}
+
+impl From<PreRgba> for Rgba {
+    fn from(pre_rgba: PreRgba) -> Rgba {
+        if pre_rgba.3 == 0 {
+            Rgba(0, 0, 0, 0)
+        } else {
+            let ratio = u8::MAX as f64 / pre_rgba.3 as f64;
+
+            Rgba(
+                (ratio * pre_rgba.0 as f64).round() as _,
+                (ratio * pre_rgba.1 as f64).round() as _,
+                (ratio * pre_rgba.2 as f64).round() as _,
+                pre_rgba.3,
+            )
+        }
+    }
+}
 
 impl Over for Rgba {
     type Output = PreRgba;
