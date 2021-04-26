@@ -24,9 +24,9 @@ impl From<PreRgba> for Rgba {
             let ratio = u8::MAX as f64 / pre_rgba.3 as f64;
 
             Rgba(
-                (ratio * pre_rgba.0 as f64).round() as _,
-                (ratio * pre_rgba.1 as f64).round() as _,
-                (ratio * pre_rgba.2 as f64).round() as _,
+                (pre_rgba.0 as f64 * ratio).round() as _,
+                (pre_rgba.1 as f64 * ratio).round() as _,
+                (pre_rgba.2 as f64 * ratio).round() as _,
                 pre_rgba.3,
             )
         }

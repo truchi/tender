@@ -21,9 +21,9 @@ impl From<Rgba> for PreRgba {
         let ratio = rgba.3 as f64 / u8::MAX as f64;
 
         PreRgba(
-            (ratio * rgba.0 as f64).round() as _,
-            (ratio * rgba.1 as f64).round() as _,
-            (ratio * rgba.2 as f64).round() as _,
+            (rgba.0 as f64 * ratio).round() as _,
+            (rgba.1 as f64 * ratio).round() as _,
+            (rgba.2 as f64 * ratio).round() as _,
             rgba.3,
         )
     }
@@ -36,10 +36,10 @@ impl Over for PreRgba {
         let ratio = 1.0 - (self.3 as f64 / u8::MAX as f64);
 
         PreRgba(
-            self.0 + (bottom.0 as f64 * ratio) as u8,
-            self.1 + (bottom.1 as f64 * ratio) as u8,
-            self.2 + (bottom.2 as f64 * ratio) as u8,
-            self.3 + (bottom.3 as f64 * ratio) as u8,
+            self.0 + (bottom.0 as f64 * ratio).round() as u8,
+            self.1 + (bottom.1 as f64 * ratio).round() as u8,
+            self.2 + (bottom.2 as f64 * ratio).round() as u8,
+            self.3 + (bottom.3 as f64 * ratio).round() as u8,
         )
     }
 }
@@ -51,9 +51,9 @@ impl Over<Rgb> for PreRgba {
         let ratio = 1.0 - (self.3 as f64 / u8::MAX as f64);
 
         Rgb(
-            self.0 + (bottom.0 as f64 * ratio) as u8,
-            self.1 + (bottom.1 as f64 * ratio) as u8,
-            self.2 + (bottom.2 as f64 * ratio) as u8,
+            self.0 + (bottom.0 as f64 * ratio).round() as u8,
+            self.1 + (bottom.1 as f64 * ratio).round() as u8,
+            self.2 + (bottom.2 as f64 * ratio).round() as u8,
         )
     }
 }

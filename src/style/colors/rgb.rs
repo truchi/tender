@@ -9,11 +9,21 @@ impl Color for Rgb {
     fn alpha(self) -> u8 {
         u8::MAX
     }
-}
 
-impl Display for Rgb {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "2;{};{};{}", self.0, self.1, self.2)
+    fn is_opaque(self) -> bool {
+        true
+    }
+
+    fn is_transparent(self) -> bool {
+        false
+    }
+
+    fn is_visible(self) -> bool {
+        true
+    }
+
+    fn is_invisible(self) -> bool {
+        false
     }
 }
 
@@ -31,9 +41,9 @@ impl From<PreRgba> for Rgb {
             let ratio = u8::MAX as f64 / pre_rgba.3 as f64;
 
             Rgb(
-                (ratio * pre_rgba.0 as f64).round() as _,
-                (ratio * pre_rgba.1 as f64).round() as _,
-                (ratio * pre_rgba.2 as f64).round() as _,
+                (pre_rgba.0 as f64 * ratio).round() as _,
+                (pre_rgba.1 as f64 * ratio).round() as _,
+                (pre_rgba.2 as f64 * ratio).round() as _,
             )
         }
     }
@@ -60,5 +70,11 @@ impl Over<Rgba> for Rgb {
 
     fn over(self, _: Rgba) -> Rgb {
         self
+    }
+}
+
+impl Display for Rgb {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "2;{};{};{}", self.0, self.1, self.2)
     }
 }
