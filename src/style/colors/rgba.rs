@@ -18,18 +18,17 @@ impl From<Rgb> for Rgba {
 
 impl From<PreRgba> for Rgba {
     fn from(pre_rgba: PreRgba) -> Rgba {
-        if pre_rgba.3 == 0 {
-            Rgba(0, 0, 0, 0)
-        } else {
-            let ratio = u8::MAX as f64 / pre_rgba.3 as f64;
+        let Rgb(red, green, blue) = pre_rgba.into();
 
-            Rgba(
-                (pre_rgba.0 as f64 * ratio).round() as _,
-                (pre_rgba.1 as f64 * ratio).round() as _,
-                (pre_rgba.2 as f64 * ratio).round() as _,
-                pre_rgba.3,
-            )
-        }
+        Rgba(red, green, blue, pre_rgba.alpha())
+    }
+}
+
+impl Over<Rgb> for Rgba {
+    type Output = PreRgba;
+
+    fn over(self, bottom: Rgb) -> PreRgba {
+        PreRgba::from(self).over(bottom)
     }
 }
 
@@ -45,14 +44,6 @@ impl Over<PreRgba> for Rgba {
     type Output = PreRgba;
 
     fn over(self, bottom: PreRgba) -> PreRgba {
-        PreRgba::from(self).over(bottom)
-    }
-}
-
-impl Over<Rgb> for Rgba {
-    type Output = Rgb;
-
-    fn over(self, bottom: Rgb) -> Rgb {
         PreRgba::from(self).over(bottom)
     }
 }

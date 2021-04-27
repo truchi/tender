@@ -35,16 +35,14 @@ impl From<Rgba> for Rgb {
 
 impl From<PreRgba> for Rgb {
     fn from(pre_rgba: PreRgba) -> Rgb {
-        if pre_rgba.3 == 0 {
-            Rgb(0, 0, 0)
-        } else {
-            let ratio = u8::MAX as f64 / pre_rgba.3 as f64;
-
+        if let Some(inv_alpha) = pre_rgba.inv_alpha_f64() {
             Rgb(
-                (pre_rgba.0 as f64 * ratio).round() as _,
-                (pre_rgba.1 as f64 * ratio).round() as _,
-                (pre_rgba.2 as f64 * ratio).round() as _,
+                (pre_rgba.0 as f64 * inv_alpha).round() as _,
+                (pre_rgba.1 as f64 * inv_alpha).round() as _,
+                (pre_rgba.2 as f64 * inv_alpha).round() as _,
             )
+        } else {
+            Rgb(0, 0, 0)
         }
     }
 }

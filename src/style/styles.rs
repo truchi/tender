@@ -22,10 +22,6 @@ impl Styles<PreRgba> {
     }
 }
 
-// impl Over for Styles
-
-// =====================================================================================
-
 impl<Fg, Bg> Styles<Fg, Bg> {
     pub fn cast<NewFg, NewBg>(self) -> Styles<NewFg, NewBg>
     where
@@ -56,6 +52,7 @@ impl<Fg, Bg> Styles<Fg, Bg> {
     }
 }
 
+/*
 impl Styles<Rgb> {
     /// Applies `color` over `Foreground` and `Background`.
     pub fn color(self, color: PreRgba) -> Self {
@@ -93,6 +90,7 @@ impl Styles<PreRgba, Rgb> {
         self.set_foreground(self.foreground.over(self.background))
     }
 }
+*/
 
 macro_rules! styler {
     ($($get:ident $set:ident $attr:ident: $Attr:ident)*) => { $(

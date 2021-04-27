@@ -18,43 +18,22 @@ impl From<Rgb> for PreRgba {
 
 impl From<Rgba> for PreRgba {
     fn from(rgba: Rgba) -> PreRgba {
-        let ratio = rgba.3 as f64 / u8::MAX as f64;
+        let alpha = rgba.alpha_f64();
 
         PreRgba(
-            (rgba.0 as f64 * ratio).round() as _,
-            (rgba.1 as f64 * ratio).round() as _,
-            (rgba.2 as f64 * ratio).round() as _,
+            (rgba.0 as f64 * alpha).round() as _,
+            (rgba.1 as f64 * alpha).round() as _,
+            (rgba.2 as f64 * alpha).round() as _,
             rgba.3,
         )
     }
 }
 
-impl Over for PreRgba {
+impl Over<Rgb> for PreRgba {
     type Output = PreRgba;
 
-    fn over(self, bottom: PreRgba) -> PreRgba {
-        let ratio = 1.0 - (self.3 as f64 / u8::MAX as f64);
-
-        PreRgba(
-            self.0 + (bottom.0 as f64 * ratio).round() as u8,
-            self.1 + (bottom.1 as f64 * ratio).round() as u8,
-            self.2 + (bottom.2 as f64 * ratio).round() as u8,
-            self.3 + (bottom.3 as f64 * ratio).round() as u8,
-        )
-    }
-}
-
-impl Over<Rgb> for PreRgba {
-    type Output = Rgb;
-
-    fn over(self, bottom: Rgb) -> Rgb {
-        let ratio = 1.0 - (self.3 as f64 / u8::MAX as f64);
-
-        Rgb(
-            self.0 + (bottom.0 as f64 * ratio).round() as u8,
-            self.1 + (bottom.1 as f64 * ratio).round() as u8,
-            self.2 + (bottom.2 as f64 * ratio).round() as u8,
-        )
+    fn over(self, bottom: Rgb) -> PreRgba {
+        self.over(PreRgba::from(bottom))
     }
 }
 
@@ -63,5 +42,20 @@ impl Over<Rgba> for PreRgba {
 
     fn over(self, bottom: Rgba) -> PreRgba {
         self.over(PreRgba::from(bottom))
+    }
+}
+
+impl Over for PreRgba {
+    type Output = PreRgba;
+
+    fn over(self, bottom: PreRgba) -> PreRgba {
+        let contr_alpha = self.contr_alpha_f64();
+
+        PreRgba(
+            self.0 + (bottom.0 as f64 * contr_alpha).round() as u8,
+            self.1 + (bottom.1 as f64 * contr_alpha).round() as u8,
+            self.2 + (bottom.2 as f64 * contr_alpha).round() as u8,
+            self.3 + (bottom.3 as f64 * contr_alpha).round() as u8,
+        )
     }
 }
