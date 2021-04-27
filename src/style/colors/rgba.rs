@@ -25,9 +25,9 @@ impl From<PreRgba> for Rgba {
 }
 
 impl Over<Rgb> for Rgba {
-    type Output = PreRgba;
+    type Output = Rgb;
 
-    fn over(self, bottom: Rgb) -> PreRgba {
+    fn over(self, bottom: Rgb) -> Rgb {
         PreRgba::from(self).over(bottom)
     }
 }

@@ -30,10 +30,16 @@ impl From<Rgba> for PreRgba {
 }
 
 impl Over<Rgb> for PreRgba {
-    type Output = PreRgba;
+    type Output = Rgb;
 
-    fn over(self, bottom: Rgb) -> PreRgba {
-        self.over(PreRgba::from(bottom))
+    fn over(self, bottom: Rgb) -> Rgb {
+        let contr_alpha = self.contr_alpha_f64();
+
+        Rgb(
+            self.0 + (bottom.0 as f64 * contr_alpha).round() as u8,
+            self.1 + (bottom.1 as f64 * contr_alpha).round() as u8,
+            self.2 + (bottom.2 as f64 * contr_alpha).round() as u8,
+        )
     }
 }
 
