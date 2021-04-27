@@ -90,33 +90,3 @@ where
         }
     }
 }
-
-macro_rules! test {
-    ($($fn:ident $A:ident $B:ident $C:ident $D:ident)*) => {$(
-        fn $fn(a: Cell<$A, $B>, b: Cell<$C, $D>) {
-            a.over(b);
-        }
-    )*};
-}
-
-test!(
-    _a11 Rgb Rgb     Rgb     Rgb
-    _b11 Rgb Rgb     Rgb     Rgba
-    _c11 Rgb Rgb     Rgb  PreRgba
-    _a21 Rgb Rgb     Rgba    Rgb
-    _b21 Rgb Rgb     Rgba    Rgba
-    _c21 Rgb Rgb     Rgba PreRgba
-    _a31 Rgb Rgb  PreRgba    Rgb
-    _b31 Rgb Rgb  PreRgba    Rgba
-    _c31 Rgb Rgb  PreRgba PreRgba
-
-    // _a12 Rgb Rgba    Rgb     Rgb
-    // _b12 Rgb Rgba    Rgb     Rgba
-    // _c12 Rgb Rgba    Rgb  PreRgba
-    // _a22 Rgb Rgba    Rgba    Rgb
-    // _b22 Rgb Rgba    Rgba    Rgba
-    // _c22 Rgb Rgba    Rgba PreRgba
-    // _a32 Rgb Rgba PreRgba    Rgb
-    // _b32 Rgb Rgba PreRgba    Rgba
-    // _c32 Rgb Rgba PreRgba PreRgba
-);

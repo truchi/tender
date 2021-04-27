@@ -29,6 +29,18 @@ impl From<Rgba> for PreRgba {
     }
 }
 
+impl PartialEq<Rgb> for PreRgba {
+    fn eq(&self, rgb: &Rgb) -> bool {
+        *self == PreRgba::from(*rgb)
+    }
+}
+
+impl PartialEq<Rgba> for PreRgba {
+    fn eq(&self, rgba: &Rgba) -> bool {
+        *self == PreRgba::from(*rgba)
+    }
+}
+
 impl Over<Rgb> for PreRgba {
     type Output = Rgb;
 
