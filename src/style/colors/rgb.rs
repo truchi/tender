@@ -5,7 +5,7 @@ use std::fmt::{self, Display, Formatter};
 #[derive(Copy, Clone, Eq, PartialEq, Default, Hash, Debug)]
 pub struct Rgb(pub u8, pub u8, pub u8);
 
-impl Color for Rgb {
+impl WithAlpha for Rgb {
     fn alpha(self) -> u8 {
         u8::MAX
     }

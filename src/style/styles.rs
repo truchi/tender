@@ -4,8 +4,8 @@ use std::fmt::{self, Display, Formatter};
 /// `Styles`.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
 pub struct Styles<Fg, Bg = Fg> {
-    pub foreground: Fg,
-    pub background: Bg,
+    pub foreground: Color<Fg>,
+    pub background: Color<Bg>,
     pub attributes: Attributes,
 }
 
@@ -16,8 +16,8 @@ impl<Fg, Bg> Styles<Fg, Bg> {
         Bg: Clone,
     {
         Styles {
-            foreground: foreground.over(background.clone()),
-            background,
+            foreground: Color(foreground.over(background.clone())),
+            background: Color(background),
             attributes,
         }
     }

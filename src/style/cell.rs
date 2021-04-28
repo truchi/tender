@@ -8,14 +8,14 @@ pub struct Cell<Fg, Bg = Fg> {
 
 // color OVER cell
 impl<C: Over<Fg, NewFg> + Over<Bg, NewBg> + Clone, Fg, Bg, NewFg, NewBg>
-    Over<Cell<Fg, Bg>, Cell<NewFg, NewBg>> for ColorWrapper<C>
+    Over<Cell<Fg, Bg>, Cell<NewFg, NewBg>> for Color<C>
 {
     fn over(self, cell: Cell<Fg, Bg>) -> Cell<NewFg, NewBg> {
         Cell {
             char:   cell.char,
             styles: Styles {
-                foreground: self.0.clone().over(cell.styles.foreground),
-                background: self.0.over(cell.styles.background),
+                foreground: self.clone().over(cell.styles.foreground),
+                background: self.over(cell.styles.background),
                 attributes: cell.styles.attributes,
             },
         }
@@ -23,10 +23,10 @@ impl<C: Over<Fg, NewFg> + Over<Bg, NewBg> + Clone, Fg, Bg, NewFg, NewBg>
 }
 
 // cell OVER color
-impl<C: Clone, Fg: Over<C, NewFg>, Bg: Over<C, NewBg>, NewFg, NewBg> Over<C, Cell<NewFg, NewBg>>
-    for Cell<Fg, Bg>
+impl<C: Clone, Fg: Over<C, NewFg>, Bg: Over<C, NewBg>, NewFg, NewBg>
+    Over<Color<C>, Cell<NewFg, NewBg>> for Cell<Fg, Bg>
 {
-    fn over(self, color: C) -> Cell<NewFg, NewBg> {
+    fn over(self, color: Color<C>) -> Cell<NewFg, NewBg> {
         Cell {
             char:   self.char,
             styles: Styles {

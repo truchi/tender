@@ -11,31 +11,38 @@ pub use rgb::*;
 pub use rgba::*;
 
 use super::*;
+use std::fmt::{self, Display, Formatter};
 
 /// A wrapper type for colors.
 #[derive(Copy, Clone, Eq, PartialEq, Default, Hash, Debug)]
-pub struct ColorWrapper<T>(pub T);
+pub struct Color<T>(pub T);
 
-impl<T> From<T> for ColorWrapper<T> {
+impl<T> From<T> for Color<T> {
     fn from(t: T) -> Self {
         Self(t)
     }
 }
 
-// impl<C, T, U> Over<T, U> for ColorWrapper<C> {
-// fn over(self, bottom: T) -> U {
-// self.0.over(bottom)
-// }
-// }
-
-impl<T: Color> Color for ColorWrapper<T> {
+impl<T: WithAlpha> WithAlpha for Color<T> {
     fn alpha(self) -> u8 {
         self.0.alpha()
     }
 }
 
+impl<C: Over<T, U>, T, U> Over<Color<T>, Color<U>> for Color<C> {
+    fn over(self, bottom: Color<T>) -> Color<U> {
+        Color(self.0.over(bottom.0))
+    }
+}
+
+impl<T: Display> Display for Color<T> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
 /// A trait for [`Rgb`], [`Rgba`], [`PreRgba`].
-pub trait Color: Copy + Default
+pub trait WithAlpha: Copy + Default
 // + From<Rgb>
 // + From<Rgba>
 // + From<PreRgba>
@@ -96,8 +103,8 @@ pub trait Color: Copy + Default
         self.alpha() == 0
     }
 
-    /// Wraps `self` within a [`ColorWrapper`].
-    fn wrap(self) -> ColorWrapper<Self> {
+    /// Wraps `self` within a [`Color`].
+    fn wrap(self) -> Color<Self> {
         self.into()
     }
 }
