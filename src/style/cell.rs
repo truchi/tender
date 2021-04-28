@@ -37,8 +37,9 @@ impl<Fg, Bg> Cell<Fg, Bg> {
 }
 
 // color OVER cell
-impl<C: Over<Fg, NewFg> + Over<Bg, NewBg> + Clone, Fg, Bg, NewFg, NewBg>
-    Over<Cell<Fg, Bg>, Cell<NewFg, NewBg>> for Color<C>
+impl<C, Fg, Bg, NewFg, NewBg> Over<Cell<Fg, Bg>, Cell<NewFg, NewBg>> for Color<C>
+where
+    C: Over<Fg, NewFg> + Over<Bg, NewBg> + Clone,
 {
     fn over(self, cell: Cell<Fg, Bg>) -> Cell<NewFg, NewBg> {
         Cell {
@@ -51,8 +52,11 @@ impl<C: Over<Fg, NewFg> + Over<Bg, NewBg> + Clone, Fg, Bg, NewFg, NewBg>
 }
 
 // cell OVER color
-impl<C: Clone, Fg: Over<C, NewFg>, Bg: Over<C, NewBg>, NewFg, NewBg>
-    Over<Color<C>, Cell<NewFg, NewBg>> for Cell<Fg, Bg>
+impl<C, Fg, Bg, NewFg, NewBg> Over<Color<C>, Cell<NewFg, NewBg>> for Cell<Fg, Bg>
+where
+    C: Clone,
+    Fg: Over<C, NewFg>,
+    Bg: Over<C, NewBg>,
 {
     fn over(self, color: Color<C>) -> Cell<NewFg, NewBg> {
         Cell {
@@ -67,55 +71,20 @@ impl<C: Clone, Fg: Over<C, NewFg>, Bg: Over<C, NewBg>, NewFg, NewBg>
 // cell OVER cell
 impl<TopFg, TopBg, BottomFg, BottomBg, NewFg, NewBg>
     Over<Cell<BottomFg, BottomBg>, Cell<NewFg, NewBg>> for Cell<TopFg, TopBg>
+where
+    TopFg: Into<NewFg> + PartialEq<TopBg>,
+    TopBg: Into<NewBg> + WithAlpha,
+    BottomBg: Clone,
+    TopFg: Over<BottomBg, NewFg>,
+    TopBg: Over<BottomFg, NewFg> + Over<BottomBg, NewBg>,
 {
     fn over(self, bottom: Cell<BottomFg, BottomBg>) -> Cell<NewFg, NewBg> {
-        todo!()
-    }
-}
-
-/*
-impl<
-        TopFg: Over<BottomBg> + Into<BottomFg> + PartialEq<TopBg>,
-        TopBg: Color + Over<BottomFg> + Over<BottomBg> + Into<BottomBg>,
-        BottomFg,
-        BottomBg: Copy,
-    > Over<Cell<BottomFg, BottomBg>> for Cell<TopFg, TopBg>
-where
-    <TopFg as Over<BottomBg>>::Output: Into<BottomFg>,
-    <TopBg as Over<BottomFg>>::Output: Into<BottomFg>,
-    <TopBg as Over<BottomBg>>::Output: Into<BottomBg>,
-{
-    type Output = Cell<BottomFg, BottomBg>;
-
-    fn over(self, bottom: Cell<BottomFg, BottomBg>) -> Cell<BottomFg, BottomBg> {
-        if self.styles.background.is_opaque() {
-            Cell {
-                char:   self.char,
-                styles: Styles {
-                    foreground: self.styles.foreground.into(),
-                    background: self.styles.background.into(),
-                    attributes: self.styles.attributes,
-                },
-            }
-        } else if self.styles.foreground == self.styles.background {
-            Cell {
-                char:   bottom.char,
-                styles: Styles {
-                    foreground: self.styles.background.over(bottom.styles.foreground).into(),
-                    background: self.styles.background.over(bottom.styles.background).into(),
-                    attributes: bottom.styles.attributes,
-                },
-            }
+        if self.background.is_opaque() {
+            self.cast()
+        } else if self.foreground == self.background {
+            self.background.over(bottom)
         } else {
-            Cell {
-                char:   self.char,
-                styles: Styles {
-                    foreground: self.styles.foreground.over(bottom.styles.background).into(),
-                    background: self.styles.background.over(bottom.styles.background).into(),
-                    attributes: self.styles.attributes,
-                },
-            }
+            self.over(bottom.background)
         }
     }
 }
-*/

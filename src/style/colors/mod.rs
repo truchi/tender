@@ -14,12 +14,18 @@ use super::*;
 use std::fmt::{self, Display, Formatter};
 
 /// A wrapper type for colors.
-#[derive(Copy, Clone, Eq, PartialEq, Default, Hash, Debug)]
+#[derive(Copy, Clone, Eq, Default, Hash, Debug)]
 pub struct Color<T>(pub T);
 
 impl<T> From<T> for Color<T> {
     fn from(t: T) -> Self {
         Self(t)
+    }
+}
+
+impl<T: PartialEq<U>, U> PartialEq<Color<U>> for Color<T> {
+    fn eq(&self, other: &Color<U>) -> bool {
+        &self.0 == &other.0
     }
 }
 
