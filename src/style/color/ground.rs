@@ -16,8 +16,8 @@ macro_rules! ground {
 }
 
 ground!(
-    /// A `Foreground` wrapper for [`Rgb`].
+    /// A foreground wrapper for [`Rgb`].
     Foreground (38)
-    /// A `Background` wrapper for [`Rgb`].
+    /// A background wrapper for [`Rgb`].
     Background (48)
 );
