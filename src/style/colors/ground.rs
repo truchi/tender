@@ -1,88 +1,13 @@
 use super::*;
 use std::fmt::{self, Display, Formatter};
 
-macro_rules! ground_color {
-    ($Ground:ident) => {
-        impl<T: Color> Color for $Ground<T> {
-            color!(self, color: U
-                from      { Self(T::from(color)) }
-                red       { self.0.red() }
-                green     { self.0.green() }
-                blue      { self.0.blue() }
-                pre_red   { self.0.pre_red() }
-                pre_green { self.0.pre_green() }
-                pre_blue  { self.0.pre_blue() }
-                alpha     { self.0.alpha() }
-                rgb       { self.0.rgb() }
-                rgba      { self.0.rgba() }
-                pre_rgba  { self.0.pre_rgba() }
-            );
-        }
-    };
-}
-
-macro_rules! convert {
-    ($Ground:ident $Other:ident $($A:ident <-> $B:ident)*) => {
-        convert!($(impl From<$A> for $Ground<$B>)*);
-        convert!($(impl From<$Ground<$A>> for $B)*);
-        convert!($(impl From<$Ground<$A>> for $Ground<$B>)*);
-        convert!($(impl From<$Other<$A>> for $Ground<$B>)*);
-    };
-    ($(impl From<$FromColor:ident> for $Ground:ident<$IntoColor:ident>)*) => { $(
-        impl From<$FromColor> for $Ground<$IntoColor> {
-            fn from(color: $FromColor) -> Self {
-                Self(Into::into(color))
-            }
-        }
-    )* };
-    ($(impl From<$Ground:ident<$FromColor:ident>> for $IntoColor:ident)*) => { $(
-        impl From<$Ground<$FromColor>> for $IntoColor {
-            fn from(ground: $Ground<$FromColor>) -> Self {
-                Into::into(ground.0)
-            }
-        }
-    )* };
-    ($(
-        impl From<$FromGround:ident<$FromColor:ident>> for $IntoGround:ident<$IntoColor:ident>
-    )*) => { $(
-        impl From<$FromGround<$FromColor>> for $IntoGround<$IntoColor> {
-            fn from(ground: $FromGround<$FromColor>) -> Self {
-                Self(Into::into(ground.0))
-            }
-        }
-    )* };
-}
-
 macro_rules! ground {
-    ($($(#[$meta:meta])* $Ground:ident ($other:ident: $Other:ident) ($csi:literal))*) => { $(
+    ($($(#[$meta:meta])* $Ground:ident ($csi:literal))*) => { $(
         $(#[$meta])*
         #[derive(Copy, Clone, Eq, PartialEq, Default, Hash, Debug)]
-        pub struct $Ground<T>(pub T);
+        pub struct $Ground(pub Rgb);
 
-        ground_color!($Ground);
-
-        impl<T> From<T> for $Ground<T> {
-            fn from(color: T) -> Self {
-                $Ground(color)
-            }
-        }
-
-        impl<T> From<$Other<T>> for $Ground<T> {
-            fn from($other: $Other<T>) -> Self {
-                Self($other.0)
-            }
-        }
-
-        convert!($Ground $Other
-               Rgba <->    Rgb
-            PreRgba <->    Rgb
-               Rgb  <->    Rgba
-            PreRgba <->    Rgba
-               Rgb  <-> PreRgba
-               Rgba <-> PreRgba
-        );
-
-        impl Display for $Ground<Rgb> {
+        impl Display for $Ground {
             fn fmt(&self, f: &mut Formatter) -> fmt::Result {
                 write!(f, "\x1B[{};{}m", $csi, self.0)
             }
@@ -91,8 +16,8 @@ macro_rules! ground {
 }
 
 ground!(
-    /// A `Foreground` wrapper for [`Color`](crate::style::Color)s.
-    Foreground (background: Background) (38)
-    /// A `Background` wrapper for [`Color`](crate::style::Color)s.
-    Background (foreground: Foreground) (48)
+    /// A `Foreground` wrapper for [`Rgb`].
+    Foreground (38)
+    /// A `Background` wrapper for [`Rgb`].
+    Background (48)
 );

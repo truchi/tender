@@ -1,4 +1,5 @@
 use super::*;
+use std::fmt::{self, Display, Formatter};
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
 pub struct Cell<Fg, Bg = Fg> {
@@ -86,5 +87,18 @@ where
         } else {
             self.over(bottom.background)
         }
+    }
+}
+
+impl Display for Cell<Rgb> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{}{}{}{}",
+            Foreground(self.foreground.0),
+            Background(self.background.0),
+            self.attributes,
+            self.char,
+        )
     }
 }

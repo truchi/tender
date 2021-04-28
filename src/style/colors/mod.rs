@@ -1,11 +1,11 @@
 //! Colors ([`Rgb`], [`Rgba`], [`PreRgba`]).
 
-// mod ground;
+mod ground;
 mod pre_rgba;
 mod rgb;
 mod rgba;
 
-// pub use ground::*;
+pub use ground::*;
 pub use pre_rgba::*;
 pub use rgb::*;
 pub use rgba::*;
@@ -38,12 +38,6 @@ impl<T: WithAlpha> WithAlpha for Color<T> {
 impl<C: Over<T, U>, T, U> Over<Color<T>, Color<U>> for Color<C> {
     fn over(self, bottom: Color<T>) -> Color<U> {
         Color(self.0.over(bottom.0))
-    }
-}
-
-impl<T: Display> Display for Color<T> {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{}", self.0)
     }
 }
 
