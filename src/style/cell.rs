@@ -7,7 +7,7 @@ pub struct Cell<Fg, Bg = Fg> {
 }
 
 impl<
-        TopFg: PartialEq<TopBg> + Into<BottomFg> + Over<BottomBg>,
+        TopFg: Over<BottomBg> + Into<BottomFg> + PartialEq<TopBg>,
         TopBg: Color + Over<BottomFg> + Over<BottomBg> + Into<BottomBg>,
         BottomFg,
         BottomBg: Copy,

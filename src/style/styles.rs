@@ -12,9 +12,9 @@ pub struct Styles<Fg, Bg = Fg> {
     pub attributes: Attributes,
 }
 
-impl Styles<PreRgba> {
-    pub fn new(foreground: PreRgba, background: PreRgba, attributes: Attributes) -> Self {
-        Self {
+impl<Fg: Over<Bg>, Bg: Copy> Styles<Fg, Bg> {
+    pub fn new(foreground: Fg, background: Bg, attributes: Attributes) -> Styles<Fg::Output, Bg> {
+        Styles {
             foreground: foreground.over(background),
             background,
             attributes,
@@ -22,6 +22,29 @@ impl Styles<PreRgba> {
     }
 }
 
+// impl Styles<PreRgba> {
+// pub fn new(foreground: PreRgba, background: PreRgba, attributes: Attributes)
+// -> Self { Self {
+// foreground: foreground.over(background),
+// background,
+// attributes,
+// }
+// }
+// }
+
+impl Display for Styles<Rgb> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        let Self {
+            foreground,
+            background,
+            attributes,
+        } = self;
+
+        write!(f, "{}{}{}", foreground, background, attributes)
+    }
+}
+
+/*
 impl<Fg, Bg> Styles<Fg, Bg> {
     pub fn cast<NewFg, NewBg>(self) -> Styles<NewFg, NewBg>
     where
@@ -52,7 +75,6 @@ impl<Fg, Bg> Styles<Fg, Bg> {
     }
 }
 
-/*
 impl Styles<Rgb> {
     /// Applies `color` over `Foreground` and `Background`.
     pub fn color(self, color: PreRgba) -> Self {
@@ -90,7 +112,6 @@ impl Styles<PreRgba, Rgb> {
         self.set_foreground(self.foreground.over(self.background))
     }
 }
-*/
 
 macro_rules! styler {
     ($($get:ident $set:ident $attr:ident: $Attr:ident)*) => { $(
@@ -146,15 +167,4 @@ impl<Fg, Bg> Styler<Fg, Bg> for Styles<Fg, Bg> {
         Self { attributes, ..self }
     }
 }
-
-impl Display for Styles<Rgb> {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        let Self {
-            foreground,
-            background,
-            attributes,
-        } = self;
-
-        write!(f, "{}{}{}", foreground, background, attributes)
-    }
-}
+*/

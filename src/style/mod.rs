@@ -16,6 +16,7 @@ pub trait Over<Bottom = Self> {
     fn over(self, bottom: Bottom) -> Self::Output;
 }
 
+/*
 pub trait Styler<Fg, Bg> {
     fn get_foreground(self) -> Fg;
     fn get_background(self) -> Bg;
@@ -41,3 +42,4 @@ pub trait Styler<Fg, Bg> {
     fn set_blink(self, blink: Blink) -> Self;
     fn set_border(self, border: Border) -> Self;
 }
+*/
