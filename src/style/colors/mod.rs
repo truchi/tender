@@ -12,19 +12,45 @@ pub use rgba::*;
 
 use super::*;
 
+/// A wrapper type for colors.
+#[derive(Copy, Clone, Eq, PartialEq, Default, Hash, Debug)]
+pub struct ColorWrapper<T>(pub T);
+
+impl<T> From<T> for ColorWrapper<T> {
+    fn from(t: T) -> Self {
+        Self(t)
+    }
+}
+
+// impl<C, T, U> Over<T, U> for ColorWrapper<C> {
+// fn over(self, bottom: T) -> U {
+// self.0.over(bottom)
+// }
+// }
+
+impl<T: Color> Color for ColorWrapper<T> {
+    fn alpha(self) -> u8 {
+        self.0.alpha()
+    }
+}
+
 /// A trait for [`Rgb`], [`Rgba`], [`PreRgba`].
-pub trait Color:
-    Copy
-    + Default
-    + From<Rgb>
-    + From<Rgba>
-    + From<PreRgba>
-    + Into<Rgb>
-    + Into<Rgba>
-    + Into<PreRgba>
-    + Over<Rgb>
-    + Over<Rgba>
-    + Over<Rgba>
+pub trait Color: Copy + Default
+// + From<Rgb>
+// + From<Rgba>
+// + From<PreRgba>
+// + Into<Rgb>
+// + Into<Rgba>
+// + Into<PreRgba>
+// + Over<Rgb, Rgb>
+// + Over<Rgb, Rgba>
+// + Over<Rgb, PreRgba>
+// + Over<Rgba, Rgb>
+// + Over<Rgba, Rgba>
+// + Over<Rgba, PreRgba>
+// + Over<PreRgba, Rgb>
+// + Over<PreRgba, Rgba>
+// + Over<PreRgba, PreRgba>
 {
     /// Returns the `alpha` component's value.
     fn alpha(self) -> u8;
@@ -68,5 +94,10 @@ pub trait Color:
     /// Returns `true` if `alpha == 0`.
     fn is_invisible(self) -> bool {
         self.alpha() == 0
+    }
+
+    /// Wraps `self` within a [`ColorWrapper`].
+    fn wrap(self) -> ColorWrapper<Self> {
+        self.into()
     }
 }

@@ -1,8 +1,5 @@
 use crate::style::*;
-use std::{
-    fmt::{self, Display, Formatter},
-    io::Write,
-};
+use std::fmt::{self, Display, Formatter};
 
 /// `Styles`.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
@@ -12,10 +9,14 @@ pub struct Styles<Fg, Bg = Fg> {
     pub attributes: Attributes,
 }
 
-impl<Fg: Over<Bg>, Bg: Copy> Styles<Fg, Bg> {
-    pub fn new(foreground: Fg, background: Bg, attributes: Attributes) -> Styles<Fg::Output, Bg> {
+impl<Fg, Bg> Styles<Fg, Bg> {
+    pub fn new<T>(foreground: T, background: Bg, attributes: Attributes) -> Self
+    where
+        T: Over<Bg, Fg>,
+        Bg: Clone,
+    {
         Styles {
-            foreground: foreground.over(background),
+            foreground: foreground.over(background.clone()),
             background,
             attributes,
         }

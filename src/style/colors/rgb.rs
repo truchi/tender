@@ -59,27 +59,9 @@ impl PartialEq<PreRgba> for Rgb {
     }
 }
 
-impl Over for Rgb {
-    type Output = Rgb;
-
-    fn over(self, _: Rgb) -> Rgb {
-        self
-    }
-}
-
-impl Over<PreRgba> for Rgb {
-    type Output = Rgb;
-
-    fn over(self, _: PreRgba) -> Rgb {
-        self
-    }
-}
-
-impl Over<Rgba> for Rgb {
-    type Output = Rgb;
-
-    fn over(self, _: Rgba) -> Rgb {
-        self
+impl<T, U: From<Rgb>> Over<T, U> for Rgb {
+    fn over(self, _: T) -> U {
+        self.into()
     }
 }
 

@@ -10,10 +10,14 @@ pub use colors::*;
 // pub use cursor::*;
 pub use styles::*;
 
-pub trait Over<Bottom = Self> {
-    type Output;
+// pub trait Over<Bottom = Self> {
+// type Output;
+//
+// fn over(self, bottom: Bottom) -> Self::Output;
+// }
 
-    fn over(self, bottom: Bottom) -> Self::Output;
+pub trait Over<Bottom = Self, Output = Bottom> {
+    fn over(self, bottom: Bottom) -> Output;
 }
 
 /*

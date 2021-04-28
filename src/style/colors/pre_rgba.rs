@@ -41,10 +41,8 @@ impl PartialEq<Rgba> for PreRgba {
     }
 }
 
-impl Over<Rgb> for PreRgba {
-    type Output = Rgb;
-
-    fn over(self, bottom: Rgb) -> Rgb {
+impl<T: From<Rgb>> Over<Rgb, T> for PreRgba {
+    fn over(self, bottom: Rgb) -> T {
         let contr_alpha = self.contr_alpha_f64();
 
         Rgb(
@@ -52,21 +50,18 @@ impl Over<Rgb> for PreRgba {
             self.1 + (bottom.1 as f64 * contr_alpha).round() as u8,
             self.2 + (bottom.2 as f64 * contr_alpha).round() as u8,
         )
+        .into()
     }
 }
 
-impl Over<Rgba> for PreRgba {
-    type Output = PreRgba;
-
-    fn over(self, bottom: Rgba) -> PreRgba {
+impl<T: From<PreRgba>> Over<Rgba, T> for PreRgba {
+    fn over(self, bottom: Rgba) -> T {
         self.over(PreRgba::from(bottom))
     }
 }
 
-impl Over for PreRgba {
-    type Output = PreRgba;
-
-    fn over(self, bottom: PreRgba) -> PreRgba {
+impl<T: From<PreRgba>> Over<PreRgba, T> for PreRgba {
+    fn over(self, bottom: PreRgba) -> T {
         let contr_alpha = self.contr_alpha_f64();
 
         PreRgba(
@@ -75,5 +70,6 @@ impl Over for PreRgba {
             self.2 + (bottom.2 as f64 * contr_alpha).round() as u8,
             self.3 + (bottom.3 as f64 * contr_alpha).round() as u8,
         )
+        .into()
     }
 }
