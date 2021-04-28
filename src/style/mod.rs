@@ -2,13 +2,13 @@ pub mod attributes;
 pub mod cell;
 pub mod colors;
 // mod cursor;
-mod styles;
+// mod styles;
 
 pub use attributes::*;
 pub use cell::*;
 pub use colors::*;
 // pub use cursor::*;
-pub use styles::*;
+// pub use styles::*;
 
 // pub trait Over<Bottom = Self> {
 // type Output;
