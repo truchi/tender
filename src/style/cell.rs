@@ -2,8 +2,38 @@ use super::*;
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
 pub struct Cell<Fg, Bg = Fg> {
-    pub char:   char,
-    pub styles: Styles<Fg, Bg>,
+    char:       char,
+    foreground: Color<Fg>,
+    background: Color<Bg>,
+    attributes: Attributes,
+}
+
+impl<Fg, Bg> Cell<Fg, Bg> {
+    pub fn new<T>(char: char, foreground: T, background: Bg, attributes: Attributes) -> Self
+    where
+        T: Over<Bg, Fg>,
+        Bg: Clone,
+    {
+        Self {
+            char,
+            foreground: Color(foreground.over(background.clone())),
+            background: Color(background),
+            attributes,
+        }
+    }
+
+    pub fn cast<T, U>(self) -> Cell<T, U>
+    where
+        Fg: Into<T>,
+        Bg: Into<U>,
+    {
+        Cell {
+            char:       self.char,
+            foreground: Color(self.foreground.0.into()),
+            background: Color(self.background.0.into()),
+            attributes: self.attributes,
+        }
+    }
 }
 
 // color OVER cell
@@ -12,12 +42,10 @@ impl<C: Over<Fg, NewFg> + Over<Bg, NewBg> + Clone, Fg, Bg, NewFg, NewBg>
 {
     fn over(self, cell: Cell<Fg, Bg>) -> Cell<NewFg, NewBg> {
         Cell {
-            char:   cell.char,
-            styles: Styles {
-                foreground: self.clone().over(cell.styles.foreground),
-                background: self.over(cell.styles.background),
-                attributes: cell.styles.attributes,
-            },
+            char:       cell.char,
+            foreground: self.clone().over(cell.foreground),
+            background: self.over(cell.background),
+            attributes: cell.attributes,
         }
     }
 }
@@ -28,13 +56,20 @@ impl<C: Clone, Fg: Over<C, NewFg>, Bg: Over<C, NewBg>, NewFg, NewBg>
 {
     fn over(self, color: Color<C>) -> Cell<NewFg, NewBg> {
         Cell {
-            char:   self.char,
-            styles: Styles {
-                foreground: self.styles.foreground.over(color.clone()),
-                background: self.styles.background.over(color),
-                attributes: self.styles.attributes,
-            },
+            char:       self.char,
+            foreground: self.foreground.over(color.clone()),
+            background: self.background.over(color),
+            attributes: self.attributes,
         }
+    }
+}
+
+// cell OVER cell
+impl<TopFg, TopBg, BottomFg, BottomBg, NewFg, NewBg>
+    Over<Cell<BottomFg, BottomBg>, Cell<NewFg, NewBg>> for Cell<TopFg, TopBg>
+{
+    fn over(self, bottom: Cell<BottomFg, BottomBg>) -> Cell<NewFg, NewBg> {
+        todo!()
     }
 }
 
