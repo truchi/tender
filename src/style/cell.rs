@@ -1,6 +1,7 @@
 use super::*;
 use std::fmt::{self, Display, Formatter};
 
+/// A terminal `Cell`.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
 pub struct Cell<Fg, Bg = Fg> {
     char:       char,

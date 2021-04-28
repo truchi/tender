@@ -1,5 +1,5 @@
 pub mod attributes;
-pub mod cell;
+mod cell;
 pub mod color;
 // mod cursor;
 
