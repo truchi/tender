@@ -44,7 +44,7 @@
 //! We use the [`Index0D`], [`Index1D`] and [`Index2D`] traits to convert to
 //! theses index types and check against grid sizes. We try our best at
 //! ergonomics: any [`Coord`] can be a `(x, y)`, any `Range` can be a
-//! `Range`-like (aka implementing [`std::ops::RangeBounds`]).
+//! `Range`-like (see [`ToRange`]).
 //!
 //! Some examples:
 //!

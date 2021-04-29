@@ -5,9 +5,9 @@ use crate::grid::*;
 /// The underlying type to index columns/rows/items is [`Rect`]
 /// (`Coord<Range<usize>>`).
 ///
-/// `RangeFull` (implied on both axis), `Coord<X: RangeBounds<usize>, Y:
-/// RangeBounds<usize>>` and `(X: RangeBounds<usize>, Y: RangeBounds<usize>)`
-/// are [`Index2D`]s.
+/// `RangeFull` (implied on both axis),
+/// `Coord<X: ToRange, Y: ToRange>`
+/// and`(X: ToRange, Y: ToRange)` are [`Index2D`]s.
 ///
 /// See [`Index1D`], [`Index2D`].
 pub trait Index2D: Clone {

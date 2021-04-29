@@ -7,7 +7,7 @@ use std::ops::Range;
 /// - `usize`: the index of the column/row,
 /// - `Range<usize>`: the range of items in that column/row.
 ///
-/// `usize` and `(usize, T: RangeBounds<usize>)` are [`Index1D`]s.
+/// `usize` and `(usize, T: ToRange)` are [`Index1D`]s.
 ///
 /// See [`Index0D`], [`Index2D`].
 pub trait Index1D: Clone + Sized {
