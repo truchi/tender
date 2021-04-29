@@ -49,35 +49,49 @@ impl<I> WithSize for Repeat<I> {
     }
 }
 
-impl<I: Clone> Grid for Repeat<I> {
-    type Item = I;
+macro_rules! grid {
+    ($(($($lifetime:lifetime $clone:ident)?) $Type:ty)*) => {
+        grid!([0D] $(($($lifetime)?) $Type)*);
+        grid!([1D]
+            $(GridCol Col col_unchecked ($($lifetime $clone)?) $Type)*
+            $(GridRow Row row_unchecked ($($lifetime $clone)?) $Type)*
+        );
+        grid!([2D] x y
+            $(GridCols Cols cols_unchecked (Col col_unchecked) y x ($($lifetime)?) $Type)*
+            $(GridRows Rows rows_unchecked (Row row_unchecked) x y ($($lifetime)?) $Type)*
+        );
+        grid!([ITEMS] $(($($lifetime $clone)?) $Type)*);
+    };
+    ([0D] $(($($lifetime:lifetime)?) $Type:ty)*) => { $(
+        impl<$($lifetime,)? I: Clone> Grid for $Type {
+            type Item = I;
 
-    unsafe fn item_unchecked(self, _: impl Index0D) -> Self::Item {
-        self.item.clone()
-    }
-}
-
-macro_rules! grid1d {
-    ($($Trait:ident $Assoc:ident $fn:ident)*) => { $(
-        impl<I: Clone> $Trait for Repeat<I> {
+            unsafe fn item_unchecked(self, _: impl Index0D) -> Self::Item {
+                self.item.clone()
+            }
+        }
+    )* };
+    ([1D] $(
+        $Trait:ident $Assoc:ident $fn:ident
+        ($($lifetime:lifetime $clone:ident)?) $Type:ty
+    )*) => { $(
+        impl<$($lifetime,)? I: Clone> $Trait for $Type {
             type $Assoc = Take<std::iter::Repeat<Self::Item>>;
 
             unsafe fn $fn(self, index: impl Index1D) -> Self::$Assoc {
                 let (_, Range { start, end }) = index.$fn(self.size);
 
-                std::iter::repeat(self.item).take(end - start)
+                std::iter::repeat(self.item$(.$clone())?).take(end - start)
             }
         }
     )* };
-}
-
-macro_rules! grid2d {
-    ($x:ident $y:ident $(
+    ([2D] $x:ident $y:ident $(
         $Trait:ident $Assoc:ident $fn:ident
         ($Item:ident $item:ident)
         $main:ident $cross:ident
+        ($($lifetime:lifetime)?) $Type:ty
     )*) => { $(
-        impl<I: Clone> $Trait for Repeat<I> {
+        impl<$($lifetime,)? I: Clone> $Trait for $Type {
             type $Assoc = Take<std::iter::Repeat<Self::$Item>>;
 
             unsafe fn $fn(self, index: impl Index2D) -> Self::$Assoc {
@@ -87,27 +101,26 @@ macro_rules! grid2d {
             }
         }
     )* };
+    ([ITEMS] $(
+        ($($lifetime:lifetime $clone:ident)?) $Type:ty
+    )*) => { $(
+        impl<$($lifetime,)? I: Clone> GridItems for $Type {
+            type Items = Take<std::iter::Repeat<Self::Item>>;
+
+            unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items {
+                let Point { x, y } = index.unchecked(self.size);
+
+                std::iter::repeat(self.item$(.$clone())?).take((x.end - x.start) * (y.end - y.start))
+            }
+        }
+    )* }
 }
 
-grid1d!(
-    GridCol Col col_unchecked
-    GridRow Row row_unchecked
+grid!(
+    ()                 Repeat<I>
+    ('a clone) &'a     Repeat<I>
+    ('a clone) &'a mut Repeat<I>
 );
-
-grid2d!(x y
-    GridCols Cols cols_unchecked (Col col_unchecked) y x
-    GridRows Rows rows_unchecked (Row row_unchecked) x y
-);
-
-impl<I: Clone> GridItems for Repeat<I> {
-    type Items = Take<std::iter::Repeat<Self::Item>>;
-
-    unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items {
-        let Point { x, y } = index.unchecked(self.size);
-
-        std::iter::repeat(self.item).take((x.end - x.start) * (y.end - y.start))
-    }
-}
 
 // ------------------------------------------------------------------- //
 //                                                                     //
