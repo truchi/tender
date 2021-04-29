@@ -1,4 +1,4 @@
-//! Colors ([`Rgb`], [`Rgba`], [`PreRgba`]).
+//! Colors ([`Color`]: [`Rgb`], [`Rgba`], [`PreRgba`]).
 
 mod ground;
 mod pre_rgba;
@@ -6,7 +6,7 @@ mod rgb;
 mod rgba;
 mod with_alpha;
 
-pub(super) use ground::*;
+pub use ground::*;
 pub use pre_rgba::*;
 pub use rgb::*;
 pub use rgba::*;
@@ -16,7 +16,13 @@ use super::*;
 
 /// A wrapper type for colors.
 #[derive(Copy, Clone, Eq, Default, Hash, Debug)]
-pub(super) struct Color<T>(pub T);
+pub struct Color<T>(pub T);
+
+impl<T> From<T> for Color<T> {
+    fn from(t: T) -> Self {
+        Self(t)
+    }
+}
 
 impl<T: PartialEq<U>, U> PartialEq<Color<U>> for Color<T> {
     fn eq(&self, other: &Color<U>) -> bool {

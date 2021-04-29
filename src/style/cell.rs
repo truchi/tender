@@ -76,9 +76,8 @@ impl<TopFg, TopBg, BottomFg, BottomBg, NewFg, NewBg>
 where
     TopFg: Into<NewFg> + PartialEq<TopBg>,
     TopBg: Into<NewBg> + WithAlpha,
-    BottomBg: Clone,
-    TopFg: Over<BottomBg, NewFg>,
-    TopBg: Over<BottomFg, NewFg> + Over<BottomBg, NewBg>,
+    Color<TopBg>: Over<Cell<BottomFg, BottomBg>, Cell<NewFg, NewBg>>,
+    Self: Over<Color<BottomBg>, Cell<NewFg, NewBg>>,
 {
     fn over(self, bottom: Cell<BottomFg, BottomBg>) -> Cell<NewFg, NewBg> {
         if self.background.is_opaque() {
