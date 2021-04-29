@@ -38,7 +38,7 @@ impl<Fg, Bg> Cell<Fg, Bg> {
     }
 }
 
-// color OVER cell
+// Color OVER Cell
 impl<C, Fg, Bg, NewFg, NewBg> Over<Cell<Fg, Bg>, Cell<NewFg, NewBg>> for Color<C>
 where
     C: Over<Fg, NewFg> + Over<Bg, NewBg> + Clone,
@@ -53,7 +53,7 @@ where
     }
 }
 
-// cell OVER color
+// Cell OVER Color
 impl<C, Fg, Bg, NewFg, NewBg> Over<Color<C>, Cell<NewFg, NewBg>> for Cell<Fg, Bg>
 where
     C: Clone,
@@ -70,7 +70,7 @@ where
     }
 }
 
-// cell OVER cell
+// Cell OVER Cell
 impl<TopFg, TopBg, BottomFg, BottomBg, NewFg, NewBg>
     Over<Cell<BottomFg, BottomBg>, Cell<NewFg, NewBg>> for Cell<TopFg, TopBg>
 where
@@ -87,6 +87,31 @@ where
         } else {
             self.over(bottom.background)
         }
+    }
+}
+
+// Cell OVER &mut Cell
+impl<'b, TopFg, TopBg, BottomFg, BottomBg> Over<&'b mut Cell<BottomFg, BottomBg>, ()>
+    for Cell<TopFg, TopBg>
+where
+    Cell<BottomFg, BottomBg>: Clone,
+    Cell<TopFg, TopBg>: Over<Cell<BottomFg, BottomBg>, Cell<BottomFg, BottomBg>>,
+{
+    fn over(self, bottom: &'b mut Cell<BottomFg, BottomBg>) {
+        *bottom = self.over(bottom.clone());
+    }
+}
+
+// &Cell OVER &mut Cell
+impl<'t, 'b, TopFg, TopBg, BottomFg, BottomBg> Over<&'b mut Cell<BottomFg, BottomBg>, ()>
+    for &'t Cell<TopFg, TopBg>
+where
+    Cell<TopFg, TopBg>: Clone,
+    Cell<BottomFg, BottomBg>: Clone,
+    Cell<TopFg, TopBg>: Over<Cell<BottomFg, BottomBg>, Cell<BottomFg, BottomBg>>,
+{
+    fn over(self, bottom: &'b mut Cell<BottomFg, BottomBg>) {
+        *bottom = self.clone().over(bottom.clone());
     }
 }
 
