@@ -7,7 +7,7 @@ pub struct Cell<Fg, Bg = Fg> {
     char:       char,
     foreground: Color<Fg>,
     background: Color<Bg>,
-    attributes: Attributes,
+    attributes: Attrs,
 }
 
 impl<Fg, Bg> Cell<Fg, Bg> {
@@ -20,7 +20,7 @@ impl<Fg, Bg> Cell<Fg, Bg> {
             char,
             foreground: Color(foreground.over(background.clone())),
             background: Color(background),
-            attributes,
+            attributes: attributes.into(),
         }
     }
 

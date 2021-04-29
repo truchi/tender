@@ -1,48 +1,10 @@
-//! Attributes ([`Attributes`](crate::style::Attributes):
-//! [`Weight`](crate::style::Weight), [`Slant`](crate::style::Slant),
-//! [`Underline`](crate::style::Underline), [`Strike`](crate::style::Strike),
-//! [`Overline`](crate::style::Overline), [`Invert`](crate::style::Invert),
-//! [`Blink`](crate::style::Blink), [`Border`](crate::style::Border)).
+//! Attributes
+//! ([`Attributes`]: [`Weight`], [`Slant`], [`Underline`], [`Strike`]).
 
-use std::fmt::{self, Display, Formatter};
+use std::fmt::{self, Debug, Display, Formatter};
 
-/// `Attributes` ([`Weight`](crate::style::Weight),
-/// [`Slant`](crate::style::Slant), [`Underline`](crate::style::Underline),
-/// [`Strike`](crate::style::Strike), [`Overline`](crate::style::Overline),
-/// [`Invert`](crate::style::Invert), [`Blink`](crate::style::Blink),
-/// [`Border`](crate::style::Border)).
-#[derive(Copy, Clone, Eq, PartialEq, Default, Hash, Debug)]
-pub struct Attributes {
-    pub weight:    Weight,
-    pub slant:     Slant,
-    pub underline: Underline,
-    pub strike:    Strike,
-    pub overline:  Overline,
-    pub invert:    Invert,
-    pub blink:     Blink,
-    pub border:    Border,
-}
-
-impl Display for Attributes {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        let Self {
-            weight,
-            slant,
-            underline,
-            strike,
-            overline,
-            invert,
-            blink,
-            border,
-        } = self;
-
-        write!(
-            f,
-            "{}{}{}{}{}{}{}{}",
-            weight, slant, underline, strike, overline, invert, blink, border,
-        )
-    }
-}
+/// Alias of `(Weight, Slant, Underline, Strike)`.
+pub type Attributes = (Weight, Slant, Underline, Strike);
 
 macro_rules! attr {
     ($(
@@ -86,66 +48,210 @@ macro_rules! attr {
 }
 
 attr!(
-    /// `Weight` (`Bold`, `Light`, `ResetWeight`).
+    /// `Weight` (`Bold`, `Light`, `NoWeight`).
     Weight {
         ///
         Bold (1)
         ///
         Light (2);
         ///
-        ResetWeight (22)
+        NoWeight (22)
     }
-    /// `Slant` (`Italic`, `ResetSlant`).
+    /// `Slant` (`Italic`, `NoSlant`).
     Slant {
         ///
         Italic (3);
         ///
-        ResetSlant (23)
+        NoSlant (23)
     }
-    /// `Underline` (`Underlined`, `ResetUnderline`).
+    /// `Underline` (`Underlined`, `NoUnderline`).
     Underline {
         ///
         Underlined (4);
         ///
-        ResetUnderline (24)
+        NoUnderline (24)
     }
-    /// `Strike` (`Striked`, `ResetStrike`).
+    /// `Strike` (`Striked`, `NoStrike`).
     Strike {
         ///
         Striked (9);
         ///
-        ResetStrike (29)
-    }
-    /// `Overline` (`Overlined`, `ResetOverline`).
-    Overline {
-        ///
-        Overlined (53);
-        ///
-        ResetOverline (55)
-    }
-    /// `Invert` (`Inverted`, `ResetInvert`).
-    Invert {
-        ///
-        Inverted (7);
-        ///
-        ResetInvert (27)
-    }
-    /// `Blink` (`Slow`, `Fast`, `ResetBlink`).
-    Blink {
-        ///
-        Slow (5)
-        ///
-        Fast (6);
-        ///
-        ResetBlink (25)
-    }
-    /// `Border` (`Circle`, `Frame`, `ResetBorder`).
-    Border {
-        ///
-        Circle (52)
-        ///
-        Frame (51);
-        ///
-        ResetBorder (54)
+        NoStrike (29)
     }
 );
+
+//         |- 00: NoWeight
+//         |- 10: Dim
+//         |- 11: Bold
+//         | |- 0: NoStrike
+//         | |- 1: Striked
+//         | | |- 0: NoUnderline
+// unused  | | |- 1: Underlined
+//     |   | | | |- 0: NoItalic
+// ____| __| | | |- 1: Italic
+// 8 7 6 5 4 3 2 1
+#[derive(Copy, Clone, Eq, PartialEq, Default, Hash)]
+pub(super) struct Attrs(u8);
+
+impl Attrs {
+    const DIM_BOLD: u8 = 8;
+    const SLANT: u8 = 1;
+    const STRIKE: u8 = 4;
+    const UNDERLINE: u8 = 2;
+    const WEIGHT: u8 = 16;
+
+    pub fn get_weight(self) -> Weight {
+        if !self.is_set(Self::WEIGHT) {
+            NoWeight
+        } else if self.is_set(Self::DIM_BOLD) {
+            Bold
+        } else {
+            Light
+        }
+    }
+
+    pub fn set_weight(&mut self, weight: Weight) -> &mut Self {
+        match weight {
+            Bold => self.bold(),
+            Light => self.light(),
+            NoWeight => self.no_weight(),
+        }
+    }
+
+    pub fn bold(&mut self) -> &mut Self {
+        self.set(Self::WEIGHT).set(Self::DIM_BOLD)
+    }
+
+    pub fn light(&mut self) -> &mut Self {
+        self.set(Self::WEIGHT).unset(Self::DIM_BOLD)
+    }
+
+    pub fn no_weight(&mut self) -> &mut Self {
+        self.unset(Self::WEIGHT).unset(Self::DIM_BOLD)
+    }
+
+    pub fn get_slant(self) -> Slant {
+        if self.is_set(Self::SLANT) {
+            Italic
+        } else {
+            NoSlant
+        }
+    }
+
+    pub fn set_slant(&mut self, slant: Slant) -> &mut Self {
+        match slant {
+            Italic => self.italic(),
+            NoSlant => self.no_slant(),
+        }
+    }
+
+    pub fn italic(&mut self) -> &mut Self {
+        self.set(Self::SLANT)
+    }
+
+    pub fn no_slant(&mut self) -> &mut Self {
+        self.unset(Self::SLANT)
+    }
+
+    pub fn get_underline(self) -> Underline {
+        if self.is_set(Self::UNDERLINE) {
+            Underlined
+        } else {
+            NoUnderline
+        }
+    }
+
+    pub fn set_underline(&mut self, underline: Underline) -> &mut Self {
+        match underline {
+            Underlined => self.underlined(),
+            NoUnderline => self.no_underline(),
+        }
+    }
+
+    pub fn underlined(&mut self) -> &mut Self {
+        self.set(Self::UNDERLINE)
+    }
+
+    pub fn no_underline(&mut self) -> &mut Self {
+        self.unset(Self::UNDERLINE)
+    }
+
+    pub fn get_strike(self) -> Strike {
+        if self.is_set(Self::STRIKE) {
+            Striked
+        } else {
+            NoStrike
+        }
+    }
+
+    pub fn set_strike(&mut self, strike: Strike) -> &mut Self {
+        match strike {
+            Striked => self.striked(),
+            NoStrike => self.no_strike(),
+        }
+    }
+
+    pub fn striked(&mut self) -> &mut Self {
+        self.set(Self::STRIKE)
+    }
+
+    pub fn no_strike(&mut self) -> &mut Self {
+        self.unset(Self::STRIKE)
+    }
+
+    fn set(&mut self, mask: u8) -> &mut Self {
+        self.0 |= mask;
+        self
+    }
+
+    fn unset(&mut self, mask: u8) -> &mut Self {
+        self.0 &= !mask;
+        self
+    }
+
+    fn is_set(&self, mask: u8) -> bool {
+        (self.0 & mask) != 0
+    }
+}
+
+impl From<Attributes> for Attrs {
+    fn from((weight, slant, underline, strike): Attributes) -> Self {
+        *Self::default()
+            .set_weight(weight)
+            .set_slant(slant)
+            .set_underline(underline)
+            .set_strike(strike)
+    }
+}
+
+impl From<Attrs> for Attributes {
+    fn from(attrs: Attrs) -> Self {
+        (
+            attrs.get_weight(),
+            attrs.get_slant(),
+            attrs.get_underline(),
+            attrs.get_strike(),
+        )
+    }
+}
+
+impl Display for Attrs {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        let (weight, slant, underline, strike) = Attributes::from(*self);
+
+        write!(f, "{}{}{}{}", weight, slant, underline, strike)
+    }
+}
+
+impl Debug for Attrs {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        let (weight, slant, underline, strike) = Attributes::from(*self);
+
+        f.debug_tuple("Attributes")
+            .field(&weight)
+            .field(&slant)
+            .field(&underline)
+            .field(&strike)
+            .finish()
+    }
+}
