@@ -8,6 +8,6 @@ pub use cell::*;
 pub use color::*;
 // pub use cursor::*;
 
-pub trait Over<Bottom = Self, Output = Bottom> {
+pub trait Over<Bottom, Output> {
     fn over(self, bottom: Bottom) -> Output;
 }
