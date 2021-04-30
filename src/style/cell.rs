@@ -85,7 +85,8 @@ where
         } else if self.foreground == self.background {
             self.background.over(bottom)
         } else {
-            self.over(bottom.background)
+            // full syntax or internal compilator error...
+            <_ as Over<_, Cell<NewFg, NewBg>>>::over(self, bottom.background)
         }
     }
 }

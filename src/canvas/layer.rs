@@ -68,27 +68,3 @@ where
             .for_each(|(top, bottom)| top.over(bottom));
     }
 }
-
-fn main() {
-    let canvas_cell = Cell::<Rgb, _>::new(' ', Rgb(0, 0, 0), Rgb(255, 0, 0), Default::default());
-    let mut canvas = Layer::new(
-        (0, 0),
-        RowVec1D::new((151, 40), vec![canvas_cell; 151 * 40]).unwrap(),
-    );
-
-    let cell1 = Cell::<Rgb, _>::new('a', Rgb(0, 255, 0), Rgba(0, 0, 0, 127), Default::default());
-    let layer1 = Layer::new((1, 1), repeat((40, 20), cell1));
-
-    let cell2 = Cell::<Rgb, _>::new(
-        'b',
-        Rgb(0, 0, 255),
-        Rgba(0, 255, 0, 127),
-        Default::default(),
-    );
-    let layer2 = Layer::new((2, 2), repeat((40, 20), cell2));
-
-    dbg!(layer1);
-    dbg!(layer2);
-
-    (&layer1).over(&mut canvas);
-}
