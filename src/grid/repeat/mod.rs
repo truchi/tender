@@ -3,6 +3,7 @@
 pub mod iter;
 
 use super::*;
+use iter::*;
 use std::{iter::Take, ops::Range};
 
 // -------------------------------------------------------------- //
@@ -27,7 +28,7 @@ use std::{iter::Take, ops::Range};
 ///     }
 /// }
 /// ```
-pub fn repeat<I: Clone>(size: impl Into<Size>, item: I) -> Repeat<I> {
+pub fn repeat<I>(size: impl Into<Size>, item: I) -> Repeat<I> {
     Repeat {
         size: size.into(),
         item,
@@ -49,7 +50,7 @@ impl<I> WithSize for Repeat<I> {
     }
 }
 
-macro_rules! grid {
+macro_rules! repeat_grid {
     ([0D] $self:ident $(
         $($lifetime:lifetime)?, $Type:ty, $Item:ty, $item:expr, $($Clone:ident)?,
     )*) => { $(
@@ -106,12 +107,12 @@ macro_rules! grid {
     )* }
 }
 
-grid!([0D] self
+repeat_grid!([0D] self
       ,         Repeat<I>,     I,  self.item.clone(), Clone,
     'a, &'a     Repeat<I>, &'a I, &self.item        ,      ,
     'a, &'a mut Repeat<I>, &'a I, &self.item        ,      ,
 );
-grid!([1D] self
+repeat_grid!([1D] self
     GridCol Col col_unchecked:   ,         Repeat<I>,  self.item, Clone,
     GridCol Col col_unchecked: 'a, &'a     Repeat<I>, &self.item,      ,
     GridCol Col col_unchecked: 'a, &'a mut Repeat<I>, &self.item,      ,
@@ -120,7 +121,7 @@ grid!([1D] self
     GridRow Row row_unchecked: 'a, &'a     Repeat<I>, &self.item,      ,
     GridRow Row row_unchecked: 'a, &'a mut Repeat<I>, &self.item,      ,
 );
-grid!([2D] x y
+repeat_grid!([2D] x y
     GridCols Cols cols_unchecked (Col col_unchecked) y x:   ,         Repeat<I>, Clone,
     GridCols Cols cols_unchecked (Col col_unchecked) y x: 'a, &'a     Repeat<I>,      ,
     GridCols Cols cols_unchecked (Col col_unchecked) y x: 'a, &'a mut Repeat<I>,      ,
@@ -129,7 +130,7 @@ grid!([2D] x y
     GridRows Rows rows_unchecked (Row row_unchecked) x y: 'a, &'a     Repeat<I>,      ,
     GridRows Rows rows_unchecked (Row row_unchecked) x y: 'a, &'a mut Repeat<I>,      ,
 );
-grid!([ITEMS] self
+repeat_grid!([ITEMS] self
       ,         Repeat<I>,  self.item, Clone,
     'a, &'a     Repeat<I>, &self.item,      ,
     'a, &'a mut Repeat<I>, &self.item,      ,
@@ -188,17 +189,23 @@ impl<I> WithSize for RepeatWith<I> {
     }
 }
 
-impl<I> Grid for RepeatWith<I> {
-    type Item = I;
+macro_rules! repeat_with_grid {
+    ([0D] $(
+        $($lifetime:lifetime)?, $Type:ty,
+    )*) => { $(
+        impl<$($lifetime,)? I> Grid for $Type {
+            type Item = I;
 
-    unsafe fn item_unchecked(self, index: impl Index0D) -> Self::Item {
-        (self.fun)(index.unchecked())
-    }
-}
-
-macro_rules! grid1d {
-    ($($Trait:ident<$M:ident> $Assoc:ident $fn:ident)*) => { $(
-        impl<I> $Trait for RepeatWith<I> {
+            unsafe fn item_unchecked(self, index: impl Index0D) -> Self::Item {
+                (self.fun)(index.unchecked())
+            }
+        }
+    )* };
+    ([1D] $(
+        $Trait:ident<$M:ident> $Assoc:ident $fn:ident:
+        $($lifetime:lifetime)?, $Type:ty,
+    )*) => { $(
+        impl<$($lifetime,)? I> $Trait for $Type {
             type $Assoc = iter::Iter1D<$M, I>;
 
             unsafe fn $fn(self, index: impl Index1D) -> Self::$Assoc {
@@ -206,34 +213,44 @@ macro_rules! grid1d {
             }
         }
     )* };
-}
+    ([2D] $(
+        $Trait:ident $Index:ident $Assoc:ident $fn:ident $Iter:ty:
+        $($lifetime:lifetime)?, $Type:ty,
+    )*) => { $(
+        impl<$($lifetime,)? I> $Trait for $Type {
+            type $Assoc = $Iter;
 
-macro_rules! grid2d {
-    ($($Trait:ident<$M:ident> $Assoc:ident $fn:ident)*) => { $(
-        impl<I> $Trait for RepeatWith<I> {
-            type $Assoc = iter::Iter2D<$M, I>;
-
-            unsafe fn $fn(self, index: impl Index2D) -> Self::$Assoc {
+            unsafe fn $fn(self, index: impl $Index) -> Self::$Assoc {
                 Self::$Assoc::new(self.fun, index.unchecked(self.size))
             }
         }
     )* };
 }
 
-grid1d!(
-    GridCol<ColMajor> Col col_unchecked
-    GridRow<RowMajor> Row row_unchecked
+repeat_with_grid!([0D]
+      ,         RepeatWith<I>,
+    'a, &'a     RepeatWith<I>,
+    'a, &'a mut RepeatWith<I>,
 );
+repeat_with_grid!([1D]
+    GridCol<ColMajor> Col col_unchecked:   ,         RepeatWith<I>,
+    GridCol<ColMajor> Col col_unchecked: 'a, &'a     RepeatWith<I>,
+    GridCol<ColMajor> Col col_unchecked: 'a, &'a mut RepeatWith<I>,
 
-grid2d!(
-    GridCols<ColMajor> Cols cols_unchecked
-    GridRows<RowMajor> Rows rows_unchecked
+    GridRow<RowMajor> Row row_unchecked:   ,         RepeatWith<I>,
+    GridRow<RowMajor> Row row_unchecked: 'a, &'a     RepeatWith<I>,
+    GridRow<RowMajor> Row row_unchecked: 'a, &'a mut RepeatWith<I>,
 );
+repeat_with_grid!([2D]
+    GridCols Index2D Cols cols_unchecked Iter2D<ColMajor, I>:   ,         RepeatWith<I>,
+    GridCols Index2D Cols cols_unchecked Iter2D<ColMajor, I>: 'a, &'a     RepeatWith<I>,
+    GridCols Index2D Cols cols_unchecked Iter2D<ColMajor, I>: 'a, &'a mut RepeatWith<I>,
 
-impl<I> GridItems for RepeatWith<I> {
-    type Items = iter::Items<I>;
+    GridRows Index2D Rows rows_unchecked Iter2D<RowMajor, I>:   ,         RepeatWith<I>,
+    GridRows Index2D Rows rows_unchecked Iter2D<RowMajor, I>: 'a, &'a     RepeatWith<I>,
+    GridRows Index2D Rows rows_unchecked Iter2D<RowMajor, I>: 'a, &'a mut RepeatWith<I>,
 
-    unsafe fn items_unchecked(self, index: impl Index2D) -> Self::Items {
-        Self::Items::new(self.fun, index.unchecked(self.size))
-    }
-}
+    GridItems Index2D Items items_unchecked Items<I>:   ,         RepeatWith<I>,
+    GridItems Index2D Items items_unchecked Items<I>: 'a, &'a     RepeatWith<I>,
+    GridItems Index2D Items items_unchecked Items<I>: 'a, &'a mut RepeatWith<I>,
+);
