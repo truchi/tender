@@ -1,28 +1,48 @@
+use crossterm::{
+    cursor::{Hide, Show},
+    event::read,
+    execute,
+    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+};
+use std::{
+    io::{stdout, Write},
+    thread::sleep,
+    time::Duration,
+};
 use tender::{canvas::*, grid::*, style::*};
 
 fn main() {
-    let canvas_cell = Cell::<Rgb, _>::new(' ', Rgb(0, 0, 0), Rgb(255, 0, 0), Default::default());
-    let vec = vec![canvas_cell; 4];
-    let mut canvas = Layer::new((0, 0), RowVec1D::new((2, 2), vec).unwrap());
-    // let mut canvas = RowVec1D::new((2, 2), vec).unwrap();
-    dbg!(&canvas);
+    let (w, h) = (151, 40);
 
-    let cell1 = Cell::<Rgb, _>::new('1', Rgb(0, 255, 0), Rgba(0, 0, 0, 127), Default::default());
-    let layer1 = Layer::new((1, 1), repeat((1, 1), cell1));
-    dbg!(layer1);
+    let canvas_cell = Cell::<Rgb, _>::new(' ', Rgb(0, 0, 0), Rgb(255, 0, 0), ());
+    let vec = vec![canvas_cell; w * h];
+    let mut canvas = Layer::new((0, 0), RowVec1D::new((w, h), vec).unwrap());
 
-    let cell2 = Cell::<Rgb, _>::new(
-        '2',
-        Rgb(0, 0, 255),
-        Rgba(0, 255, 0, 127),
-        Default::default(),
-    );
-    let layer2 = Layer::new((0, 0), repeat((1, 1), cell2));
-    dbg!(layer2);
+    let cell1 = Cell::<Rgb, _>::new('1', Rgb(0, 255, 0), Rgba(0, 0, 0, 127), ());
+    let layer1 = Layer::new((1, 1), repeat((10, 10), cell1));
 
-    (&layer1).rows(..);
-    (&mut canvas).rows(..);
+    let cell2 = Cell::<Rgb, _>::new('2', Rgb(0, 0, 255), Rgba(0, 255, 0, 127), ());
+    let layer2 = Layer::new((2, 2), repeat((10, 10), cell2));
 
+    enter();
+    print!("{}", canvas);
+    sleep(Duration::from_millis(500));
     (&layer1).over(&mut canvas);
-    dbg!(&canvas);
+    print!("{}", canvas);
+    sleep(Duration::from_millis(500));
+    (&layer2).over(&mut canvas);
+    print!("{}", canvas);
+    sleep(Duration::from_millis(500));
+    leave();
+}
+
+fn enter() {
+    execute!(stdout(), EnterAlternateScreen, Hide).unwrap();
+    enable_raw_mode().unwrap();
+}
+
+fn leave() {
+    read().unwrap();
+    disable_raw_mode().unwrap();
+    execute!(stdout(), LeaveAlternateScreen, Show).unwrap();
 }

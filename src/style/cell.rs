@@ -11,7 +11,12 @@ pub struct Cell<Fg, Bg = Fg> {
 }
 
 impl<Fg, Bg> Cell<Fg, Bg> {
-    pub fn new<T>(char: char, foreground: T, background: Bg, attributes: Attributes) -> Self
+    pub fn new<T>(
+        char: char,
+        foreground: T,
+        background: Bg,
+        attributes: impl Into<Attributes>,
+    ) -> Self
     where
         T: Over<Bg, Fg>,
         Bg: Clone,
@@ -20,7 +25,7 @@ impl<Fg, Bg> Cell<Fg, Bg> {
             char,
             foreground: Color(foreground.over(background.clone())),
             background: Color(background),
-            attributes: attributes.into(),
+            attributes: attributes.into().into(),
         }
     }
 

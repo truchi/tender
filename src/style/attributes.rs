@@ -3,8 +3,44 @@
 
 use std::fmt::{self, Debug, Display, Formatter};
 
-/// Alias of `(Weight, Slant, Underline, Strike)`.
-pub type Attributes = (Weight, Slant, Underline, Strike);
+/// `Attributes` ([`Weight`], [`Slant`], [`Underline`], [`Strike`]).
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
+pub struct Attributes {
+    pub weight:    Weight,
+    pub slant:     Slant,
+    pub underline: Underline,
+    pub strike:    Strike,
+}
+
+impl From<()> for Attributes {
+    fn from(_: ()) -> Self {
+        Self::default()
+    }
+}
+
+impl From<(Weight, Slant, Underline, Strike)> for Attributes {
+    fn from((weight, slant, underline, strike): (Weight, Slant, Underline, Strike)) -> Self {
+        Self {
+            weight,
+            slant,
+            underline,
+            strike,
+        }
+    }
+}
+
+impl From<Attributes> for (Weight, Slant, Underline, Strike) {
+    fn from(
+        Attributes {
+            weight,
+            slant,
+            underline,
+            strike,
+        }: Attributes,
+    ) -> Self {
+        (weight, slant, underline, strike)
+    }
+}
 
 macro_rules! attr {
     ($(
@@ -215,7 +251,14 @@ impl Attrs {
 }
 
 impl From<Attributes> for Attrs {
-    fn from((weight, slant, underline, strike): Attributes) -> Self {
+    fn from(
+        Attributes {
+            weight,
+            slant,
+            underline,
+            strike,
+        }: Attributes,
+    ) -> Self {
         *Self::default()
             .set_weight(weight)
             .set_slant(slant)
@@ -226,18 +269,23 @@ impl From<Attributes> for Attrs {
 
 impl From<Attrs> for Attributes {
     fn from(attrs: Attrs) -> Self {
-        (
-            attrs.get_weight(),
-            attrs.get_slant(),
-            attrs.get_underline(),
-            attrs.get_strike(),
-        )
+        Attributes {
+            weight:    attrs.get_weight(),
+            slant:     attrs.get_slant(),
+            underline: attrs.get_underline(),
+            strike:    attrs.get_strike(),
+        }
     }
 }
 
 impl Display for Attrs {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        let (weight, slant, underline, strike) = Attributes::from(*self);
+        let Attributes {
+            weight,
+            slant,
+            underline,
+            strike,
+        } = (*self).into();
 
         write!(f, "{}{}{}{}", weight, slant, underline, strike)
     }
@@ -245,7 +293,12 @@ impl Display for Attrs {
 
 impl Debug for Attrs {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        let (weight, slant, underline, strike) = Attributes::from(*self);
+        let Attributes {
+            weight,
+            slant,
+            underline,
+            strike,
+        } = (*self).into();
 
         f.debug_tuple("Attributes")
             .field(&weight)
