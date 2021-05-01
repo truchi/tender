@@ -1,4 +1,5 @@
 use super::*;
+use std::fmt::{self, Display, Formatter};
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
 pub struct Layer<T> {
@@ -64,5 +65,34 @@ where
             .zip_at(self.position(), self)
             .flatten_rows()
             .for_each(|(bottom, top)| top.over(bottom));
+    }
+}
+
+impl<T> Display for Layer<T>
+where
+    for<'a> &'a T: GridRows<Item = &'a Cell<Rgb>>,
+{
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        let rows = unsafe { self.grid.rows_unchecked(..) };
+        let mut move_to = MoveTo(self.position);
+
+        for row in rows {
+            write!(f, "{}", move_to)?;
+            for cell in row {
+                write!(f, "{}", cell)?;
+            }
+            move_to.0.y += 1;
+        }
+
+        Ok(())
+    }
+}
+
+#[derive(Debug)]
+struct MoveTo(Point);
+
+impl Display for MoveTo {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "\x1B[{};{}H", self.0.y + 1, self.0.x + 1)
     }
 }
