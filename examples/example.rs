@@ -1,14 +1,3 @@
-use crossterm::{
-    cursor::{Hide, Show},
-    event::read,
-    execute,
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
-};
-use std::{
-    io::{stdout, Write},
-    thread::sleep,
-    time::Duration,
-};
 use tender::{canvas::*, grid::*, style::*};
 
 fn main() {
@@ -24,7 +13,7 @@ fn main() {
         Rgba(0, 255, 0, 127),
         Default::default(),
     );
-    let layer2 = Layer::new((0, 0), repeat((1, 1), cell2));
+    // let layer2 = Layer::new((0, 0), repeat((1, 1), cell2));
 
     dbg!(&canvas);
     dbg!(layer1);
