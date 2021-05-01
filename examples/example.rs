@@ -28,16 +28,19 @@ fn main() {
 
     print!("{}", canvas);
     // println!("{:?}", canvas.to_string());
+    stdout().flush().unwrap();
     sleep(Duration::from_millis(500));
     (&layer1).over(&mut canvas);
 
     print!("{}", canvas);
     // println!("{:?}", canvas.to_string());
+    stdout().flush().unwrap();
     sleep(Duration::from_millis(500));
     (&layer2).over(&mut canvas);
 
     print!("{}", canvas);
     // println!("{:?}", canvas.to_string());
+    stdout().flush().unwrap();
     sleep(Duration::from_millis(500));
 
     leave();
