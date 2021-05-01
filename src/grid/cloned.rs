@@ -1,10 +1,7 @@
 //! Grids that `Clone`/`Copy` elements.
 
 use crate::grid::*;
-use std::{
-    iter::Map,
-    ops::{Deref, DerefMut},
-};
+use std::iter::Map;
 
 macro_rules! grid1d {
     ($Type:ident: $Clone:ident ($Cloned:ident $cloned:ident) $($Trait:ident $Assoc:ident $fn:ident)*) => { $(
@@ -41,17 +38,9 @@ macro_rules! cloned {
         $(#[$meta])*
         pub struct $Type<T>(pub(crate) T);
 
-        impl<T> Deref for $Type<T> {
-            type Target = T;
-
-            fn deref(&self) -> &Self::Target {
-                &self.0
-            }
-        }
-
-        impl<T> DerefMut for $Type<T> {
-            fn deref_mut(&mut self) -> &mut Self::Target {
-                &mut self.0
+        impl<T: WithSize> WithSize for $Type<T> {
+            fn size(&self) -> Size {
+                self.0.size()
             }
         }
 

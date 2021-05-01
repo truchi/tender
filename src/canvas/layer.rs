@@ -35,7 +35,7 @@ macro_rules! grid {
     (impl $Trait:ident $Assoc:ident $fn:ident $Index:ident $($mut:ident)?) => {
         impl<'a, T> $Trait for &'a $($mut)? Layer<T>
         where
-            T: WithSize,
+            Self: WithSize,
             &'a $($mut)? T: $Trait,
         {
             type $Assoc = <&'a $($mut)? T as $Trait>::$Assoc;
@@ -47,44 +47,22 @@ macro_rules! grid {
     };
 }
 
-// FIXME
 grid!(
     Grid     Item item_unchecked Index0D
     GridRow  Row  row_unchecked  Index1D
     GridRows Rows rows_unchecked Index2D
 );
 
-impl<'t, 'b, Top, Bottom> Over<&'b mut Layer<Bottom>, ()> for &'t Layer<Top>
+impl<'t, Top, Bottom> Over<Bottom, ()> for &'t Layer<Top>
 where
     &'t Layer<Top>: GridRows,
-    &'b mut Layer<Bottom>: GridRows,
-    <&'t Layer<Top> as Grid>::Item: Over<<&'b mut Layer<Bottom> as Grid>::Item, ()>,
+    Bottom: GridRows,
+    <&'t Layer<Top> as Grid>::Item: Over<<Bottom as Grid>::Item, ()>,
 {
-    fn over(self, bottom: &'b mut Layer<Bottom>) {
-        self.zip_at(bottom.position(), bottom)
+    fn over(self, bottom: Bottom) {
+        bottom
+            .zip_at(self.position(), self)
             .flatten_rows()
-            .for_each(|(top, bottom)| top.over(bottom));
+            .for_each(|(bottom, top)| top.over(bottom));
     }
-}
-
-fn _main() {
-    let canvas_cell = Cell::<Rgb, _>::new(' ', Rgb(0, 0, 0), Rgb(255, 0, 0), Default::default());
-    let mut canvas = Layer::new((0, 0), RowVec1D::new((1, 1), vec![canvas_cell; 1]).unwrap());
-    dbg!(&canvas);
-
-    let cell1 = Cell::<Rgb, _>::new('1', Rgb(0, 255, 0), Rgba(0, 0, 0, 127), Default::default());
-    let layer1 = Layer::new((0, 0), repeat((1, 1), cell1));
-    dbg!(layer1);
-
-    // let cell2 = Cell::<Rgb, _>::new(
-    // '2',
-    // Rgb(0, 0, 255),
-    // Rgba(0, 255, 0, 127),
-    // Default::default(),
-    // );
-    // let layer2 = Layer::new((0, 0), repeat((1, 1), cell2));
-    // dbg!(layer2);
-
-    // (&layer1).over(&mut canvas);
-    dbg!(&canvas);
 }
