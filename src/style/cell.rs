@@ -133,3 +133,22 @@ impl Display for Cell<Rgb> {
         )
     }
 }
+
+impl Display for Dedup<Cell<Rgb>> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{}{}{}{}",
+            Dedup(
+                Foreground(self.0.foreground.0),
+                Foreground(self.1.foreground.0)
+            ),
+            Dedup(
+                Background(self.0.background.0),
+                Background(self.1.background.0)
+            ),
+            Dedup(self.0.attributes, self.1.attributes),
+            self.1.char,
+        )
+    }
+}

@@ -12,6 +12,16 @@ macro_rules! ground {
                 write!(f, "\x1B[{};{}m", $csi, self.0)
             }
         }
+
+        impl Display for Dedup<$Ground> {
+            fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+                if self.0 != self.1 {
+                    self.1.fmt(f)
+                }else {
+                    Ok(())
+                }
+            }
+        }
     )* };
 }
 

@@ -11,3 +11,5 @@ pub use color::*;
 pub trait Over<Bottom, Output> {
     fn over(self, bottom: Bottom) -> Output;
 }
+
+pub struct Dedup<T>(pub T, pub T);

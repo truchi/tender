@@ -1,6 +1,7 @@
 //! Attributes
 //! ([`Attributes`]: [`Weight`], [`Slant`], [`Underline`], [`Strike`]).
 
+use super::*;
 use std::fmt::{self, Debug, Display, Formatter};
 
 /// `Attributes` ([`Weight`], [`Slant`], [`Underline`], [`Strike`]).
@@ -288,6 +289,40 @@ impl Display for Attrs {
         } = (*self).into();
 
         write!(f, "{}{}{}{}", weight, slant, underline, strike)
+    }
+}
+
+impl Display for Dedup<Attrs> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        let (
+            Attributes {
+                weight: previous_weight,
+                slant: previous_slant,
+                underline: previous_underline,
+                strike: previous_strike,
+            },
+            Attributes {
+                weight,
+                slant,
+                underline,
+                strike,
+            },
+        ) = (self.0.into(), self.1.into());
+
+        if weight != previous_weight {
+            write!(f, "{}", weight)?;
+        }
+        if slant != previous_slant {
+            write!(f, "{}", slant)?;
+        }
+        if underline != previous_underline {
+            write!(f, "{}", underline)?;
+        }
+        if strike != previous_strike {
+            write!(f, "{}", strike)?;
+        }
+
+        Ok(())
     }
 }
 

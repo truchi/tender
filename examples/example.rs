@@ -25,14 +25,21 @@ fn main() {
     let layer2 = Layer::new((2, 2), repeat((10, 10), cell2));
 
     enter();
+
     print!("{}", canvas);
+    // println!("{:?}", canvas.to_string());
     sleep(Duration::from_millis(500));
     (&layer1).over(&mut canvas);
+
     print!("{}", canvas);
+    // println!("{:?}", canvas.to_string());
     sleep(Duration::from_millis(500));
     (&layer2).over(&mut canvas);
+
     print!("{}", canvas);
+    // println!("{:?}", canvas.to_string());
     sleep(Duration::from_millis(500));
+
     leave();
 }
 

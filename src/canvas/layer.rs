@@ -73,15 +73,30 @@ where
     for<'a> &'a T: GridRows<Item = &'a Cell<Rgb>>,
 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        let rows = unsafe { self.grid.rows_unchecked(..) };
+        let mut rows = unsafe { self.grid.rows_unchecked(..) }.into_iter();
         let mut move_to = MoveTo(self.position);
 
-        for row in rows {
-            write!(f, "{}", move_to)?;
-            for cell in row {
-                write!(f, "{}", cell)?;
+        if let Some(row) = rows.next() {
+            let mut row = row.into_iter();
+
+            if let Some(mut previous) = row.next() {
+                write!(f, "{}{}", move_to, previous)?;
+
+                for cell in row {
+                    write!(f, "{}", Dedup(*previous, *cell))?;
+                    previous = cell;
+                }
+                move_to.next_row();
+
+                for row in rows {
+                    write!(f, "{}", move_to)?;
+                    for cell in row {
+                        write!(f, "{}", Dedup(*previous, *cell))?;
+                        previous = cell;
+                    }
+                    move_to.next_row();
+                }
             }
-            move_to.0.y += 1;
         }
 
         Ok(())
@@ -90,6 +105,12 @@ where
 
 #[derive(Debug)]
 struct MoveTo(Point);
+
+impl MoveTo {
+    fn next_row(&mut self) {
+        self.0.y += 1;
+    }
+}
 
 impl Display for MoveTo {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
