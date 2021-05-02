@@ -15,6 +15,7 @@ fn main() {
     let (w, h) = (151, 40);
 
     let canvas_cell = Cell::<Rgb, _>::new(' ', Rgb(0, 0, 0), Rgb(255, 0, 0), ());
+    let canvas_cell = DamageCell::new(canvas_cell);
     let vec = vec![canvas_cell; w * h];
     let mut canvas = Layer::new((0, 0), RowVec1D::new((w, h), vec).unwrap());
 

@@ -54,11 +54,11 @@ grid!(
     GridRows Rows rows_unchecked Index2D
 );
 
-impl<'t, Top, Bottom> Over<Bottom, ()> for &'t Layer<Top>
+impl<Top, Bottom> Over<Bottom, ()> for &Layer<Top>
 where
-    &'t Layer<Top>: GridRows,
+    Self: GridRows,
     Bottom: GridRows,
-    <&'t Layer<Top> as Grid>::Item: Over<<Bottom as Grid>::Item, ()>,
+    <Self as Grid>::Item: Over<<Bottom as Grid>::Item, ()>,
 {
     fn over(self, bottom: Bottom) {
         bottom

@@ -1,5 +1,8 @@
 use super::*;
-use std::fmt::{self, Display, Formatter};
+use std::{
+    fmt::{self, Display, Formatter},
+    ops::DerefMut,
+};
 
 /// A terminal `Cell`.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
@@ -97,26 +100,26 @@ where
 }
 
 // Cell OVER &mut Cell
-impl<'b, TopFg, TopBg, BottomFg, BottomBg> Over<&'b mut Cell<BottomFg, BottomBg>, ()>
+impl<TopFg, TopBg, BottomFg, BottomBg> Over<&mut Cell<BottomFg, BottomBg>, ()>
     for Cell<TopFg, TopBg>
 where
     Cell<BottomFg, BottomBg>: Clone,
     Cell<TopFg, TopBg>: Over<Cell<BottomFg, BottomBg>, Cell<BottomFg, BottomBg>>,
 {
-    fn over(self, bottom: &'b mut Cell<BottomFg, BottomBg>) {
+    fn over(self, bottom: &mut Cell<BottomFg, BottomBg>) {
         *bottom = self.over(bottom.clone());
     }
 }
 
 // &Cell OVER &mut Cell
-impl<'t, 'b, TopFg, TopBg, BottomFg, BottomBg> Over<&'b mut Cell<BottomFg, BottomBg>, ()>
-    for &'t Cell<TopFg, TopBg>
+impl<TopFg, TopBg, BottomFg, BottomBg> Over<&mut Cell<BottomFg, BottomBg>, ()>
+    for &Cell<TopFg, TopBg>
 where
     Cell<TopFg, TopBg>: Clone,
     Cell<BottomFg, BottomBg>: Clone,
     Cell<TopFg, TopBg>: Over<Cell<BottomFg, BottomBg>, Cell<BottomFg, BottomBg>>,
 {
-    fn over(self, bottom: &'b mut Cell<BottomFg, BottomBg>) {
+    fn over(self, bottom: &mut Cell<BottomFg, BottomBg>) {
         *bottom = self.clone().over(bottom.clone());
     }
 }
@@ -150,5 +153,88 @@ impl Display for Dedup<Cell<Rgb>> {
             Dedup(self.0.attributes, self.1.attributes),
             self.1.char,
         )
+    }
+}
+
+// =================================================================================================
+
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
+pub struct DamageCell {
+    pub current:  Cell<Rgb>,
+    pub previous: Cell<Rgb>,
+}
+
+impl DamageCell {
+    pub fn new(cell: Cell<Rgb>) -> Self {
+        Self {
+            current:  cell,
+            previous: cell,
+        }
+    }
+}
+
+pub trait WithDamage {
+    fn cell(&mut self) -> &mut Cell<Rgb>;
+
+    fn damage(&self) -> Option<Cell<Rgb>>;
+
+    fn update(&mut self) -> Option<Cell<Rgb>>;
+}
+
+impl WithDamage for Cell<Rgb> {
+    fn cell(&mut self) -> &mut Cell<Rgb> {
+        self
+    }
+
+    fn damage(&self) -> Option<Cell<Rgb>> {
+        Some(*self)
+    }
+
+    fn update(&mut self) -> Option<Cell<Rgb>> {
+        Some(*self)
+    }
+}
+
+impl<T: DerefMut<Target = DamageCell>> WithDamage for T {
+    fn cell(&mut self) -> &mut Cell<Rgb> {
+        &mut self.current
+    }
+
+    fn damage(&self) -> Option<Cell<Rgb>> {
+        if self.current != self.previous {
+            Some(self.current)
+        } else {
+            None
+        }
+    }
+
+    fn update(&mut self) -> Option<Cell<Rgb>> {
+        let damage = self.damage();
+        self.previous = self.current;
+
+        damage
+    }
+}
+
+// Cell OVER impl WithDamage
+impl<T, Fg, Bg> Over<T, ()> for Cell<Fg, Bg>
+where
+    T: WithDamage,
+    Cell<Fg, Bg>: Over<Cell<Rgb, Rgb>, Cell<Rgb, Rgb>>,
+{
+    fn over(self, mut bottom: T) {
+        *bottom.cell() = self.over(*bottom.cell());
+    }
+}
+
+// &Cell OVER impl WithDamage
+impl<T, Fg, Bg> Over<T, ()> for &Cell<Fg, Bg>
+where
+    T: WithDamage,
+    Cell<Fg, Bg>: Clone,
+    Cell<Fg, Bg>: Over<Cell<Rgb, Rgb>, Cell<Rgb, Rgb>>,
+{
+    fn over(self, mut bottom: T) {
+        *bottom.cell() = self.clone().over(*bottom.cell());
     }
 }

@@ -1,13 +1,6 @@
 use tender::style::*;
 
 fn main() {
-    dbg!(std::mem::size_of::<Attrs>());
-
-    let attrs = Attrs::default();
-    println!("{:#?}", attrs);
-}
-
-fn main2() {
     let width = 151;
     let height = 40;
 
@@ -17,12 +10,15 @@ fn main2() {
     dbg!(std::mem::size_of::<Rgb>());
     dbg!(std::mem::size_of::<Rgba>());
     dbg!(std::mem::size_of::<Cell<Rgb>>());
+    dbg!(std::mem::size_of::<Option<Cell<Rgb>>>());
     dbg!(std::mem::size_of::<Cell<Rgba>>());
+    dbg!(std::mem::size_of::<Option<Cell<Rgba>>>());
     dbg!(width * height * std::mem::size_of::<Cell<Rgba>>());
     dbg!(width * height * 20);
     dbg!(width * height * 16);
     dbg!(width * height * 12);
 
+    /*
     struct C<C> {
         char:  char,
         fg:    C,
@@ -31,6 +27,7 @@ fn main2() {
     }
     dbg!(std::mem::size_of::<C<Rgb>>());
     dbg!(std::mem::size_of::<C<Rgba>>());
+    */
 
     let u = 0b00001000;
 
