@@ -1,19 +1,44 @@
 use super::*;
 use std::{
     fmt::{self, Display, Formatter},
+    marker::PhantomData,
     ops::DerefMut,
 };
 
+#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
+pub enum Composited {}
+
+#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
+pub enum Straight {}
+
 /// A terminal `Cell`.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
-pub struct Cell<Fg, Bg = Fg> {
+pub struct Cell<T, Fg, Bg = Fg> {
     char:       char,
     foreground: Color<Fg>,
     background: Color<Bg>,
     attributes: Attrs,
+    phantom:    PhantomData<T>,
 }
 
-impl<Fg, Bg> Cell<Fg, Bg> {
+impl<Fg, Bg> Cell<Straight, Fg, Bg> {
+    pub fn new(
+        char: char,
+        foreground: Fg,
+        background: Bg,
+        attributes: impl Into<Attributes>,
+    ) -> Self {
+        Self {
+            char,
+            foreground: Color(foreground),
+            background: Color(background),
+            attributes: attributes.into().into(),
+            phantom: PhantomData,
+        }
+    }
+}
+
+impl<Fg, Bg> Cell<Composited, Fg, Bg> {
     pub fn new<T>(
         char: char,
         foreground: T,
@@ -29,23 +54,28 @@ impl<Fg, Bg> Cell<Fg, Bg> {
             foreground: Color(foreground.over(background.clone())),
             background: Color(background),
             attributes: attributes.into().into(),
+            phantom: PhantomData,
         }
     }
+}
 
-    pub fn cast<T, U>(self) -> Cell<T, U>
+impl<T, Fg, Bg> Cell<T, Fg, Bg> {
+    pub fn cast<NewFg, NewBg>(self) -> Cell<T, NewFg, NewBg>
     where
-        Fg: Into<T>,
-        Bg: Into<U>,
+        Fg: Into<NewFg>,
+        Bg: Into<NewBg>,
     {
         Cell {
             char:       self.char,
             foreground: Color(self.foreground.0.into()),
             background: Color(self.background.0.into()),
             attributes: self.attributes,
+            phantom:    PhantomData,
         }
     }
 }
 
+/*
 // Color OVER Cell
 impl<C, Fg, Bg, NewFg, NewBg> Over<Cell<Fg, Bg>, Cell<NewFg, NewBg>> for Color<C>
 where
@@ -238,3 +268,4 @@ where
         *bottom.cell() = self.clone().over(*bottom.cell());
     }
 }
+*/
