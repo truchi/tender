@@ -1,5 +1,5 @@
 /// A trait for colors.
-pub trait WithAlpha: Copy + Default {
+pub trait WithAlpha: Sized {
     /// Returns the `alpha` component's value.
     fn alpha(self) -> u8;
 
@@ -15,7 +15,7 @@ pub trait WithAlpha: Copy + Default {
         if alpha == 0 {
             None
         } else {
-            Some(u8::MAX as f64 / self.alpha() as f64)
+            Some(u8::MAX as f64 / alpha as f64)
         }
     }
 
