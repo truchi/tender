@@ -1,5 +1,15 @@
 //! Colors ([`Color`]: [`Rgb`], [`Rgba`], [`PreRgba`]).
 
+macro_rules! over {
+    ($self:ident,
+        $(Over<$bottom:tt: $Bottom:ty, $Output:ty> for $Top:ty $body:block)*
+    ) => { $(
+        impl Over<$Bottom, $Output> for $Top {
+            fn over($self, $bottom: $Bottom) -> $Output $body
+        }
+    )* }
+}
+
 mod ground;
 mod pre_rgba;
 mod rgb;
