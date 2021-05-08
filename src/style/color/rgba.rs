@@ -56,17 +56,17 @@ over!(self,
     Over<bottom:    &Rgba, PreRgba> for &Rgba { PreRgba::from(*self).over(*bottom) }
     Over<bottom: &PreRgba, PreRgba> for &Rgba { PreRgba::from(*self).over(*bottom) }
 
-    Over<bottom: &mut    Rgb , ()> for  Rgba { *bottom =   self .over(*bottom)        }
-    Over<bottom: &mut    Rgba, ()> for  Rgba { *bottom =   self .over(*bottom).into() }
-    Over<bottom: &mut PreRgba, ()> for  Rgba { *bottom =   self .over(*bottom)        }
-    Over<bottom: &mut    Rgb , ()> for &Rgba { *bottom = (*self).over(*bottom)        }
-    Over<bottom: &mut    Rgba, ()> for &Rgba { *bottom = (*self).over(*bottom).into() }
-    Over<bottom: &mut PreRgba, ()> for &Rgba { *bottom = (*self).over(*bottom)        }
+    // Over<bottom: &mut    Rgb , ()> for  Rgba { *bottom =   self .over(*bottom)        }
+    // Over<bottom: &mut    Rgba, ()> for  Rgba { *bottom =   self .over(*bottom).into() }
+    // Over<bottom: &mut PreRgba, ()> for  Rgba { *bottom =   self .over(*bottom)        }
+    // Over<bottom: &mut    Rgb , ()> for &Rgba { *bottom = (*self).over(*bottom)        }
+    // Over<bottom: &mut    Rgba, ()> for &Rgba { *bottom = (*self).over(*bottom).into() }
+    // Over<bottom: &mut PreRgba, ()> for &Rgba { *bottom = (*self).over(*bottom)        }
 
-    Over<bottom:     Rgb , ()> for  &mut Rgba { *self = (*self).over( bottom).into() }
-    Over<bottom:     Rgba, ()> for  &mut Rgba { *self = (*self).over( bottom).into() }
-    Over<bottom:  PreRgba, ()> for  &mut Rgba { *self = (*self).over( bottom).into() }
-    Over<bottom:    &Rgb , ()> for  &mut Rgba { *self = (*self).over(*bottom).into() }
-    Over<bottom:    &Rgba, ()> for  &mut Rgba { *self = (*self).over(*bottom).into() }
-    Over<bottom: &PreRgba, ()> for  &mut Rgba { *self = (*self).over(*bottom).into() }
+    // Over<bottom:     Rgb , ()> for  &mut Rgba { *self = (*self).over( bottom).into() }
+    // Over<bottom:     Rgba, ()> for  &mut Rgba { *self = (*self).over( bottom).into() }
+    // Over<bottom:  PreRgba, ()> for  &mut Rgba { *self = (*self).over( bottom).into() }
+    // Over<bottom:    &Rgb , ()> for  &mut Rgba { *self = (*self).over(*bottom).into() }
+    // Over<bottom:    &Rgba, ()> for  &mut Rgba { *self = (*self).over(*bottom).into() }
+    // Over<bottom: &PreRgba, ()> for  &mut Rgba { *self = (*self).over(*bottom).into() }
 );

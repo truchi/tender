@@ -40,11 +40,11 @@ impl<T: PartialEq<U>, U> PartialEq<Color<U>> for Color<T> {
     }
 }
 
-impl<T: WithAlpha> WithAlpha for Color<T> {
-    fn alpha(self) -> u8 {
-        self.0.alpha()
-    }
-}
+// impl<T: WithAlpha> WithAlpha for Color<T> {
+// fn alpha(self) -> u8 {
+// self.0.alpha()
+// }
+// }
 
 impl<C: Over<T, U>, T, U> Over<Color<T>, Color<U>> for Color<C> {
     fn over(self, bottom: Color<T>) -> Color<U> {

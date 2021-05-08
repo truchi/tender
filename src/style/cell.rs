@@ -5,48 +5,55 @@ use std::{
     ops::DerefMut,
 };
 
-#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
-pub enum Composited {}
-
-#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Debug)]
-pub enum Straight {}
+// ------------------------------------------------------------ //
+//                                                              //
+// *************************** CELL *************************** //
+//                                                              //
+// ------------------------------------------------------------ //
 
 /// A terminal `Cell`.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
-pub struct Cell<T, Fg, Bg = Fg> {
+pub struct Cell<Fg, Bg, Attrs> {
     char:       char,
     foreground: Color<Fg>,
     background: Color<Bg>,
     attributes: Attrs,
-    phantom:    PhantomData<T>,
 }
 
-impl<Fg, Bg> Cell<Straight, Fg, Bg> {
-    pub fn new(
-        char: char,
-        foreground: Fg,
-        background: Bg,
-        attributes: impl Into<Attributes>,
-    ) -> Self {
+impl<Fg, Bg, Attrs> Cell<Fg, Bg, Attrs> {
+    pub fn new(char: char, foreground: Fg, background: Bg, attributes: Attrs) -> Self {
         Self {
             char,
             foreground: Color(foreground),
             background: Color(background),
-            attributes: attributes.into().into(),
-            phantom: PhantomData,
+            attributes,
         }
     }
 }
 
+impl<Fg: Over<Rgb, Rgb> + Copy, T: Display> Display for Cell<Fg, Rgb, T> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{}{}{}{}",
+            Foreground(self.foreground.0.over(self.background.0)),
+            Background(self.background.0),
+            self.attributes,
+            self.char,
+        )
+    }
+}
+
+/*
 impl<Fg, Bg> Cell<Composited, Fg, Bg> {
-    pub fn new<T>(
+    pub fn new<C>(
         char: char,
-        foreground: T,
+        foreground: C,
         background: Bg,
         attributes: impl Into<Attributes>,
     ) -> Self
     where
-        T: Over<Bg, Fg>,
+        C: Over<Bg, Fg>,
         Bg: Clone,
     {
         Self {
@@ -74,6 +81,19 @@ impl<T, Fg, Bg> Cell<T, Fg, Bg> {
         }
     }
 }
+
+impl<C: Over<Bg, Fg>, Fg, Bg: Clone> From<Cell<Straight, C, Bg>> for Cell<Composited, Fg, Bg> {
+    fn from(cell: Cell<Straight, C, Bg>) -> Self {
+        Self {
+            char:       cell.char,
+            foreground: cell.foreground.over(cell.background.clone()),
+            background: cell.background,
+            attributes: cell.attributes,
+            phantom:    PhantomData,
+        }
+    }
+}
+*/
 
 /*
 // Color OVER Cell

@@ -79,17 +79,17 @@ over!(self,
     Over<_:    &Rgba, Rgb> for &Rgb { *self }
     Over<_: &PreRgba, Rgb> for &Rgb { *self }
 
-    Over<bottom: &mut    Rgb , ()> for  Rgb { *bottom =   self         }
-    Over<bottom: &mut    Rgba, ()> for  Rgb { *bottom =   self .into() }
-    Over<bottom: &mut PreRgba, ()> for  Rgb { *bottom =   self .into() }
-    Over<bottom: &mut    Rgb , ()> for &Rgb { *bottom =  *self         }
-    Over<bottom: &mut    Rgba, ()> for &Rgb { *bottom = (*self).into() }
-    Over<bottom: &mut PreRgba, ()> for &Rgb { *bottom = (*self).into() }
+    // Over<bottom: &mut    Rgb , ()> for  Rgb { *bottom =   self         }
+    // Over<bottom: &mut    Rgba, ()> for  Rgb { *bottom =   self .into() }
+    // Over<bottom: &mut PreRgba, ()> for  Rgb { *bottom =   self .into() }
+    // Over<bottom: &mut    Rgb , ()> for &Rgb { *bottom =  *self         }
+    // Over<bottom: &mut    Rgba, ()> for &Rgb { *bottom = (*self).into() }
+    // Over<bottom: &mut PreRgba, ()> for &Rgb { *bottom = (*self).into() }
 
-    Over<_:     Rgb , ()> for  &mut Rgb {}
-    Over<_:     Rgba, ()> for  &mut Rgb {}
-    Over<_:  PreRgba, ()> for  &mut Rgb {}
-    Over<_:    &Rgb , ()> for  &mut Rgb {}
-    Over<_:    &Rgba, ()> for  &mut Rgb {}
-    Over<_: &PreRgba, ()> for  &mut Rgb {}
+    // Over<_:     Rgb , ()> for  &mut Rgb {}
+    // Over<_:     Rgba, ()> for  &mut Rgb {}
+    // Over<_:  PreRgba, ()> for  &mut Rgb {}
+    // Over<_:    &Rgb , ()> for  &mut Rgb {}
+    // Over<_:    &Rgba, ()> for  &mut Rgb {}
+    // Over<_: &PreRgba, ()> for  &mut Rgb {}
 );

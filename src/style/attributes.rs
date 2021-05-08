@@ -4,6 +4,12 @@
 use super::*;
 use std::fmt::{self, Debug, Display, Formatter};
 
+// ------------------------------------------------------------------ //
+//                                                                    //
+// *************************** ATTRIBUTES *************************** //
+//                                                                    //
+// ------------------------------------------------------------------ //
+
 /// `Attributes` ([`Weight`], [`Slant`], [`Underline`], [`Strike`]).
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
 pub struct Attributes {
@@ -117,6 +123,12 @@ attr!(
     }
 );
 
+// --------------------------------------------------------------------- //
+//                                                                       //
+// *************************** ATTRIBUTES U8 *************************** //
+//                                                                       //
+// --------------------------------------------------------------------- //
+
 //         |- 00: NoWeight
 //         |- 10: Dim
 //         |- 11: Bold
@@ -128,9 +140,9 @@ attr!(
 // ____| __| | | |- 1: Italic
 // 8 7 6 5 4 3 2 1
 #[derive(Copy, Clone, Eq, PartialEq, Default, Hash)]
-pub(super) struct Attrs(u8);
+pub struct AttributesU8(u8);
 
-impl Attrs {
+impl AttributesU8 {
     const DIM_BOLD: u8 = 8;
     const SLANT: u8 = 1;
     const STRIKE: u8 = 4;
@@ -251,7 +263,7 @@ impl Attrs {
     }
 }
 
-impl From<Attributes> for Attrs {
+impl From<Attributes> for AttributesU8 {
     fn from(
         Attributes {
             weight,
@@ -268,8 +280,8 @@ impl From<Attributes> for Attrs {
     }
 }
 
-impl From<Attrs> for Attributes {
-    fn from(attrs: Attrs) -> Self {
+impl From<AttributesU8> for Attributes {
+    fn from(attrs: AttributesU8) -> Self {
         Attributes {
             weight:    attrs.get_weight(),
             slant:     attrs.get_slant(),
@@ -279,7 +291,7 @@ impl From<Attrs> for Attributes {
     }
 }
 
-impl Display for Attrs {
+impl Display for AttributesU8 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let Attributes {
             weight,
@@ -292,7 +304,7 @@ impl Display for Attrs {
     }
 }
 
-impl Display for Dedup<Attrs> {
+impl Display for Dedup<AttributesU8> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let (
             Attributes {
@@ -326,7 +338,7 @@ impl Display for Dedup<Attrs> {
     }
 }
 
-impl Debug for Attrs {
+impl Debug for AttributesU8 {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let Attributes {
             weight,
