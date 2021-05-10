@@ -1,14 +1,4 @@
-//! Colors ([`Color`]: [`Rgb`], [`Rgba`], [`PreRgba`]).
-
-macro_rules! over {
-    ($self:ident,
-        $(Over<$bottom:tt: $Bottom:ty, $Output:ty> for $Top:ty $body:block)*
-    ) => { $(
-        impl Over<$Bottom, $Output> for $Top {
-            fn over($self, $bottom: $Bottom) -> $Output $body
-        }
-    )* }
-}
+//! Colors ([`Rgb`], [`Rgba`], [`PreRgba`]).
 
 mod ground;
 mod pre_rgba;
@@ -23,42 +13,6 @@ pub use rgba::*;
 pub use with_alpha::*;
 
 use super::*;
-
-// /// A wrapper type for colors.
-// #[derive(Copy, Clone, Eq, Default, Hash, Debug)]
-// pub struct Color<T>(pub T);
-//
-// impl<T> From<T> for Color<T> {
-//     fn from(t: T) -> Self {
-//         Self(t)
-//     }
-// }
-//
-// impl<T: PartialEq<U>, U> PartialEq<Color<U>> for Color<T> {
-//     fn eq(&self, other: &Color<U>) -> bool {
-//         &self.0 == &other.0
-//     }
-// }
-//
-// impl<Top: Over<Bottom>, Bottom> Over<Color<Bottom>> for Color<Top> {
-//     type Output = Color<Top::Output>;
-//
-//     fn over(self, bottom: Color<Bottom>) -> Color<Top::Output> {
-//         Color(self.0.over(bottom.0))
-//     }
-// }
-
-// impl<T: WithAlpha> WithAlpha for Color<T> {
-// fn alpha(self) -> u8 {
-// self.0.alpha()
-// }
-// }
-
-// impl<C: Over<T, U>, T, U> Over<Color<T>, Color<U>> for Color<C> {
-// fn over(self, bottom: Color<T>) -> Color<U> {
-// Color(self.0.over(bottom.0))
-// }
-// }
 
 macro_rules! web_colors {
     ($($Color:ident $R:literal $G:literal $B:literal)*) => {

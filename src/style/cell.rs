@@ -167,7 +167,7 @@ impl<Fg, Bg> Comp<Fg, Bg> {
     }
 }
 
-macro_rules! color_over_cell {
+macro_rules! color_over_comp {
     ($($C:ident)*) => { $(
         impl<Fg, Bg> Over<Comp<Fg, Bg>> for $C
         where
@@ -187,7 +187,7 @@ macro_rules! color_over_cell {
     )* };
 }
 
-macro_rules! cell_over_color {
+macro_rules! comp_over_color {
     ($($C:ident)*) => { $(
         impl<Fg, Bg> Over<$C> for Comp<Fg, Bg>
         where
@@ -208,50 +208,10 @@ macro_rules! cell_over_color {
     )* }
 }
 
-macro_rules! cell_over_cell {
-    // ($self:ident $bottom:ident) => {};
-    ($($C:ident)*) => { $(
-        impl<TopFg, BottomFg, BottomBg> Over<Comp<BottomFg, BottomBg>> for Comp<TopFg, $C>
-        where
-            TopFg: Over<BottomBg> + PartialEq<$C> + Into<PreRgba>,
-            $C: Over<BottomFg> + Over<BottomBg>,
-            <TopFg as Over<BottomBg>>::Output: Into<PreRgba>,
-            <$C as Over<BottomFg>>::Output: Into<PreRgba>,
-            <$C as Over<BottomBg>>::Output: Into<PreRgba>,
-            // NOTE This bound shouldn't really be necessary! Why does the compiler need it?
-            Self: Over<
-                BottomBg,
-                Output = Comp<<TopFg as Over<BottomBg>>::Output, <$C as Over<BottomBg>>::Output, Attrs>,
-            >,
-        {
-            type Output = Comp<PreRgba, PreRgba, Attrs>;
+color_over_comp!(Rgb Rgba PreRgba);
+comp_over_color!(Rgb Rgba PreRgba);
 
-            fn over(self, bottom: Comp<BottomFg, BottomBg, Attrs>) -> Self::Output {
-                if self.background.is_opaque() {
-                    self.cast()
-                } else if self.foreground == self.background {
-                    self.background.over(bottom).cast()
-                } else {
-                    self.over(bottom.background).cast()
-                }
-            }
-        }
-    )* };
-}
-// cell_over_cell!(Rgba PreRgba);
-
-// impl<TopFg, BottomFg, BottomBg, Attrs> Over<Comp<BottomFg, BottomBg, Attrs>>
-// for Comp<TopFg, Rgb, Attrs>
-// {
-// type Output = Comp<TopFg, Rgb, Attrs>;
-//
-// fn over(self, _: Comp<BottomFg, BottomBg, Attrs>) -> Self::Output {
-// self
-// }
-// }
-
-color_over_cell!(Rgb Rgba PreRgba);
-cell_over_color!(Rgb Rgba PreRgba);
+// --- Comp: Over<Comp> ---
 
 /// Rgb     Rgb  OVER    Rgb     Rgb  => Rgb Rgb (TOP)
 ///                      Rgb  PreRgba => Rgb Rgb (TOP)

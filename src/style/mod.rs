@@ -14,14 +14,10 @@ pub trait Over<Bottom> {
     fn over(self, bottom: Bottom) -> Self::Output;
 }
 
-// pub trait Over<Bottom, Output> {
-// fn over(self, bottom: Bottom) -> Output;
-// }
+pub trait Paint<Top, Output> {
+    fn paint(self, top: Top) -> Output;
+}
 
-// pub trait Paint<Top, Output> {
-// fn paint(self, top: Top) -> Output;
-// }
-//
 // impl<T, Top: Over<T, Output>, Output> Paint<Top, Output> for T {
 // fn paint(self, top: Top) -> Output {
 // top.over(self)
