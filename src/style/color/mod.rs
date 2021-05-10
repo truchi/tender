@@ -40,17 +40,25 @@ impl<T: PartialEq<U>, U> PartialEq<Color<U>> for Color<T> {
     }
 }
 
+impl<Top: Over<Bottom>, Bottom> Over<Color<Bottom>> for Color<Top> {
+    type Output = Color<Top::Output>;
+
+    fn over(self, bottom: Color<Bottom>) -> Color<Top::Output> {
+        Color(self.0.over(bottom.0))
+    }
+}
+
 // impl<T: WithAlpha> WithAlpha for Color<T> {
 // fn alpha(self) -> u8 {
 // self.0.alpha()
 // }
 // }
 
-impl<C: Over<T, U>, T, U> Over<Color<T>, Color<U>> for Color<C> {
-    fn over(self, bottom: Color<T>) -> Color<U> {
-        Color(self.0.over(bottom.0))
-    }
-}
+// impl<C: Over<T, U>, T, U> Over<Color<T>, Color<U>> for Color<C> {
+// fn over(self, bottom: Color<T>) -> Color<U> {
+// Color(self.0.over(bottom.0))
+// }
+// }
 
 macro_rules! web_colors {
     ($($Color:ident $R:literal $G:literal $B:literal)*) => {

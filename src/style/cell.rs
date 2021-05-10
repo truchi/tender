@@ -11,6 +11,7 @@ use std::{
 //                                                              //
 // ------------------------------------------------------------ //
 
+/*
 /// A terminal `Cell`.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
 pub struct Cell<Fg, Bg, Attrs> {
@@ -43,6 +44,7 @@ impl<Fg: Over<Rgb, Rgb> + Copy, T: Display> Display for Cell<Fg, Rgb, T> {
         )
     }
 }
+*/
 
 /*
 impl<Fg, Bg> Cell<Composited, Fg, Bg> {
@@ -90,6 +92,188 @@ impl<C: Over<Bg, Fg>, Fg, Bg: Clone> From<Cell<Straight, C, Bg>> for Cell<Compos
             background: cell.background,
             attributes: cell.attributes,
             phantom:    PhantomData,
+        }
+    }
+}
+*/
+
+// ------------------------------------------------------------ //
+//                                                              //
+// *************************** COMP *************************** //
+//                                                              //
+// ------------------------------------------------------------ //
+
+/// A terminal `Cell`, composited.
+///
+/// Composited cells, 5 possibilities:
+/// ```
+///     Rgb     Rgb
+///     Rgb  PreRgba
+///  PreRgba PreRgba
+/// (   Rgb     Rgba)
+/// (PreRgba    Rgba)
+///
+/// OVER
+///    Rgb     Rgb  OVER    Rgb     Rgb  => Rgb Rgb (TOP)
+///                         Rgb  PreRgba => Rgb Rgb (TOP)
+///                      PreRgba PreRgba => Rgb Rgb (TOP)
+///
+///    Rgb  PreRgba OVER    Rgb     Rgb  => Rgb    Rgb
+///                         Rgb  PreRgba => Rgb PreRgba
+///                      PreRgba PreRgba => Rgb PreRgba
+///
+/// PreRgba PreRgba OVER    Rgb     Rgb  =>    Rgb     Rgb
+///                         Rgb  PreRgba => PreRgba PreRgba
+///                      PreRgba PreRgba => PreRgba PreRgba
+/// ```
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
+pub struct Comp<Fg, Bg, Attrs> {
+    char:       char,
+    foreground: Fg,
+    background: Bg,
+    attributes: Attrs,
+}
+
+impl<Fg, Bg, Attrs> Comp<Fg, Bg, Attrs> {
+    pub fn new<C>(char: char, foreground: C, background: Bg, attributes: Attrs) -> Self
+    where
+        C: Over<Bg, Output = Fg>,
+        Bg: Copy,
+    {
+        Self {
+            char,
+            foreground: foreground.over(background),
+            background,
+            attributes,
+        }
+    }
+
+    pub fn cast<NewFg, NewBg, NewAttrs>(self) -> Comp<NewFg, NewBg, NewAttrs>
+    where
+        Fg: Into<NewFg>,
+        Bg: Into<NewBg>,
+        Attrs: Into<NewAttrs>,
+    {
+        Comp {
+            char:       self.char,
+            foreground: self.foreground.into(),
+            background: self.background.into(),
+            attributes: self.attributes.into(),
+        }
+    }
+}
+
+macro_rules! color_over_cell {
+    ($($C:ident)*) => { $(
+        impl<Fg, Bg, Attrs> Over<Comp<Fg, Bg, Attrs>> for $C
+        where
+            $C: Over<Fg> + Over<Bg>,
+        {
+            type Output = Comp<<$C as Over<Fg>>::Output, <$C as Over<Bg>>::Output, Attrs>;
+
+            fn over(self, comp: Comp<Fg, Bg, Attrs>) -> Self::Output {
+                Comp {
+                    char:       comp.char,
+                    foreground: self.over(comp.foreground),
+                    background: self.over(comp.background),
+                    attributes: comp.attributes,
+                }
+            }
+        }
+    )* };
+}
+
+macro_rules! cell_over_color {
+    ($($C:ident)*) => { $(
+        impl<Fg, Bg, Attrs> Over<$C> for Comp<Fg, Bg, Attrs>
+        where
+            Fg: Over<$C>,
+            Bg: Over<$C>,
+        {
+            type Output = Comp<<Fg as Over<$C>>::Output, <Bg as Over<$C>>::Output, Attrs>;
+
+            fn over(self, color: $C) -> Self::Output {
+                Comp {
+                    char:       self.char,
+                    foreground: self.foreground.over(color),
+                    background: self.background.over(color),
+                    attributes: self.attributes,
+                }
+            }
+        }
+    )* }
+}
+
+macro_rules! cell_over_cell {
+    // ($self:ident $bottom:ident) => {};
+    ($($C:ident)*) => { $(
+        impl<TopFg, BottomFg, BottomBg, Attrs> Over<Comp<BottomFg, BottomBg, Attrs>>
+            for Comp<TopFg, $C, Attrs>
+        where
+            TopFg: Over<BottomBg> + PartialEq<$C> + Into<PreRgba>,
+            $C: Over<BottomFg> + Over<BottomBg>,
+            <TopFg as Over<BottomBg>>::Output: Into<PreRgba>,
+            <$C as Over<BottomFg>>::Output: Into<PreRgba>,
+            <$C as Over<BottomBg>>::Output: Into<PreRgba>,
+            // NOTE This bound shouldn't really be necessary! Why does the compiler need it?
+            Self: Over<
+                BottomBg,
+                Output = Comp<<TopFg as Over<BottomBg>>::Output, <$C as Over<BottomBg>>::Output, Attrs>,
+            >,
+        {
+            type Output = Comp<PreRgba, PreRgba, Attrs>;
+
+            fn over(self, bottom: Comp<BottomFg, BottomBg, Attrs>) -> Self::Output {
+                if self.background.is_opaque() {
+                    self.cast()
+                } else if self.foreground == self.background {
+                    self.background.over(bottom).cast()
+                } else {
+                    self.over(bottom.background).cast()
+                }
+            }
+        }
+    )* };
+}
+// cell_over_cell!(Rgba PreRgba);
+
+// impl<TopFg, BottomFg, BottomBg, Attrs> Over<Comp<BottomFg, BottomBg, Attrs>>
+// for Comp<TopFg, Rgb, Attrs>
+// {
+// type Output = Comp<TopFg, Rgb, Attrs>;
+//
+// fn over(self, _: Comp<BottomFg, BottomBg, Attrs>) -> Self::Output {
+// self
+// }
+// }
+
+color_over_cell!(Rgb Rgba PreRgba);
+cell_over_color!(Rgb Rgba PreRgba);
+
+/*
+impl<TopFg, BottomFg, BottomBg, Attrs> Over<Comp<BottomFg, BottomBg, Attrs>>
+    for Comp<TopFg, Rgba, Attrs>
+where
+    TopFg: Over<BottomBg> + PartialEq<Rgba> + Into<PreRgba>,
+    Rgba: Over<BottomFg> + Over<BottomBg>,
+    <TopFg as Over<BottomBg>>::Output: Into<PreRgba>,
+    <Rgba as Over<BottomFg>>::Output: Into<PreRgba>,
+    <Rgba as Over<BottomBg>>::Output: Into<PreRgba>,
+    // NOTE This bound shouldn't really be necessary! Why does the compiler need it?
+    Self: Over<
+        BottomBg,
+        Output = Comp<<TopFg as Over<BottomBg>>::Output, <Rgba as Over<BottomBg>>::Output, Attrs>,
+    >,
+{
+    type Output = Comp<PreRgba, PreRgba, Attrs>;
+
+    fn over(self, bottom: Comp<BottomFg, BottomBg, Attrs>) -> Self::Output {
+        if self.background.is_opaque() {
+            self.cast()
+        } else if self.foreground == self.background {
+            self.background.over(bottom).cast()
+        } else {
+            self.over(bottom.background).cast()
         }
     }
 }

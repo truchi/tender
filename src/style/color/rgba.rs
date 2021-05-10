@@ -42,6 +42,31 @@ impl PartialEq<PreRgba> for Rgba {
     }
 }
 
+impl Over<Rgb> for Rgba {
+    type Output = Rgb;
+
+    fn over(self, bottom: Rgb) -> Rgb {
+        PreRgba::from(self).over(bottom)
+    }
+}
+
+impl Over<Rgba> for Rgba {
+    type Output = PreRgba;
+
+    fn over(self, bottom: Rgba) -> PreRgba {
+        PreRgba::from(self).over(bottom)
+    }
+}
+
+impl Over<PreRgba> for Rgba {
+    type Output = PreRgba;
+
+    fn over(self, bottom: PreRgba) -> PreRgba {
+        PreRgba::from(self).over(bottom)
+    }
+}
+
+/*
 over!(self,
     Over<bottom:     Rgb ,    Rgb > for  Rgba { PreRgba::from( self).over( bottom) }
     Over<bottom:     Rgba, PreRgba> for  Rgba { PreRgba::from( self).over( bottom) }
@@ -70,3 +95,4 @@ over!(self,
     // Over<bottom:    &Rgba, ()> for  &mut Rgba { *self = (*self).over(*bottom).into() }
     // Over<bottom: &PreRgba, ()> for  &mut Rgba { *self = (*self).over(*bottom).into() }
 );
+*/

@@ -65,6 +65,31 @@ impl Display for Rgb {
     }
 }
 
+impl Over<Rgb> for Rgb {
+    type Output = Rgb;
+
+    fn over(self, _: Rgb) -> Rgb {
+        self
+    }
+}
+
+impl Over<Rgba> for Rgb {
+    type Output = Rgb;
+
+    fn over(self, _: Rgba) -> Rgb {
+        self
+    }
+}
+
+impl Over<PreRgba> for Rgb {
+    type Output = Rgb;
+
+    fn over(self, _: PreRgba) -> Rgb {
+        self
+    }
+}
+
+/*
 over!(self,
     Over<_:     Rgb , Rgb> for  Rgb {  self }
     Over<_:     Rgba, Rgb> for  Rgb {  self }
@@ -93,3 +118,4 @@ over!(self,
     // Over<_:    &Rgba, ()> for  &mut Rgb {}
     // Over<_: &PreRgba, ()> for  &mut Rgb {}
 );
+*/
