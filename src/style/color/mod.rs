@@ -24,29 +24,29 @@ pub use with_alpha::*;
 
 use super::*;
 
-/// A wrapper type for colors.
-#[derive(Copy, Clone, Eq, Default, Hash, Debug)]
-pub struct Color<T>(pub T);
-
-impl<T> From<T> for Color<T> {
-    fn from(t: T) -> Self {
-        Self(t)
-    }
-}
-
-impl<T: PartialEq<U>, U> PartialEq<Color<U>> for Color<T> {
-    fn eq(&self, other: &Color<U>) -> bool {
-        &self.0 == &other.0
-    }
-}
-
-impl<Top: Over<Bottom>, Bottom> Over<Color<Bottom>> for Color<Top> {
-    type Output = Color<Top::Output>;
-
-    fn over(self, bottom: Color<Bottom>) -> Color<Top::Output> {
-        Color(self.0.over(bottom.0))
-    }
-}
+// /// A wrapper type for colors.
+// #[derive(Copy, Clone, Eq, Default, Hash, Debug)]
+// pub struct Color<T>(pub T);
+//
+// impl<T> From<T> for Color<T> {
+//     fn from(t: T) -> Self {
+//         Self(t)
+//     }
+// }
+//
+// impl<T: PartialEq<U>, U> PartialEq<Color<U>> for Color<T> {
+//     fn eq(&self, other: &Color<U>) -> bool {
+//         &self.0 == &other.0
+//     }
+// }
+//
+// impl<Top: Over<Bottom>, Bottom> Over<Color<Bottom>> for Color<Top> {
+//     type Output = Color<Top::Output>;
+//
+//     fn over(self, bottom: Color<Bottom>) -> Color<Top::Output> {
+//         Color(self.0.over(bottom.0))
+//     }
+// }
 
 // impl<T: WithAlpha> WithAlpha for Color<T> {
 // fn alpha(self) -> u8 {
