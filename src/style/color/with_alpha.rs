@@ -1,7 +1,7 @@
 use super::*;
 
 /// A trait for colors.
-pub trait WithAlpha:
+pub trait Color:
     Copy
     + Default
     + PartialEq<Rgb>

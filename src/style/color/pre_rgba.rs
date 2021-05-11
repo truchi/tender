@@ -4,7 +4,7 @@ use super::*;
 #[derive(Copy, Clone, Eq, Default, Hash, Debug)]
 pub struct PreRgba(pub u8, pub u8, pub u8, pub u8);
 
-impl WithAlpha for PreRgba {
+impl Color for PreRgba {
     fn alpha(self) -> u8 {
         self.3
     }
