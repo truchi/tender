@@ -165,6 +165,19 @@ impl<Fg, Bg> Comp<Fg, Bg> {
             attributes: self.attributes,
         }
     }
+
+    pub fn hard_cast<NewFg, NewBg>(self) -> Comp<NewFg, NewBg>
+    where
+        Fg: HardInto<NewFg>,
+        Bg: HardInto<NewBg>,
+    {
+        Comp {
+            char:       self.char,
+            foreground: self.foreground.hard_into(),
+            background: self.background.hard_into(),
+            attributes: self.attributes,
+        }
+    }
 }
 
 macro_rules! color_over_comp {
@@ -271,8 +284,8 @@ impl Over<Comp<Rgb, Rgb>> for Comp<PreRgba, PreRgba> {
 
     fn over(self, bottom: Comp<Rgb, Rgb>) -> Self::Output {
         if self.background.is_opaque() {
-            // self.cast()
-            todo!()
+            debug_assert!(self.foreground.is_opaque());
+            self.hard_cast()
         } else if self.foreground == self.background {
             self.background.over(bottom)
         } else {
