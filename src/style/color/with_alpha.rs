@@ -1,5 +1,26 @@
+use super::*;
+
 /// A trait for colors.
-pub trait WithAlpha: Sized {
+pub trait WithAlpha:
+    Copy
+    + Default
+    + PartialEq<Rgb>
+    + Over<Rgb>
+    + From<Rgb>
+    + TryInto<Rgb>
+    + HardInto<Rgb>
+    + PartialEq<Rgba>
+    + Over<Rgba>
+    + TryFrom<Rgba>
+    + HardFrom<Rgba>
+    + HardInto<Rgba>
+    + TryInto<Rgba>
+    + PartialEq<PreRgba>
+    + Over<PreRgba>
+    + TryFrom<PreRgba>
+    + HardFrom<PreRgba>
+    + Into<PreRgba>
+{
     /// Returns the `alpha` component's value.
     fn alpha(self) -> u8;
 

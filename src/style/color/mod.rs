@@ -13,7 +13,7 @@ pub use rgba::*;
 pub use with_alpha::*;
 
 use super::*;
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
 
 pub trait HardFrom<T> {
     fn hard_from(_: T) -> Self;

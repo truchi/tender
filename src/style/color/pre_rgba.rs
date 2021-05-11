@@ -31,13 +31,13 @@ impl From<Rgba> for PreRgba {
 
 impl PartialEq<Rgb> for PreRgba {
     fn eq(&self, rgb: &Rgb) -> bool {
-        *self == PreRgba::from(*rgb)
+        rgb == self
     }
 }
 
 impl PartialEq<Rgba> for PreRgba {
     fn eq(&self, rgba: &Rgba) -> bool {
-        *self == PreRgba::from(*rgba)
+        rgba == self
     }
 }
 

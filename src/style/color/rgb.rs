@@ -67,13 +67,17 @@ impl HardFrom<PreRgba> for Rgb {
 
 impl PartialEq<Rgba> for Rgb {
     fn eq(&self, rgba: &Rgba) -> bool {
-        Rgba::from(*self) == *rgba
+        Rgb::try_from(*rgba)
+            .map(|rgb| *self == rgb)
+            .unwrap_or(false)
     }
 }
 
 impl PartialEq<PreRgba> for Rgb {
     fn eq(&self, pre_rgba: &PreRgba) -> bool {
-        PreRgba::from(*self) == *pre_rgba
+        Rgb::try_from(*pre_rgba)
+            .map(|rgb| *self == rgb)
+            .unwrap_or(false)
     }
 }
 
