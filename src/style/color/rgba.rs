@@ -16,11 +16,29 @@ impl From<Rgb> for Rgba {
     }
 }
 
-impl From<PreRgba> for Rgba {
-    fn from(pre_rgba: PreRgba) -> Rgba {
-        let Rgb(red, green, blue) = pre_rgba.into();
+impl TryFrom<PreRgba> for Rgba {
+    type Error = ();
 
-        Rgba(red, green, blue, pre_rgba.alpha())
+    fn try_from(pre_rgba: PreRgba) -> Result<Rgba, ()> {
+        if pre_rgba.is_visible() {
+            Ok(Rgba::hard_from(pre_rgba))
+        } else {
+            Err(())
+        }
+    }
+}
+
+impl HardFrom<PreRgba> for Rgba {
+    fn hard_from(pre_rgba: PreRgba) -> Rgba {
+        debug_assert!(pre_rgba.is_visible());
+        let inv_alpha = pre_rgba.inv_alpha_f64();
+
+        Rgba(
+            (pre_rgba.0 as f64 * inv_alpha).round() as _,
+            (pre_rgba.1 as f64 * inv_alpha).round() as _,
+            (pre_rgba.2 as f64 * inv_alpha).round() as _,
+            pre_rgba.3,
+        )
     }
 }
 

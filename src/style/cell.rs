@@ -271,7 +271,8 @@ impl Over<Comp<Rgb, Rgb>> for Comp<PreRgba, PreRgba> {
 
     fn over(self, bottom: Comp<Rgb, Rgb>) -> Self::Output {
         if self.background.is_opaque() {
-            self.cast()
+            // self.cast()
+            todo!()
         } else if self.foreground == self.background {
             self.background.over(bottom)
         } else {

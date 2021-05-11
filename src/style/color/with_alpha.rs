@@ -8,15 +8,9 @@ pub trait WithAlpha: Sized {
         self.alpha() as f64 / u8::MAX as f64
     }
 
-    /// Returns `1.0 / alpha_f64`, or `None` if `alpha == 0`.
-    fn inv_alpha_f64(self) -> Option<f64> {
-        let alpha = self.alpha();
-
-        if alpha == 0 {
-            None
-        } else {
-            Some(u8::MAX as f64 / alpha as f64)
-        }
+    /// Returns `1.0 / alpha_f64`.
+    fn inv_alpha_f64(self) -> f64 {
+        u8::MAX as f64 / self.alpha() as f64
     }
 
     /// Returns `1.0 - alpha_f64`.

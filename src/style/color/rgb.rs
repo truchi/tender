@@ -27,23 +27,41 @@ impl WithAlpha for Rgb {
     }
 }
 
-impl From<Rgba> for Rgb {
-    fn from(rgba: Rgba) -> Rgb {
+impl TryFrom<Rgba> for Rgb {
+    type Error = ();
+
+    fn try_from(rgba: Rgba) -> Result<Rgb, ()> {
+        if rgba.is_opaque() {
+            Ok(Rgb::hard_from(rgba))
+        } else {
+            Err(())
+        }
+    }
+}
+
+impl HardFrom<Rgba> for Rgb {
+    fn hard_from(rgba: Rgba) -> Rgb {
+        debug_assert!(rgba.is_opaque());
         Rgb(rgba.0, rgba.1, rgba.2)
     }
 }
 
-impl From<PreRgba> for Rgb {
-    fn from(pre_rgba: PreRgba) -> Rgb {
-        if let Some(inv_alpha) = pre_rgba.inv_alpha_f64() {
-            Rgb(
-                (pre_rgba.0 as f64 * inv_alpha).round() as _,
-                (pre_rgba.1 as f64 * inv_alpha).round() as _,
-                (pre_rgba.2 as f64 * inv_alpha).round() as _,
-            )
+impl TryFrom<PreRgba> for Rgb {
+    type Error = ();
+
+    fn try_from(pre_rgba: PreRgba) -> Result<Rgb, ()> {
+        if pre_rgba.is_opaque() {
+            Ok(Rgb::hard_from(pre_rgba))
         } else {
-            Rgb(0, 0, 0)
+            Err(())
         }
+    }
+}
+
+impl HardFrom<PreRgba> for Rgb {
+    fn hard_from(pre_rgba: PreRgba) -> Rgb {
+        debug_assert!(pre_rgba.is_opaque());
+        Rgb(pre_rgba.0, pre_rgba.1, pre_rgba.2)
     }
 }
 
