@@ -25,10 +25,10 @@ use super::*;
 /// ```
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
 pub struct Comp<Fg, Bg> {
-    char:       char,
-    foreground: Fg,
-    background: Bg,
-    attributes: AttributesU8,
+    pub(super) char:       char,
+    pub(super) foreground: Fg,
+    pub(super) background: Bg,
+    pub(super) attributes: AttributesU8,
 }
 
 impl<Fg, Bg> Comp<Fg, Bg> {
@@ -50,7 +50,7 @@ impl<Fg, Bg> Comp<Fg, Bg> {
         }
     }
 
-    pub fn cast<NewFg, NewBg>(self) -> Comp<NewFg, NewBg>
+    fn cast<NewFg, NewBg>(self) -> Comp<NewFg, NewBg>
     where
         Fg: Into<NewFg>,
         Bg: Into<NewBg>,
@@ -73,6 +73,17 @@ impl<Fg, Bg> Comp<Fg, Bg> {
             foreground: self.foreground.hard_into(),
             background: self.background.hard_into(),
             attributes: self.attributes,
+        }
+    }
+}
+
+impl<Fg: Over<Bg>, Bg: Copy> From<Cell<Fg, Bg>> for Comp<Fg::Output, Bg> {
+    fn from(cell: Cell<Fg, Bg>) -> Self {
+        Self {
+            char:       cell.char,
+            foreground: cell.foreground.over(cell.background),
+            background: cell.background,
+            attributes: cell.attributes,
         }
     }
 }

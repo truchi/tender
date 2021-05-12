@@ -4,10 +4,10 @@ use std::fmt::{self, Display, Formatter};
 /// A terminal `Cell`.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
 pub struct Cell<Fg, Bg> {
-    char:       char,
-    foreground: Fg,
-    background: Bg,
-    attributes: AttributesU8,
+    pub char:       char,
+    pub foreground: Fg,
+    pub background: Bg,
+    pub attributes: AttributesU8,
 }
 
 impl<Fg, Bg> Cell<Fg, Bg> {
@@ -22,6 +22,17 @@ impl<Fg, Bg> Cell<Fg, Bg> {
             foreground,
             background,
             attributes: attributes.into().into(),
+        }
+    }
+}
+
+impl From<Comp<Rgb, Rgb>> for Cell<Rgb, Rgb> {
+    fn from(comp: Comp<Rgb, Rgb>) -> Self {
+        Self {
+            char:       comp.char,
+            foreground: comp.foreground,
+            background: comp.background,
+            attributes: comp.attributes,
         }
     }
 }
