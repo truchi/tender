@@ -1,16 +1,16 @@
 //! Colors ([`Rgb`], [`Rgba`], [`PreRgba`]).
 
+mod color;
 mod ground;
 mod pre_rgba;
 mod rgb;
 mod rgba;
-mod with_alpha;
 
+pub use color::*;
 pub use ground::*;
 pub use pre_rgba::*;
 pub use rgb::*;
 pub use rgba::*;
-pub use with_alpha::*;
 
 use super::*;
 use std::convert::{TryFrom, TryInto};
