@@ -166,7 +166,7 @@ impl<Fg, Bg> Comp<Fg, Bg> {
         }
     }
 
-    pub fn hard_cast<NewFg, NewBg>(self) -> Comp<NewFg, NewBg>
+    fn hard_cast<NewFg, NewBg>(self) -> Comp<NewFg, NewBg>
     where
         Fg: HardInto<NewFg>,
         Bg: HardInto<NewBg>,

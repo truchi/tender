@@ -15,32 +15,6 @@ pub use with_alpha::*;
 use super::*;
 use std::convert::{TryFrom, TryInto};
 
-pub trait HardFrom<T> {
-    fn hard_from(_: T) -> Self;
-}
-
-pub trait HardInto<T> {
-    fn hard_into(self) -> T;
-}
-
-impl<T, U> HardInto<U> for T
-where
-    U: HardFrom<T>,
-{
-    fn hard_into(self) -> U {
-        U::hard_from(self)
-    }
-}
-
-impl<T, U> HardFrom<U> for T
-where
-    U: Into<T>,
-{
-    fn hard_from(value: U) -> Self {
-        value.into()
-    }
-}
-
 macro_rules! web_colors {
     ($($Color:ident $R:literal $G:literal $B:literal)*) => {
         impl    Rgb  { $(pub const $Color:    Rgb  =    Rgb ($R, $G, $B);)* }

@@ -8,17 +8,13 @@ pub trait Color:
     + Over<Rgb>
     + From<Rgb>
     + TryInto<Rgb>
-    + HardInto<Rgb>
     + PartialEq<Rgba>
     + Over<Rgba>
     + TryFrom<Rgba>
-    + HardFrom<Rgba>
-    + HardInto<Rgba>
     + TryInto<Rgba>
     + PartialEq<PreRgba>
     + Over<PreRgba>
     + TryFrom<PreRgba>
-    + HardFrom<PreRgba>
     + Into<PreRgba>
 {
     /// Returns the `alpha` component's value.

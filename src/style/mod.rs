@@ -25,3 +25,20 @@ pub trait Paint<Top, Output> {
 // }
 
 pub struct Dedup<T>(pub T, pub T);
+
+trait HardFrom<T> {
+    fn hard_from(_: T) -> Self;
+}
+
+trait HardInto<T> {
+    fn hard_into(self) -> T;
+}
+
+impl<T, U> HardInto<U> for T
+where
+    U: HardFrom<T>,
+{
+    fn hard_into(self) -> U {
+        U::hard_from(self)
+    }
+}
