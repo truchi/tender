@@ -5,7 +5,7 @@ pub trait Color:
     Copy
     + Default
     + PartialEq<Rgb>
-    + Over<Rgb>
+    + Over<Rgb, Output = Rgb>
     + From<Rgb>
     + TryInto<Rgb>
     + PartialEq<Rgba>

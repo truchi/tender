@@ -1,11 +1,13 @@
 pub mod attributes;
 mod cell;
 pub mod color;
+mod comp;
 // mod cursor;
 
 pub use attributes::*;
 pub use cell::*;
 pub use color::*;
+pub use comp::*;
 // pub use cursor::*;
 
 pub trait Over<Bottom> {

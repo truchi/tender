@@ -1,289 +1,43 @@
 use super::*;
-use std::{
-    fmt::{self, Display, Formatter},
-    marker::PhantomData,
-    ops::DerefMut,
-};
+use std::fmt::{self, Display, Formatter};
 
-// ------------------------------------------------------------ //
-//                                                              //
-// *************************** CELL *************************** //
-//                                                              //
-// ------------------------------------------------------------ //
-
-/*
 /// A terminal `Cell`.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
-pub struct Cell<Fg, Bg, Attrs> {
-    char:       char,
-    foreground: Color<Fg>,
-    background: Color<Bg>,
-    attributes: Attrs,
-}
-
-impl<Fg, Bg, Attrs> Cell<Fg, Bg, Attrs> {
-    pub fn new(char: char, foreground: Fg, background: Bg, attributes: Attrs) -> Self {
-        Self {
-            char,
-            foreground: Color(foreground),
-            background: Color(background),
-            attributes,
-        }
-    }
-}
-
-impl<Fg: Over<Rgb, Rgb> + Copy, T: Display> Display for Cell<Fg, Rgb, T> {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(
-            f,
-            "{}{}{}{}",
-            Foreground(self.foreground.0.over(self.background.0)),
-            Background(self.background.0),
-            self.attributes,
-            self.char,
-        )
-    }
-}
-*/
-
-/*
-impl<Fg, Bg> Cell<Composited, Fg, Bg> {
-    pub fn new<C>(
-        char: char,
-        foreground: C,
-        background: Bg,
-        attributes: impl Into<Attributes>,
-    ) -> Self
-    where
-        C: Over<Bg, Fg>,
-        Bg: Clone,
-    {
-        Self {
-            char,
-            foreground: Color(foreground.over(background.clone())),
-            background: Color(background),
-            attributes: attributes.into().into(),
-            phantom: PhantomData,
-        }
-    }
-}
-
-impl<T, Fg, Bg> Cell<T, Fg, Bg> {
-    pub fn cast<NewFg, NewBg>(self) -> Cell<T, NewFg, NewBg>
-    where
-        Fg: Into<NewFg>,
-        Bg: Into<NewBg>,
-    {
-        Cell {
-            char:       self.char,
-            foreground: Color(self.foreground.0.into()),
-            background: Color(self.background.0.into()),
-            attributes: self.attributes,
-            phantom:    PhantomData,
-        }
-    }
-}
-
-impl<C: Over<Bg, Fg>, Fg, Bg: Clone> From<Cell<Straight, C, Bg>> for Cell<Composited, Fg, Bg> {
-    fn from(cell: Cell<Straight, C, Bg>) -> Self {
-        Self {
-            char:       cell.char,
-            foreground: cell.foreground.over(cell.background.clone()),
-            background: cell.background,
-            attributes: cell.attributes,
-            phantom:    PhantomData,
-        }
-    }
-}
-*/
-
-// ------------------------------------------------------------ //
-//                                                              //
-// *************************** COMP *************************** //
-//                                                              //
-// ------------------------------------------------------------ //
-
-/// A terminal `Cell`, composited.
-///
-/// Composited cells, 5 possibilities:
-/// ```
-///     Rgb     Rgb
-///     Rgb  PreRgba
-///  PreRgba PreRgba
-/// (   Rgb     Rgba)
-/// (PreRgba    Rgba)
-///
-/// OVER
-///    Rgb     Rgb  OVER    Rgb     Rgb  => Rgb Rgb (TOP)
-///                         Rgb  PreRgba => Rgb Rgb (TOP)
-///                      PreRgba PreRgba => Rgb Rgb (TOP)
-///
-///    Rgb  PreRgba OVER    Rgb     Rgb  => Rgb    Rgb
-///                         Rgb  PreRgba => Rgb PreRgba
-///                      PreRgba PreRgba => Rgb PreRgba
-///
-/// PreRgba PreRgba OVER    Rgb     Rgb  =>    Rgb     Rgb
-///                         Rgb  PreRgba => PreRgba PreRgba
-///                      PreRgba PreRgba => PreRgba PreRgba
-/// ```
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
-pub struct Comp<Fg, Bg> {
+pub struct Cell<Fg, Bg> {
     char:       char,
     foreground: Fg,
     background: Bg,
     attributes: AttributesU8,
 }
 
-impl<Fg, Bg> Comp<Fg, Bg> {
-    pub fn new<C>(
+impl<Fg, Bg> Cell<Fg, Bg> {
+    pub fn new(
         char: char,
-        foreground: C,
+        foreground: Fg,
         background: Bg,
         attributes: impl Into<Attributes>,
-    ) -> Self
-    where
-        C: Over<Bg, Output = Fg>,
-        Bg: Copy,
-    {
+    ) -> Self {
         Self {
             char,
-            foreground: foreground.over(background),
+            foreground,
             background,
             attributes: attributes.into().into(),
         }
     }
+}
 
-    pub fn cast<NewFg, NewBg>(self) -> Comp<NewFg, NewBg>
-    where
-        Fg: Into<NewFg>,
-        Bg: Into<NewBg>,
-    {
-        Comp {
-            char:       self.char,
-            foreground: self.foreground.into(),
-            background: self.background.into(),
-            attributes: self.attributes,
-        }
-    }
-
-    fn hard_cast<NewFg, NewBg>(self) -> Comp<NewFg, NewBg>
-    where
-        Fg: HardInto<NewFg>,
-        Bg: HardInto<NewBg>,
-    {
-        Comp {
-            char:       self.char,
-            foreground: self.foreground.hard_into(),
-            background: self.background.hard_into(),
-            attributes: self.attributes,
-        }
+impl<Fg: Color> Display for Cell<Fg, Rgb> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{}{}{}{}",
+            Foreground(self.foreground.over(self.background)),
+            Background(self.background),
+            self.attributes,
+            self.char,
+        )
     }
 }
-
-macro_rules! color_over_comp {
-    ($($C:ident)*) => { $(
-        impl<Fg, Bg> Over<Comp<Fg, Bg>> for $C
-        where
-            $C: Over<Fg> + Over<Bg>,
-        {
-            type Output = Comp<<$C as Over<Fg>>::Output, <$C as Over<Bg>>::Output>;
-
-            fn over(self, comp: Comp<Fg, Bg>) -> Self::Output {
-                Comp {
-                    char:       comp.char,
-                    foreground: self.over(comp.foreground),
-                    background: self.over(comp.background),
-                    attributes: comp.attributes,
-                }
-            }
-        }
-    )* };
-}
-
-macro_rules! comp_over_color {
-    ($($C:ident)*) => { $(
-        impl<Fg, Bg> Over<$C> for Comp<Fg, Bg>
-        where
-            Fg: Over<$C>,
-            Bg: Over<$C>,
-        {
-            type Output = Comp<<Fg as Over<$C>>::Output, <Bg as Over<$C>>::Output>;
-
-            fn over(self, color: $C) -> Self::Output {
-                Comp {
-                    char:       self.char,
-                    foreground: self.foreground.over(color),
-                    background: self.background.over(color),
-                    attributes: self.attributes,
-                }
-            }
-        }
-    )* }
-}
-
-macro_rules! comp_rgb_rgb_over_comp {
-    ($(Comp<$Fg:ty, $Bg:ty>)*) => { $(
-        impl Over<Comp<$Fg, $Bg>> for Comp<Rgb, Rgb> {
-            type Output = Comp<Rgb, Rgb>;
-
-            fn over(self, _: Comp<$Fg, $Bg>) -> Self::Output {
-                self
-            }
-        }
-    )* };
-}
-
-macro_rules! comp_rgb_pre_rgba_over_comp {
-    ($(Comp<$Fg:ty, $Bg:ty, Output = Comp<$NewFg:ty, $NewBg:ty>>)*) => { $(
-        impl Over<Comp<$Fg, $Bg>> for Comp<Rgb, PreRgba> {
-            type Output = Comp<$NewFg, $NewBg>;
-
-            fn over(self, bottom: Comp<$Fg, $Bg>) -> Self::Output {
-                self.over(bottom.background)
-            }
-        }
-    )* };
-}
-
-macro_rules! comp_pre_rgba_pre_rgba_over_comp {
-    ($(
-        Comp<$Fg:ty, $Bg:ty, Output = Comp<$NewFg:ty, $NewBg:ty>>
-        ($($cast1:ident)?) ($($cast2:ident)?)
-    )*) => { $(
-        impl Over<Comp<$Fg, $Bg>> for Comp<PreRgba, PreRgba> {
-            type Output = Comp<$NewFg, $NewBg>;
-
-            fn over(self, bottom: Comp<$Fg, $Bg>) -> Self::Output {
-                if self.background.is_opaque() {
-                    debug_assert!(self.foreground.is_opaque());
-                    self$(.$cast1())?
-                } else if self.foreground == self.background {
-                    self.background.over(bottom)$(.$cast2())?
-                } else {
-                    self.over(bottom.background)
-                }
-            }
-        }
-    )* };
-}
-
-color_over_comp!(Rgb Rgba PreRgba);
-comp_over_color!(Rgb Rgba PreRgba);
-comp_rgb_rgb_over_comp!(
-    Comp<   Rgb ,    Rgb >
-    Comp<   Rgb ,    Rgba>
-    Comp<PreRgba, PreRgba>
-);
-comp_rgb_pre_rgba_over_comp!(
-    Comp<   Rgb ,    Rgb , Output = Comp<Rgb,    Rgb >>
-    Comp<   Rgb ,    Rgba, Output = Comp<Rgb, PreRgba>>
-    Comp<PreRgba, PreRgba, Output = Comp<Rgb, PreRgba>>
-);
-comp_pre_rgba_pre_rgba_over_comp!(
-    Comp<   Rgb ,    Rgb , Output = Comp<   Rgb ,    Rgb >> (hard_cast) ()
-    Comp<   Rgb ,    Rgba, Output = Comp<PreRgba, PreRgba>> (cast) (cast)
-    Comp<PreRgba, PreRgba, Output = Comp<PreRgba, PreRgba>> () ()
-);
 
 /*
 impl<TopFg, BottomFg, BottomBg, Attrs> Over<Comp<BottomFg, BottomBg, Attrs>>
