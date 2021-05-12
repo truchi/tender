@@ -221,106 +221,69 @@ macro_rules! comp_over_color {
     )* }
 }
 
+macro_rules! comp_rgb_rgb_over_comp {
+    ($(Comp<$Fg:ty, $Bg:ty>)*) => { $(
+        impl Over<Comp<$Fg, $Bg>> for Comp<Rgb, Rgb> {
+            type Output = Comp<Rgb, Rgb>;
+
+            fn over(self, _: Comp<$Fg, $Bg>) -> Self::Output {
+                self
+            }
+        }
+    )* };
+}
+
+macro_rules! comp_rgb_pre_rgba_over_comp {
+    ($(Comp<$Fg:ty, $Bg:ty, Output = Comp<$NewFg:ty, $NewBg:ty>>)*) => { $(
+        impl Over<Comp<$Fg, $Bg>> for Comp<Rgb, PreRgba> {
+            type Output = Comp<$NewFg, $NewBg>;
+
+            fn over(self, bottom: Comp<$Fg, $Bg>) -> Self::Output {
+                self.over(bottom.background)
+            }
+        }
+    )* };
+}
+
+macro_rules! comp_pre_rgba_pre_rgba_over_comp {
+    ($(
+        Comp<$Fg:ty, $Bg:ty, Output = Comp<$NewFg:ty, $NewBg:ty>>
+        ($($cast1:ident)?) ($($cast2:ident)?)
+    )*) => { $(
+        impl Over<Comp<$Fg, $Bg>> for Comp<PreRgba, PreRgba> {
+            type Output = Comp<$NewFg, $NewBg>;
+
+            fn over(self, bottom: Comp<$Fg, $Bg>) -> Self::Output {
+                if self.background.is_opaque() {
+                    debug_assert!(self.foreground.is_opaque());
+                    self$(.$cast1())?
+                } else if self.foreground == self.background {
+                    self.background.over(bottom)$(.$cast2())?
+                } else {
+                    self.over(bottom.background)
+                }
+            }
+        }
+    )* };
+}
+
 color_over_comp!(Rgb Rgba PreRgba);
 comp_over_color!(Rgb Rgba PreRgba);
-
-// --- Comp: Over<Comp> ---
-
-/// Rgb     Rgb  OVER    Rgb     Rgb  => Rgb Rgb (TOP)
-///                      Rgb  PreRgba => Rgb Rgb (TOP)
-///                   PreRgba PreRgba => Rgb Rgb (TOP)
-impl Over<Comp<Rgb, Rgb>> for Comp<Rgb, Rgb> {
-    type Output = Comp<Rgb, Rgb>;
-
-    fn over(self, _: Comp<Rgb, Rgb>) -> Self::Output {
-        self
-    }
-}
-impl Over<Comp<Rgb, PreRgba>> for Comp<Rgb, Rgb> {
-    type Output = Comp<Rgb, Rgb>;
-
-    fn over(self, _: Comp<Rgb, PreRgba>) -> Self::Output {
-        self
-    }
-}
-impl Over<Comp<PreRgba, PreRgba>> for Comp<Rgb, Rgb> {
-    type Output = Comp<Rgb, Rgb>;
-
-    fn over(self, _: Comp<PreRgba, PreRgba>) -> Self::Output {
-        self
-    }
-}
-
-// Rgb  PreRgba OVER    Rgb     Rgb  => Rgb    Rgb
-//                      Rgb  PreRgba => Rgb PreRgba
-//                   PreRgba PreRgba => Rgb PreRgba
-impl Over<Comp<Rgb, Rgb>> for Comp<Rgb, PreRgba> {
-    type Output = Comp<Rgb, Rgb>;
-
-    fn over(self, bottom: Comp<Rgb, Rgb>) -> Self::Output {
-        self.over(bottom.background)
-    }
-}
-impl Over<Comp<Rgb, PreRgba>> for Comp<Rgb, PreRgba> {
-    type Output = Comp<Rgb, PreRgba>;
-
-    fn over(self, bottom: Comp<Rgb, PreRgba>) -> Self::Output {
-        self.over(bottom.background)
-    }
-}
-impl Over<Comp<PreRgba, PreRgba>> for Comp<Rgb, PreRgba> {
-    type Output = Comp<Rgb, PreRgba>;
-
-    fn over(self, bottom: Comp<PreRgba, PreRgba>) -> Self::Output {
-        self.over(bottom.background)
-    }
-}
-
-// PreRgba PreRgba OVER    Rgb     Rgb  =>    Rgb     Rgb
-//                         Rgb  PreRgba => PreRgba PreRgba
-//                      PreRgba PreRgba => PreRgba PreRgba
-impl Over<Comp<Rgb, Rgb>> for Comp<PreRgba, PreRgba> {
-    type Output = Comp<Rgb, Rgb>;
-
-    fn over(self, bottom: Comp<Rgb, Rgb>) -> Self::Output {
-        if self.background.is_opaque() {
-            debug_assert!(self.foreground.is_opaque());
-            self.hard_cast()
-        } else if self.foreground == self.background {
-            self.background.over(bottom)
-        } else {
-            self.over(bottom.background)
-        }
-    }
-}
-impl Over<Comp<Rgb, PreRgba>> for Comp<PreRgba, PreRgba> {
-    type Output = Comp<PreRgba, PreRgba>;
-
-    fn over(self, bottom: Comp<Rgb, PreRgba>) -> Self::Output {
-        if self.background.is_opaque() {
-            debug_assert!(self.foreground.is_opaque());
-            self.cast()
-        } else if self.foreground == self.background {
-            self.background.over(bottom).cast()
-        } else {
-            self.over(bottom.background)
-        }
-    }
-}
-impl Over<Comp<PreRgba, PreRgba>> for Comp<PreRgba, PreRgba> {
-    type Output = Comp<PreRgba, PreRgba>;
-
-    fn over(self, bottom: Comp<PreRgba, PreRgba>) -> Self::Output {
-        if self.background.is_opaque() {
-            debug_assert!(self.foreground.is_opaque());
-            self
-        } else if self.foreground == self.background {
-            self.background.over(bottom)
-        } else {
-            self.over(bottom.background)
-        }
-    }
-}
+comp_rgb_rgb_over_comp!(
+    Comp<   Rgb ,    Rgb >
+    Comp<   Rgb ,    Rgba>
+    Comp<PreRgba, PreRgba>
+);
+comp_rgb_pre_rgba_over_comp!(
+    Comp<   Rgb ,    Rgb , Output = Comp<Rgb,    Rgb >>
+    Comp<   Rgb ,    Rgba, Output = Comp<Rgb, PreRgba>>
+    Comp<PreRgba, PreRgba, Output = Comp<Rgb, PreRgba>>
+);
+comp_pre_rgba_pre_rgba_over_comp!(
+    Comp<   Rgb ,    Rgb , Output = Comp<   Rgb ,    Rgb >> (hard_cast) ()
+    Comp<   Rgb ,    Rgba, Output = Comp<PreRgba, PreRgba>> (cast) (cast)
+    Comp<PreRgba, PreRgba, Output = Comp<PreRgba, PreRgba>> () ()
+);
 
 /*
 impl<TopFg, BottomFg, BottomBg, Attrs> Over<Comp<BottomFg, BottomBg, Attrs>>
