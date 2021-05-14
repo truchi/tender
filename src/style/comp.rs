@@ -24,59 +24,95 @@ use super::*;
 ///                      PreRgba PreRgba => PreRgba PreRgba
 /// ```
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
-pub struct Comp<Fg, Bg> {
-    pub(super) char:       char,
-    pub(super) foreground: Fg,
-    pub(super) background: Bg,
-    pub(super) attributes: AttributesU8,
+pub struct Comp {
+    pub char:       char,
+    pub foreground: PreRgba,
+    pub background: PreRgba,
+    pub attributes: AttributesU8,
 }
 
-impl<Fg, Bg> Comp<Fg, Bg> {
-    pub fn new<C>(
+impl Comp {
+    pub fn new(
         char: char,
-        foreground: C,
-        background: Bg,
+        foreground: PreRgba,
+        background: PreRgba,
         attributes: impl Into<Attributes>,
-    ) -> Self
-    where
-        C: Over<Bg, Output = Fg>,
-        Bg: Copy,
-    {
+    ) -> Self {
         Self {
             char,
-            foreground: foreground.over(background),
+            foreground,
             background,
             attributes: attributes.into().into(),
         }
     }
+}
 
-    fn cast<NewFg, NewBg>(self) -> Comp<NewFg, NewBg>
-    where
-        Fg: Into<NewFg>,
-        Bg: Into<NewBg>,
-    {
-        Comp {
-            char:       self.char,
-            foreground: self.foreground.into(),
-            background: self.background.into(),
-            attributes: self.attributes,
-        }
-    }
-
-    fn hard_cast<NewFg, NewBg>(self) -> Comp<NewFg, NewBg>
-    where
-        Fg: HardInto<NewFg>,
-        Bg: HardInto<NewBg>,
-    {
-        Comp {
-            char:       self.char,
-            foreground: self.foreground.hard_into(),
-            background: self.background.hard_into(),
-            attributes: self.attributes,
+impl<Fg: Over<Bg>, Bg: Color> From<Cell<Fg, Bg>> for Comp
+where
+    <Fg as Over<Bg>>::Output: Color,
+{
+    fn from(cell: Cell<Fg, Bg>) -> Self {
+        Self {
+            char:       cell.char,
+            foreground: cell.foreground.over(cell.background).into(),
+            background: cell.background.into(),
+            attributes: cell.attributes,
         }
     }
 }
 
+macro_rules! color_over_comp {
+    ($($C:ident)*) => { $(
+        impl Over<Comp> for $C {
+            type Output = Comp;
+
+            fn over(self, comp: Comp) -> Self::Output {
+                Comp {
+                    char:       comp.char,
+                    foreground: self.over(comp.foreground).into(),
+                    background: self.over(comp.background).into(),
+                    attributes: comp.attributes,
+                }
+            }
+        }
+    )* };
+}
+
+macro_rules! comp_over_color {
+    ($($C:ident)*) => { $(
+        impl Over<$C> for Comp {
+            type Output = Comp;
+
+            fn over(self, color: $C) -> Self::Output {
+                Comp {
+                    char:       self.char,
+                    foreground: self.foreground.over(color).into(),
+                    background: self.background.over(color).into(),
+                    attributes: self.attributes,
+                }
+            }
+        }
+    )* }
+}
+
+color_over_comp!(Rgb Rgba PreRgba);
+comp_over_color!(Rgb Rgba PreRgba);
+
+impl Over<Comp> for Comp {
+    type Output = Comp;
+
+    fn over(self, bottom: Comp) -> Comp {
+        if self.background.is_opaque() {
+            self
+        } else if self.foreground == self.background {
+            self.background.over(bottom)
+        } else {
+            self.over(bottom.background)
+        }
+    }
+}
+
+/*
 impl<Fg: Over<Bg>, Bg: Copy> From<Cell<Fg, Bg>> for Comp<Fg::Output, Bg> {
     fn from(cell: Cell<Fg, Bg>) -> Self {
         Self {
@@ -192,3 +228,38 @@ comp_pre_rgba_pre_rgba_over_comp!(
     Comp<   Rgb ,    Rgba, Output = Comp<PreRgba, PreRgba>> (cast) (cast)
     Comp<PreRgba, PreRgba, Output = Comp<PreRgba, PreRgba>> () ()
 );
+
+// ```
+//     Rgb     Rgb
+//     Rgb  PreRgba
+//  PreRgba PreRgba
+//
+// COMP OVER CELL
+//    Rgb     Rgb  OVER    Rgb  Rgb (TOP)
+//                         Rgba Rgb (TOP)
+//                      PreRgba Rgb (TOP)
+//
+//    Rgb  PreRgba OVER    Rgb  Rgb
+//                         Rgba Rgb
+//                      PreRgba Rgb
+//
+// PreRgba PreRgba OVER    Rgb  Rgb
+//                         Rgba Rgb
+//                      PreRgba Rgb
+// ```
+
+impl Over<Cell<Rgb, Rgb>> for Comp<Rgb, Rgb> {
+    type Output = Cell<Rgb, Rgb>;
+
+    fn over(self, _: Cell<Rgb, Rgb>) -> Self::Output {
+        self.into()
+    }
+}
+impl Over<Cell<Rgba, Rgb>> for Comp<Rgb, Rgb> {
+    type Output = Cell<Rgba, Rgb>;
+
+    fn over(self, _: Cell<Rgba, Rgb>) -> Self::Output {
+        Cell::from(self).cast::<Rgba, Rgb>()
+    }
+}
+*/

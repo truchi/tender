@@ -85,3 +85,53 @@ impl Over<PreRgba> for Rgba {
         PreRgba::from(self).over(bottom)
     }
 }
+
+/*
+impl Over<Rgb> for &mut Rgba {
+    type Output = ();
+
+    fn over(self, bottom: Rgb) {
+        *self = (*self).over(bottom).into();
+    }
+}
+
+impl Over<Rgba> for &mut Rgba {
+    type Output = ();
+
+    fn over(self, bottom: Rgba) {
+        *self = (*self).over(bottom).try_into().unwrap_or(*self);
+    }
+}
+
+impl Over<PreRgba> for &mut Rgba {
+    type Output = ();
+
+    fn over(self, bottom: PreRgba) {
+        *self = (*self).over(bottom).try_into().unwrap_or(*self);
+    }
+}
+
+impl Over<&mut Rgb> for Rgba {
+    type Output = ();
+
+    fn over(self, bottom: &mut Rgb) {
+        *bottom = self.over(*bottom);
+    }
+}
+
+impl Over<&mut Rgba> for Rgba {
+    type Output = ();
+
+    fn over(self, bottom: &mut Rgba) {
+        *bottom = self.over(*bottom).try_into().unwrap_or(*bottom);
+    }
+}
+
+impl Over<&mut PreRgba> for Rgba {
+    type Output = ();
+
+    fn over(self, bottom: &mut PreRgba) {
+        *bottom = self.over(*bottom);
+    }
+}
+*/

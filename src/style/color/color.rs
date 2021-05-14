@@ -54,4 +54,9 @@ pub trait Color:
     fn is_invisible(self) -> bool {
         self.alpha() == 0
     }
+
+    /// Converts `self` to `PreRgba`.
+    fn pre(self) -> PreRgba {
+        self.into()
+    }
 }

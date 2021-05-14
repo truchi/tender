@@ -26,17 +26,6 @@ impl<Fg, Bg> Cell<Fg, Bg> {
     }
 }
 
-impl From<Comp<Rgb, Rgb>> for Cell<Rgb, Rgb> {
-    fn from(comp: Comp<Rgb, Rgb>) -> Self {
-        Self {
-            char:       comp.char,
-            foreground: comp.foreground,
-            background: comp.background,
-            attributes: comp.attributes,
-        }
-    }
-}
-
 impl<Fg: Color> Display for Cell<Fg, Rgb> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(
