@@ -53,6 +53,31 @@ impl HardFrom<Comp> for Cell<Rgb, Rgb> {
     }
 }
 
+impl<TopFg, TopBg, BottomFg, BottomBg> Over<Cell<BottomFg, BottomBg>> for Cell<TopFg, TopBg>
+where
+    Cell<TopFg, TopBg>: Into<Comp>,
+    Cell<BottomFg, BottomBg>: Into<Comp>,
+{
+    type Output = Comp;
+
+    fn over(self, bottom: Cell<BottomFg, BottomBg>) -> Comp {
+        self.into().over(bottom.into())
+    }
+}
+
+impl<Fg, Bg> Over<&mut Cell<Rgb, Rgb>> for &Cell<Fg, Bg>
+where
+    Fg: Color,
+    Bg: Color,
+    Cell<Fg, Bg>: Into<Comp>,
+{
+    type Output = ();
+
+    fn over(self, bottom: &mut Cell<Rgb, Rgb>) {
+        (&(*self).into()).over(bottom);
+    }
+}
+
 /*
 impl<TopFg, BottomFg, BottomBg, Attrs> Over<Comp<BottomFg, BottomBg, Attrs>>
     for Comp<TopFg, Rgba, Attrs>
