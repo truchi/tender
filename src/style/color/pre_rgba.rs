@@ -2,7 +2,7 @@ use super::*;
 
 /// Premultiplied-alpha rgba color.
 #[derive(Copy, Clone, Eq, Default, Hash, Debug)]
-pub struct PreRgba(pub u8, pub u8, pub u8, pub u8);
+pub struct PreRgba(pub(super) u8, pub(super) u8, pub(super) u8, pub(super) u8);
 
 impl Color for PreRgba {
     fn alpha(self) -> u8 {

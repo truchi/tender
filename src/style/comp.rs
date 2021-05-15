@@ -1,50 +1,12 @@
 use super::*;
 
 /// A terminal `Cell`, composited.
-///
-/// Composited cells, 5 possibilities:
-/// ```
-///     Rgb     Rgb
-///     Rgb  PreRgba
-///  PreRgba PreRgba
-/// (   Rgb     Rgba)
-/// (PreRgba    Rgba)
-///
-/// OVER
-///    Rgb     Rgb  OVER    Rgb     Rgb  => Rgb Rgb (TOP)
-///                         Rgb  PreRgba => Rgb Rgb (TOP)
-///                      PreRgba PreRgba => Rgb Rgb (TOP)
-///
-///    Rgb  PreRgba OVER    Rgb     Rgb  => Rgb    Rgb
-///                         Rgb  PreRgba => Rgb PreRgba
-///                      PreRgba PreRgba => Rgb PreRgba
-///
-/// PreRgba PreRgba OVER    Rgb     Rgb  =>    Rgb     Rgb
-///                         Rgb  PreRgba => PreRgba PreRgba
-///                      PreRgba PreRgba => PreRgba PreRgba
-/// ```
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
 pub struct Comp {
-    pub char:       char,
-    pub foreground: PreRgba,
-    pub background: PreRgba,
-    pub attributes: AttributesU8,
-}
-
-impl Comp {
-    pub fn new(
-        char: char,
-        foreground: PreRgba,
-        background: PreRgba,
-        attributes: impl Into<Attributes>,
-    ) -> Self {
-        Self {
-            char,
-            foreground,
-            background,
-            attributes: attributes.into().into(),
-        }
-    }
+    pub(super) char:       char,
+    pub(super) foreground: PreRgba,
+    pub(super) background: PreRgba,
+    pub(super) attributes: AttributesU8,
 }
 
 impl<Fg: Over<Bg>, Bg: Color> From<Cell<Fg, Bg>> for Comp
@@ -61,54 +23,68 @@ where
     }
 }
 
-macro_rules! color_over_comp {
-    ($($C:ident)*) => { $(
-        impl Over<Comp> for $C {
-            type Output = Comp;
+impl Over<Comp> for PreRgba {
+    type Output = Comp;
 
-            fn over(self, comp: Comp) -> Self::Output {
-                Comp {
-                    char:       comp.char,
-                    foreground: self.over(comp.foreground).into(),
-                    background: self.over(comp.background).into(),
-                    attributes: comp.attributes,
-                }
-            }
+    fn over(self, comp: Comp) -> Self::Output {
+        Comp {
+            char:       comp.char,
+            foreground: self.over(comp.foreground).into(),
+            background: self.over(comp.background).into(),
+            attributes: comp.attributes,
         }
-    )* };
+    }
 }
 
-macro_rules! comp_over_color {
-    ($($C:ident)*) => { $(
-        impl Over<$C> for Comp {
-            type Output = Comp;
+impl Over<PreRgba> for Comp {
+    type Output = Comp;
 
-            fn over(self, color: $C) -> Self::Output {
-                Comp {
-                    char:       self.char,
-                    foreground: self.foreground.over(color).into(),
-                    background: self.background.over(color).into(),
-                    attributes: self.attributes,
-                }
-            }
+    fn over(self, color: PreRgba) -> Self::Output {
+        Comp {
+            char:       self.char,
+            foreground: self.foreground.over(color).into(),
+            background: self.background.over(color).into(),
+            attributes: self.attributes,
         }
-    )* }
+    }
 }
-
-color_over_comp!(Rgb Rgba PreRgba);
-comp_over_color!(Rgb Rgba PreRgba);
 
 impl Over<Comp> for Comp {
     type Output = Comp;
 
     fn over(self, bottom: Comp) -> Comp {
         if self.background.is_opaque() {
+            debug_assert!(self.foreground.is_opaque());
             self
         } else if self.foreground == self.background {
             self.background.over(bottom)
         } else {
             self.over(bottom.background)
         }
+    }
+}
+
+impl Over<&mut Comp> for &Comp {
+    type Output = ();
+
+    fn over(self, bottom: &mut Comp) {
+        *bottom = (*self).over(*bottom);
+    }
+}
+
+impl Over<Cell<Rgb, Rgb>> for Comp {
+    type Output = Cell<Rgb, Rgb>;
+
+    fn over(self, bottom: Cell<Rgb, Rgb>) -> Cell<Rgb, Rgb> {
+        self.over(Self::from(bottom)).hard_into()
+    }
+}
+
+impl Over<&mut Cell<Rgb, Rgb>> for &Comp {
+    type Output = ();
+
+    fn over(self, bottom: &mut Cell<Rgb, Rgb>) {
+        *bottom = (*self).over(*bottom);
     }
 }
 
