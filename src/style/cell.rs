@@ -39,6 +39,19 @@ impl<Fg: Color> Display for Cell<Fg, Rgb> {
     }
 }
 
+impl Display for Dedup<Cell<Rgb, Rgb>> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{}{}{}{}",
+            Dedup(Foreground(self.0.foreground), Foreground(self.1.foreground)),
+            Dedup(Background(self.0.background), Background(self.1.background)),
+            Dedup(self.0.attributes, self.1.attributes),
+            self.1.char,
+        )
+    }
+}
+
 impl HardFrom<Comp> for Cell<Rgb, Rgb> {
     fn hard_from(comp: Comp) -> Self {
         debug_assert!(comp.foreground.is_opaque());
@@ -107,119 +120,9 @@ where
 }
 */
 
-/*
-// Color OVER Cell
-impl<C, Fg, Bg, NewFg, NewBg> Over<Cell<Fg, Bg>, Cell<NewFg, NewBg>> for Color<C>
-where
-    C: Over<Fg, NewFg> + Over<Bg, NewBg> + Clone,
-{
-    fn over(self, cell: Cell<Fg, Bg>) -> Cell<NewFg, NewBg> {
-        Cell {
-            char:       cell.char,
-            foreground: self.clone().over(cell.foreground),
-            background: self.over(cell.background),
-            attributes: cell.attributes,
-        }
-    }
-}
-
-// Cell OVER Color
-impl<C, Fg, Bg, NewFg, NewBg> Over<Color<C>, Cell<NewFg, NewBg>> for Cell<Fg, Bg>
-where
-    C: Clone,
-    Fg: Over<C, NewFg>,
-    Bg: Over<C, NewBg>,
-{
-    fn over(self, color: Color<C>) -> Cell<NewFg, NewBg> {
-        Cell {
-            char:       self.char,
-            foreground: self.foreground.over(color.clone()),
-            background: self.background.over(color),
-            attributes: self.attributes,
-        }
-    }
-}
-
-// Cell OVER Cell
-impl<TopFg, TopBg, BottomFg, BottomBg, NewFg, NewBg>
-    Over<Cell<BottomFg, BottomBg>, Cell<NewFg, NewBg>> for Cell<TopFg, TopBg>
-where
-    TopFg: Into<NewFg> + PartialEq<TopBg>,
-    TopBg: Into<NewBg> + WithAlpha,
-    Color<TopBg>: Over<Cell<BottomFg, BottomBg>, Cell<NewFg, NewBg>>,
-    Self: Over<Color<BottomBg>, Cell<NewFg, NewBg>>,
-{
-    fn over(self, bottom: Cell<BottomFg, BottomBg>) -> Cell<NewFg, NewBg> {
-        if self.background.is_opaque() {
-            self.cast()
-        } else if self.foreground == self.background {
-            self.background.over(bottom)
-        } else {
-            // full syntax or internal compilator error...
-            <_ as Over<_, Cell<NewFg, NewBg>>>::over(self, bottom.background)
-        }
-    }
-}
-
-// Cell OVER &mut Cell
-impl<TopFg, TopBg, BottomFg, BottomBg> Over<&mut Cell<BottomFg, BottomBg>, ()>
-    for Cell<TopFg, TopBg>
-where
-    Cell<BottomFg, BottomBg>: Clone,
-    Cell<TopFg, TopBg>: Over<Cell<BottomFg, BottomBg>, Cell<BottomFg, BottomBg>>,
-{
-    fn over(self, bottom: &mut Cell<BottomFg, BottomBg>) {
-        *bottom = self.over(bottom.clone());
-    }
-}
-
-// &Cell OVER &mut Cell
-impl<TopFg, TopBg, BottomFg, BottomBg> Over<&mut Cell<BottomFg, BottomBg>, ()>
-    for &Cell<TopFg, TopBg>
-where
-    Cell<TopFg, TopBg>: Clone,
-    Cell<BottomFg, BottomBg>: Clone,
-    Cell<TopFg, TopBg>: Over<Cell<BottomFg, BottomBg>, Cell<BottomFg, BottomBg>>,
-{
-    fn over(self, bottom: &mut Cell<BottomFg, BottomBg>) {
-        *bottom = self.clone().over(bottom.clone());
-    }
-}
-
-impl Display for Cell<Rgb> {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(
-            f,
-            "{}{}{}{}",
-            Foreground(self.foreground.0),
-            Background(self.background.0),
-            self.attributes,
-            self.char,
-        )
-    }
-}
-
-impl Display for Dedup<Cell<Rgb>> {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(
-            f,
-            "{}{}{}{}",
-            Dedup(
-                Foreground(self.0.foreground.0),
-                Foreground(self.1.foreground.0)
-            ),
-            Dedup(
-                Background(self.0.background.0),
-                Background(self.1.background.0)
-            ),
-            Dedup(self.0.attributes, self.1.attributes),
-            self.1.char,
-        )
-    }
-}
-
 // =================================================================================================
 
+/*
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
 pub struct DamageCell {
     pub current:  Cell<Rgb>,
