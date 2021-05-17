@@ -21,24 +21,17 @@ impl TryFrom<PreRgba> for Rgba {
 
     fn try_from(pre_rgba: PreRgba) -> Result<Rgba, ()> {
         if pre_rgba.is_visible() {
-            Ok(Rgba::hard_from(pre_rgba))
+            let inv_alpha = pre_rgba.inv_alpha_f64();
+
+            Ok(Rgba(
+                (pre_rgba.0 as f64 * inv_alpha).round() as _,
+                (pre_rgba.1 as f64 * inv_alpha).round() as _,
+                (pre_rgba.2 as f64 * inv_alpha).round() as _,
+                pre_rgba.3,
+            ))
         } else {
             Err(())
         }
-    }
-}
-
-impl HardFrom<PreRgba> for Rgba {
-    fn hard_from(pre_rgba: PreRgba) -> Rgba {
-        debug_assert!(pre_rgba.is_visible());
-        let inv_alpha = pre_rgba.inv_alpha_f64();
-
-        Rgba(
-            (pre_rgba.0 as f64 * inv_alpha).round() as _,
-            (pre_rgba.1 as f64 * inv_alpha).round() as _,
-            (pre_rgba.2 as f64 * inv_alpha).round() as _,
-            pre_rgba.3,
-        )
     }
 }
 

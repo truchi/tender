@@ -4,6 +4,13 @@ use super::*;
 #[derive(Copy, Clone, Eq, Default, Hash, Debug)]
 pub struct PreRgba(pub(super) u8, pub(super) u8, pub(super) u8, pub(super) u8);
 
+impl PreRgba {
+    pub fn drop_alpha(self) -> Rgb {
+        debug_assert!(self.is_opaque());
+        Rgb(self.0, self.1, self.2)
+    }
+}
+
 impl Color for PreRgba {
     fn alpha(self) -> u8 {
         self.3

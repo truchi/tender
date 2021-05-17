@@ -9,6 +9,20 @@ pub struct Comp {
     pub(super) attributes: AttributesU8,
 }
 
+impl Comp {
+    pub fn drop_alpha(self) -> Cell<Rgb, Rgb> {
+        debug_assert!(self.foreground.is_opaque());
+        debug_assert!(self.background.is_opaque());
+
+        Cell {
+            char:       self.char,
+            foreground: self.foreground.drop_alpha(),
+            background: self.background.drop_alpha(),
+            attributes: self.attributes,
+        }
+    }
+}
+
 impl<Fg: Over<Bg>, Bg: Color> From<Cell<Fg, Bg>> for Comp
 where
     <Fg as Over<Bg>>::Output: Color,
@@ -76,7 +90,7 @@ impl Over<Cell<Rgb, Rgb>> for Comp {
     type Output = Cell<Rgb, Rgb>;
 
     fn over(self, bottom: Cell<Rgb, Rgb>) -> Cell<Rgb, Rgb> {
-        self.over(Self::from(bottom)).hard_into()
+        self.over(Self::from(bottom)).drop_alpha()
     }
 }
 

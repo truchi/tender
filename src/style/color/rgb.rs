@@ -32,17 +32,10 @@ impl TryFrom<Rgba> for Rgb {
 
     fn try_from(rgba: Rgba) -> Result<Rgb, ()> {
         if rgba.is_opaque() {
-            Ok(Rgb::hard_from(rgba))
+            Ok(Rgb(rgba.0, rgba.1, rgba.2))
         } else {
             Err(())
         }
-    }
-}
-
-impl HardFrom<Rgba> for Rgb {
-    fn hard_from(rgba: Rgba) -> Rgb {
-        debug_assert!(rgba.is_opaque());
-        Rgb(rgba.0, rgba.1, rgba.2)
     }
 }
 
@@ -51,17 +44,10 @@ impl TryFrom<PreRgba> for Rgb {
 
     fn try_from(pre_rgba: PreRgba) -> Result<Rgb, ()> {
         if pre_rgba.is_opaque() {
-            Ok(Rgb::hard_from(pre_rgba))
+            Ok(Rgb(pre_rgba.0, pre_rgba.1, pre_rgba.2))
         } else {
             Err(())
         }
-    }
-}
-
-impl HardFrom<PreRgba> for Rgb {
-    fn hard_from(pre_rgba: PreRgba) -> Rgb {
-        debug_assert!(pre_rgba.is_opaque());
-        Rgb(pre_rgba.0, pre_rgba.1, pre_rgba.2)
     }
 }
 

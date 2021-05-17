@@ -52,20 +52,6 @@ impl Display for Dedup<Cell<Rgb, Rgb>> {
     }
 }
 
-impl HardFrom<Comp> for Cell<Rgb, Rgb> {
-    fn hard_from(comp: Comp) -> Self {
-        debug_assert!(comp.foreground.is_opaque());
-        debug_assert!(comp.background.is_opaque());
-
-        Cell {
-            char:       comp.char,
-            foreground: comp.foreground.hard_into(),
-            background: comp.background.hard_into(),
-            attributes: comp.attributes,
-        }
-    }
-}
-
 impl<TopFg, TopBg, BottomFg, BottomBg> Over<Cell<BottomFg, BottomBg>> for Cell<TopFg, TopBg>
 where
     Cell<TopFg, TopBg>: Into<Comp>,
