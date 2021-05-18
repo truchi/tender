@@ -9,23 +9,21 @@ use std::{
     thread::sleep,
     time::Duration,
 };
-use tender::{grid::*, style::*};
-// use tender::{canvas::*, grid::*, style::*};
+use tender::{canvas::*, grid::*, style::*};
+
+// fn main() {
+// let mut red = Rgba(255, 0, 0, 127);
+// let blue = Rgba(0, 0, 255, 127);
+// let over: Rgba = red.over(blue);
+// let paint: Rgba = blue.paint(red);
+//
+// println!("{:?}", over);
+// println!("{:?}", paint);
+//
+// (red).over(&mut blue);
+// }
 
 fn main() {
-    let mut red = Rgba(255, 0, 0, 127);
-    let blue = Rgba(0, 0, 255, 127);
-    let over: Rgba = red.over(blue);
-    let paint: Rgba = blue.paint(red);
-
-    println!("{:?}", over);
-    println!("{:?}", paint);
-
-    (red).over(&mut blue);
-}
-
-/*
-fn main2() {
     let (w, h) = (151, 40);
 
     let canvas_cell = Cell::<Rgb, _>::new(' ', Rgb(0, 0, 0), Rgb(255, 0, 0), ());
@@ -60,7 +58,6 @@ fn main2() {
 
     leave();
 }
-*/
 
 fn enter() {
     execute!(stdout(), EnterAlternateScreen, Hide).unwrap();

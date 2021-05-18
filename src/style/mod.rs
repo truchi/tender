@@ -2,12 +2,14 @@ pub mod attributes;
 mod cell;
 pub mod color;
 mod comp;
+mod damaged;
 // mod cursor;
 
 pub use attributes::*;
 pub use cell::*;
 pub use color::*;
 pub use comp::*;
+pub use damaged::*;
 // pub use cursor::*;
 
 pub trait Over<Bottom> {
@@ -31,3 +33,13 @@ impl<Top: Over<Bottom>, Bottom> Under<Top> for Bottom {
 }
 
 pub struct Dedup<T>(pub T, pub T);
+
+pub trait ICell {
+    fn cell(&self) -> Cell<Rgb, Rgb>;
+
+    // fn cell_mut(&mut self) -> &mut Cell<Rgb, Rgb>;
+
+    fn damage(&self) -> Option<Cell<Rgb, Rgb>>;
+
+    fn update(&mut self);
+}

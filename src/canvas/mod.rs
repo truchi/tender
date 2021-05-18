@@ -20,10 +20,9 @@ impl<T: Deref<Target = U>, U: WithPosition> WithPosition for T {
     }
 }
 
-// pub struct Screen<Canvas, Cell> {
-// cells:   Canvas,
-// stdout:  Stdout,
-// phantom: PhantomData<Cell>,
+// pub struct Screen<Cell> {
+// cells:  RowVec1D<Cell>,
+// stdout: Stdout,
 // }
 
 // impl WithSize for Screen {

@@ -77,6 +77,22 @@ where
     }
 }
 
+impl ICell for &Cell<Rgb, Rgb> {
+    fn cell(&self) -> Cell<Rgb, Rgb> {
+        **self
+    }
+
+    // fn cell_mut(&mut self) -> &mut Cell<Rgb, Rgb> {
+    // self
+    // }
+
+    fn damage(&self) -> Option<Cell<Rgb, Rgb>> {
+        Some(**self)
+    }
+
+    fn update(&mut self) {}
+}
+
 /*
 impl<TopFg, BottomFg, BottomBg, Attrs> Over<Comp<BottomFg, BottomBg, Attrs>>
     for Comp<TopFg, Rgba, Attrs>
