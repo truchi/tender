@@ -77,6 +77,41 @@ where
     }
 }
 
+impl<Fg, Bg> Over<Damaged> for Cell<Fg, Bg>
+where
+    Fg: Color,
+    Bg: Color,
+    Cell<Fg, Bg>: Into<Comp>,
+{
+    type Output = Damaged;
+
+    fn over(self, mut damaged: Damaged) -> Damaged {
+        (&self).over(&mut damaged.current);
+        damaged
+    }
+}
+
+impl Over<&mut Damaged> for Cell<Rgb, Rgb> {
+    type Output = ();
+
+    fn over(self, damaged: &mut Damaged) {
+        (&self).over(&mut damaged.current)
+    }
+}
+
+impl<'t, 'b, Fg, Bg> Over<&'b mut Damaged> for &'t Cell<Fg, Bg>
+where
+    Fg: Color,
+    Bg: Color,
+    Cell<Fg, Bg>: Into<Comp>,
+{
+    type Output = ();
+
+    fn over(self, damaged: &mut Damaged) {
+        self.over(&mut damaged.current)
+    }
+}
+
 impl ICell for &Cell<Rgb, Rgb> {
     fn cell(&self) -> Cell<Rgb, Rgb> {
         **self

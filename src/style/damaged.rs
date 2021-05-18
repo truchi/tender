@@ -58,3 +58,11 @@ impl ICell for &Damaged {
         // self.previous = self.current;
     }
 }
+
+impl Over<&mut Cell<Rgb, Rgb>> for &Damaged {
+    type Output = ();
+
+    fn over(self, cell: &mut Cell<Rgb, Rgb>) {
+        (&self.cell()).over(cell)
+    }
+}
