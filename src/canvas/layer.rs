@@ -83,8 +83,8 @@ where
         if let Some(row) = rows.next() {
             let mut row = row.into_iter();
 
-            if let Some(prev) = row.next() {
-                previous = prev.cell();
+            if let Some(cell) = row.next() {
+                previous = cell.cell();
                 write!(f, "{}{}", move_to, previous)?;
 
                 render_row(f, row, &mut previous, &mut move_to)?;
