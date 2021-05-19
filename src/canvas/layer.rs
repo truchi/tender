@@ -62,12 +62,12 @@ where
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let mut rows = self.rows();
         let mut move_to = MoveTo(self.position);
-        let mut previous: Cell<Rgb, Rgb>;
+        let mut previous: Cell;
 
         fn render_row<T: ICell>(
             f: &mut Formatter,
             row: impl IntoIterator<Item = T>,
-            previous: &mut Cell<Rgb, Rgb>,
+            previous: &mut Cell,
             move_to: &mut MoveTo,
         ) -> fmt::Result {
             for icell in row {

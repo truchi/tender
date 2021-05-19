@@ -10,7 +10,7 @@ pub struct Comp {
 }
 
 impl Comp {
-    pub fn drop_alpha(self) -> Cell<Rgb, Rgb> {
+    pub fn drop_alpha(self) -> Cell {
         debug_assert!(self.foreground.is_opaque());
         debug_assert!(self.background.is_opaque());
 
@@ -78,10 +78,10 @@ impl Over<Comp> for Comp {
     }
 }
 
-impl Over<Cell<Rgb, Rgb>> for Comp {
-    type Output = Cell<Rgb, Rgb>;
+impl Over<Cell> for Comp {
+    type Output = Cell;
 
-    fn over(self, bottom: Cell<Rgb, Rgb>) -> Cell<Rgb, Rgb> {
+    fn over(self, bottom: Cell) -> Cell {
         self.over(Self::from(bottom)).drop_alpha()
     }
 }

@@ -2,12 +2,12 @@ use super::*;
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
 pub struct Damaged {
-    pub current:  Cell<Rgb, Rgb>,
-    pub previous: Cell<Rgb, Rgb>,
+    pub current:  Cell,
+    pub previous: Cell,
 }
 
 impl Damaged {
-    pub fn new(cell: Cell<Rgb, Rgb>) -> Self {
+    pub fn new(cell: Cell) -> Self {
         Self {
             current:  cell,
             previous: cell,
@@ -16,15 +16,15 @@ impl Damaged {
 }
 
 impl ICell for Damaged {
-    fn cell(&self) -> Cell<Rgb, Rgb> {
+    fn cell(&self) -> Cell {
         self.current
     }
 
-    // fn cell_mut(&mut self) -> &mut Cell<Rgb, Rgb> {
+    // fn cell_mut(&mut self) -> &mut Cell {
     // &mut self.current
     // }
 
-    fn damage(&self) -> Option<Cell<Rgb, Rgb>> {
+    fn damage(&self) -> Option<Cell> {
         if self.current == self.previous {
             None
         } else {
@@ -38,15 +38,15 @@ impl ICell for Damaged {
 }
 
 impl ICell for &Damaged {
-    fn cell(&self) -> Cell<Rgb, Rgb> {
+    fn cell(&self) -> Cell {
         self.current
     }
 
-    // fn cell_mut(&mut self) -> &mut Cell<Rgb, Rgb> {
+    // fn cell_mut(&mut self) -> &mut Cell {
     // &mut self.current
     // }
 
-    fn damage(&self) -> Option<Cell<Rgb, Rgb>> {
+    fn damage(&self) -> Option<Cell> {
         if self.current == self.previous {
             None
         } else {

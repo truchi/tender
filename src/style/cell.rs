@@ -3,7 +3,7 @@ use std::fmt::{self, Display, Formatter};
 
 /// A terminal `Cell`.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
-pub struct Cell<Fg, Bg> {
+pub struct Cell<Fg = Rgb, Bg = Rgb> {
     pub char:       char,
     pub foreground: Fg,
     pub background: Bg,
@@ -39,7 +39,7 @@ impl<Fg: Color> Display for Cell<Fg, Rgb> {
     }
 }
 
-impl Display for Dedup<Cell<Rgb, Rgb>> {
+impl Display for Dedup<Cell> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(
             f,
@@ -64,7 +64,7 @@ where
     }
 }
 
-impl<Fg, Bg> Over<&mut Cell<Rgb, Rgb>> for &Cell<Fg, Bg>
+impl<Fg, Bg> Over<&mut Cell> for &Cell<Fg, Bg>
 where
     Fg: Color,
     Bg: Color,
@@ -72,7 +72,7 @@ where
 {
     type Output = ();
 
-    fn over(self, bottom: &mut Cell<Rgb, Rgb>) {
+    fn over(self, bottom: &mut Cell) {
         (&(*self).into()).over(bottom);
     }
 }
@@ -91,16 +91,16 @@ where
     }
 }
 
-impl ICell for &Cell<Rgb, Rgb> {
-    fn cell(&self) -> Cell<Rgb, Rgb> {
+impl ICell for &Cell {
+    fn cell(&self) -> Cell {
         **self
     }
 
-    // fn cell_mut(&mut self) -> &mut Cell<Rgb, Rgb> {
+    // fn cell_mut(&mut self) -> &mut Cell {
     // self
     // }
 
-    fn damage(&self) -> Option<Cell<Rgb, Rgb>> {
+    fn damage(&self) -> Option<Cell> {
         Some(**self)
     }
 
