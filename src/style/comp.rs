@@ -78,27 +78,11 @@ impl Over<Comp> for Comp {
     }
 }
 
-impl Over<&mut Comp> for &Comp {
-    type Output = ();
-
-    fn over(self, bottom: &mut Comp) {
-        *bottom = (*self).over(*bottom);
-    }
-}
-
 impl Over<Cell<Rgb, Rgb>> for Comp {
     type Output = Cell<Rgb, Rgb>;
 
     fn over(self, bottom: Cell<Rgb, Rgb>) -> Cell<Rgb, Rgb> {
         self.over(Self::from(bottom)).drop_alpha()
-    }
-}
-
-impl Over<&mut Cell<Rgb, Rgb>> for &Comp {
-    type Output = ();
-
-    fn over(self, bottom: &mut Cell<Rgb, Rgb>) {
-        *bottom = (*self).over(*bottom);
     }
 }
 

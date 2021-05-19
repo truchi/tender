@@ -18,6 +18,22 @@ pub trait Over<Bottom> {
     fn over(self, bottom: Bottom) -> Self::Output;
 }
 
+impl<Top: Over<Bottom, Output = Bottom> + Copy, Bottom: Copy> Over<&mut Bottom> for &Top {
+    type Output = ();
+
+    fn over(self, bottom: &mut Bottom) {
+        *bottom = (*self).over(*bottom);
+    }
+}
+
+impl<Top: Over<Bottom, Output = Top> + Copy, Bottom: Copy> Over<&Bottom> for &mut Top {
+    type Output = ();
+
+    fn over(self, bottom: &Bottom) {
+        *self = (*self).over(*bottom);
+    }
+}
+
 pub trait Under<Top> {
     type Output;
 
