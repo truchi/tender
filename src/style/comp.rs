@@ -23,15 +23,15 @@ impl Comp {
     }
 }
 
-impl<Fg: Over<Bg>, Bg: Color> From<Cell<Fg, Bg>> for Comp
-where
-    <Fg as Over<Bg>>::Output: Color,
-{
+impl<Fg: Color, Bg: Color> From<Cell<Fg, Bg>> for Comp {
     fn from(cell: Cell<Fg, Bg>) -> Self {
+        let foreground: PreRgba = cell.foreground.into();
+        let background: PreRgba = cell.background.into();
+
         Self {
-            char:       cell.char,
-            foreground: cell.foreground.over(cell.background).into(),
-            background: cell.background.into(),
+            char: cell.char,
+            foreground: foreground.over(background),
+            background,
             attributes: cell.attributes,
         }
     }
@@ -78,10 +78,27 @@ impl Over<Comp> for Comp {
     }
 }
 
-impl Over<Cell> for Comp {
-    type Output = Cell;
+impl<Fg: Color, Bg: Color> Over<Cell<Fg, Bg>> for Comp {
+    type Output = Comp;
 
-    fn over(self, bottom: Cell) -> Cell {
-        self.over(Self::from(bottom)).drop_alpha()
+    fn over(self, bottom: Cell<Fg, Bg>) -> Comp {
+        self.over(Comp::from(bottom))
+    }
+}
+
+impl Over<&mut Cell> for &Comp {
+    type Output = ();
+
+    fn over(self, bottom: &mut Cell) {
+        *bottom = (*self).over(*bottom).drop_alpha();
+    }
+}
+
+impl Over<Damaged> for Comp {
+    type Output = Damaged;
+
+    fn over(self, mut bottom: Damaged) -> Damaged {
+        (&self).over(&mut bottom.current);
+        bottom
     }
 }

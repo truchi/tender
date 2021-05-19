@@ -52,15 +52,25 @@ impl Display for Dedup<Cell> {
     }
 }
 
-impl<TopFg, TopBg, BottomFg, BottomBg> Over<Cell<BottomFg, BottomBg>> for Cell<TopFg, TopBg>
+impl<Fg: Color, Bg: Color> Over<Comp> for Cell<Fg, Bg> {
+    type Output = Comp;
+
+    fn over(self, bottom: Comp) -> Comp {
+        Comp::from(self).over(bottom)
+    }
+}
+
+impl<TopFg, TopBg, BotFg, BotBg> Over<Cell<BotFg, BotBg>> for Cell<TopFg, TopBg>
 where
-    Cell<TopFg, TopBg>: Into<Comp>,
-    Cell<BottomFg, BottomBg>: Into<Comp>,
+    TopFg: Color,
+    TopBg: Color,
+    BotFg: Color,
+    BotBg: Color,
 {
     type Output = Comp;
 
-    fn over(self, bottom: Cell<BottomFg, BottomBg>) -> Comp {
-        self.into().over(bottom.into())
+    fn over(self, bottom: Cell<BotFg, BotBg>) -> Comp {
+        Comp::from(self).over(Comp::from(bottom))
     }
 }
 
@@ -68,12 +78,11 @@ impl<Fg, Bg> Over<&mut Cell> for &Cell<Fg, Bg>
 where
     Fg: Color,
     Bg: Color,
-    Cell<Fg, Bg>: Into<Comp>,
 {
     type Output = ();
 
     fn over(self, bottom: &mut Cell) {
-        (&(*self).into()).over(bottom);
+        (&Comp::from(*self)).over(bottom)
     }
 }
 
@@ -85,9 +94,8 @@ where
 {
     type Output = Damaged;
 
-    fn over(self, mut damaged: Damaged) -> Damaged {
-        (&self).over(&mut damaged.current);
-        damaged
+    fn over(self, damaged: Damaged) -> Damaged {
+        Comp::from(self).over(damaged)
     }
 }
 
