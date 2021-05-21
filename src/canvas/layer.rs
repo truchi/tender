@@ -15,11 +15,48 @@ impl<T> Layer<T> {
         }
     }
 
-    fn rows<'a>(&'a self) -> <<&'a T as GridRows>::Rows as IntoIterator>::IntoIter
+    pub fn render<'a>(&'a self, mut w: impl Write) -> io::Result<()>
     where
         &'a T: GridRows,
+        <&'a T as Grid>::Item: ICell,
     {
-        unsafe { self.grid.rows_unchecked(..) }.into_iter()
+        let mut rows = unsafe { self.grid.rows_unchecked(..) }.into_iter();
+        let mut move_to = MoveTo(self.position);
+        let mut previous: Cell;
+
+        if let Some(row) = rows.next() {
+            let mut row = row.into_iter();
+
+            if let Some(cell) = row.next() {
+                previous = cell.cell();
+                write!(w, "{}{}", move_to, previous)?;
+
+                Self::render_row(&mut w, row, &mut previous, &mut move_to)?;
+
+                for row in rows {
+                    write!(w, "{}", move_to)?;
+                    Self::render_row(&mut w, row, &mut previous, &mut move_to)?;
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    fn render_row<C: ICell>(
+        mut w: impl Write,
+        row: impl IntoIterator<Item = C>,
+        previous: &mut Cell,
+        move_to: &mut MoveTo,
+    ) -> io::Result<()> {
+        for icell in row {
+            let cell = icell.cell();
+            write!(w, "{}", Dedup(*previous, cell))?;
+            *previous = cell;
+        }
+        move_to.next_row();
+
+        Ok(())
     }
 }
 
@@ -54,52 +91,6 @@ where
     }
 }
 
-impl<T, C> Display for Layer<T>
-where
-    for<'a> &'a T: GridRows<Item = &'a C>,
-    for<'a> &'a C: ICell,
-{
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        let mut rows = self.rows();
-        let mut move_to = MoveTo(self.position);
-        let mut previous: Cell;
-
-        fn render_row<T: ICell>(
-            f: &mut Formatter,
-            row: impl IntoIterator<Item = T>,
-            previous: &mut Cell,
-            move_to: &mut MoveTo,
-        ) -> fmt::Result {
-            for icell in row {
-                let cell = icell.cell();
-                write!(f, "{}", Dedup(*previous, cell))?;
-                *previous = cell;
-            }
-            move_to.next_row();
-
-            Ok(())
-        }
-
-        if let Some(row) = rows.next() {
-            let mut row = row.into_iter();
-
-            if let Some(cell) = row.next() {
-                previous = cell.cell();
-                write!(f, "{}{}", move_to, previous)?;
-
-                render_row(f, row, &mut previous, &mut move_to)?;
-
-                for row in rows {
-                    write!(f, "{}", move_to)?;
-                    render_row(f, row, &mut previous, &mut move_to)?;
-                }
-            }
-        }
-
-        Ok(())
-    }
-}
-
 #[derive(Debug)]
 struct MoveTo(Point);
 
@@ -118,11 +109,7 @@ impl Display for MoveTo {
 // ===================================================================
 
 pub fn example() {
-    use std::{
-        io::{stdout, Write},
-        thread::sleep,
-        time::Duration,
-    };
+    use std::{io::stdout, thread::sleep, time::Duration};
 
     let (w, h) = (151, 40);
 
@@ -137,22 +124,17 @@ pub fn example() {
     let cell2 = Cell::new('2', Rgb(0, 0, 255), Rgba(0, 255, 0, 127), ());
     let layer2 = Layer::new((2, 2), repeat((10, 10), cell2));
 
-    print!("{}", canvas);
-    // println!("{:?}", canvas.to_string());
+    canvas.render(stdout()).unwrap();
     stdout().flush().unwrap();
     sleep(Duration::from_millis(500));
+
     (&layer1).over(&mut canvas);
-
-    print!("{}", canvas);
-    // println!("{:?}", canvas.to_string());
+    canvas.render(stdout()).unwrap();
     stdout().flush().unwrap();
     sleep(Duration::from_millis(500));
+
     (&layer2).over(&mut canvas);
-
-    print!("{}", canvas);
-    // println!("{:?}", canvas.to_string());
+    canvas.render(stdout()).unwrap();
     stdout().flush().unwrap();
     sleep(Duration::from_millis(500));
-    /*
-     */
 }
