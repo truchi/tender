@@ -20,42 +20,115 @@ impl<T> Layer<T> {
         &'a T: GridRows,
         <&'a T as Grid>::Item: AsRef<Cell>,
     {
+        fn render_row<C: AsRef<Cell>>(
+            mut w: impl Write,
+            row: impl IntoIterator<Item = C>,
+            previous: &mut Cell,
+            move_to: &mut MoveTo,
+        ) -> io::Result<()> {
+            for icell in row {
+                let cell = *icell.as_ref();
+                write!(w, "{}", Dedup(*previous, cell))?;
+                *previous = cell;
+            }
+            move_to.next_row();
+
+            Ok(())
+        }
+
         let mut rows = unsafe { self.grid.rows_unchecked(..) }.into_iter();
-        let mut move_to = MoveTo(self.position);
-        let mut previous: Cell;
+        let mut move_to = MoveTo::new(self.position);
 
         if let Some(row) = rows.next() {
             let mut row = row.into_iter();
 
+            // Render first cell as is
             if let Some(cell) = row.next() {
-                previous = *cell.as_ref();
+                let mut previous = *cell.as_ref();
                 write!(w, "{}{}", move_to, previous)?;
 
-                Self::render_row(&mut w, row, &mut previous, &mut move_to)?;
+                // Finish rendering this row, deduping
+                render_row(&mut w, row, &mut previous, &mut move_to)?;
 
+                // Render remaining rows, deduping
                 for row in rows {
                     write!(w, "{}", move_to)?;
-                    Self::render_row(&mut w, row, &mut previous, &mut move_to)?;
+                    render_row(&mut w, row, &mut previous, &mut move_to)?;
                 }
+
+                // Done
+                return Ok(());
             }
         }
 
+        // Was empty
         Ok(())
     }
 
-    fn render_row<C: AsRef<Cell>>(
-        mut w: impl Write,
-        row: impl IntoIterator<Item = C>,
-        previous: &mut Cell,
-        move_to: &mut MoveTo,
-    ) -> io::Result<()> {
-        for icell in row {
-            let cell = *icell.as_ref();
-            write!(w, "{}", Dedup(*previous, cell))?;
-            *previous = cell;
-        }
-        move_to.next_row();
+    pub fn render_damage<'a>(&'a mut self, mut w: impl Write) -> io::Result<()>
+    where
+        &'a mut T: GridRows,
+        <&'a mut T as Grid>::Item: AsMut<Damaged>,
+    {
+        fn render_row_damage<C: AsMut<Damaged>>(
+            mut w: impl Write,
+            row: impl IntoIterator<Item = C>,
+            previous: &mut Cell,
+            move_to: &mut MoveTo,
+            mut rendered: bool,
+        ) -> io::Result<()> {
+            for mut damaged in row {
+                if let Some(cell) = damaged.as_mut().damage() {
+                    if !rendered {
+                        write!(w, "{}", move_to)?;
+                    }
+                    write!(w, "{}", Dedup(*previous, cell))?;
+                    *previous = cell;
+                    rendered = true;
+                } else {
+                    rendered = false;
+                }
+                move_to.next_col();
+            }
+            move_to.next_row();
 
+            Ok(())
+        }
+
+        let mut rows = unsafe { self.grid.rows_unchecked(..) }.into_iter();
+        let mut move_to = MoveTo::new(self.position);
+
+        // We start looking for a cell that has damage
+        while let Some(row) = rows.next() {
+            move_to.first_col();
+
+            let mut row = row.into_iter();
+            while let Some(mut damaged) = row.next() {
+                // Render first cell with damage as is
+                if let Some(cell) = damaged.as_mut().damage() {
+                    let mut previous = cell;
+
+                    write!(w, "{}{}", move_to, previous)?;
+
+                    // Finish rendering this row, deduping
+                    move_to.next_col();
+                    render_row_damage(&mut w, row, &mut previous, &mut move_to, true)?;
+
+                    // Render remaining rows, deduping
+                    while let Some(row) = rows.next() {
+                        move_to.first_col();
+                        render_row_damage(&mut w, row, &mut previous, &mut move_to, false)?;
+                    }
+
+                    // Done
+                    return Ok(());
+                }
+                move_to.next_col();
+            }
+            move_to.next_row();
+        }
+
+        // Was empty or undamaged
         Ok(())
     }
 }
@@ -92,17 +165,39 @@ where
 }
 
 #[derive(Debug)]
-struct MoveTo(Point);
+struct MoveTo {
+    initial: Point,
+    current: Point,
+}
 
 impl MoveTo {
+    fn new(initial: Point) -> Self {
+        Self {
+            initial,
+            current: initial,
+        }
+    }
+
+    fn first_col(&mut self) {
+        self.current.x = self.initial.x;
+    }
+
+    fn first_row(&mut self) {
+        self.current.y = self.initial.y;
+    }
+
+    fn next_col(&mut self) {
+        self.current.x += 1;
+    }
+
     fn next_row(&mut self) {
-        self.0.y += 1;
+        self.current.y += 1;
     }
 }
 
 impl Display for MoveTo {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "\x1B[{};{}H", self.0.y + 1, self.0.x + 1)
+        write!(f, "\x1B[{};{}H", self.current.y + 1, self.current.x + 1)
     }
 }
 
@@ -137,12 +232,12 @@ pub fn example() {
     sleep(Duration::from_millis(500));
 
     (&layer1).over(&mut canvas);
-    canvas.render(stdout()).unwrap();
+    canvas.render_damage(stdout()).unwrap();
     stdout().flush().unwrap();
     sleep(Duration::from_millis(500));
 
-    (&layer2).over(&mut canvas);
-    canvas.render(stdout()).unwrap();
-    stdout().flush().unwrap();
-    sleep(Duration::from_millis(500));
+    // (&layer2).over(&mut canvas);
+    // canvas.render(stdout()).unwrap();
+    // stdout().flush().unwrap();
+    // sleep(Duration::from_millis(500));
 }

@@ -13,6 +13,17 @@ impl Damaged {
             previous: cell,
         }
     }
+
+    pub fn damage(&mut self) -> Option<Cell> {
+        let damage = if self.current == self.previous {
+            None
+        } else {
+            Some(self.current)
+        };
+
+        self.previous = self.current;
+        damage
+    }
 }
 
 impl AsRef<Cell> for Damaged {
