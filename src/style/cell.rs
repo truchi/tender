@@ -99,18 +99,8 @@ where
     }
 }
 
-impl ICell for &Cell {
-    fn cell(&self) -> Cell {
-        **self
+impl<Fg, Bg> AsRef<Cell<Fg, Bg>> for Cell<Fg, Bg> {
+    fn as_ref(&self) -> &Cell<Fg, Bg> {
+        self
     }
-
-    // fn cell_mut(&mut self) -> &mut Cell {
-    // self
-    // }
-
-    fn damage(&self) -> Option<Cell> {
-        Some(**self)
-    }
-
-    fn update(&mut self) {}
 }

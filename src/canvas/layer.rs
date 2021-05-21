@@ -18,7 +18,7 @@ impl<T> Layer<T> {
     pub fn render<'a>(&'a self, mut w: impl Write) -> io::Result<()>
     where
         &'a T: GridRows,
-        <&'a T as Grid>::Item: ICell,
+        <&'a T as Grid>::Item: AsRef<Cell>,
     {
         let mut rows = unsafe { self.grid.rows_unchecked(..) }.into_iter();
         let mut move_to = MoveTo(self.position);
@@ -28,7 +28,7 @@ impl<T> Layer<T> {
             let mut row = row.into_iter();
 
             if let Some(cell) = row.next() {
-                previous = cell.cell();
+                previous = *cell.as_ref();
                 write!(w, "{}{}", move_to, previous)?;
 
                 Self::render_row(&mut w, row, &mut previous, &mut move_to)?;
@@ -43,14 +43,14 @@ impl<T> Layer<T> {
         Ok(())
     }
 
-    fn render_row<C: ICell>(
+    fn render_row<C: AsRef<Cell>>(
         mut w: impl Write,
         row: impl IntoIterator<Item = C>,
         previous: &mut Cell,
         move_to: &mut MoveTo,
     ) -> io::Result<()> {
         for icell in row {
-            let cell = icell.cell();
+            let cell = *icell.as_ref();
             write!(w, "{}", Dedup(*previous, cell))?;
             *previous = cell;
         }
@@ -123,6 +123,14 @@ pub fn example() {
 
     let cell2 = Cell::new('2', Rgb(0, 0, 255), Rgba(0, 255, 0, 127), ());
     let layer2 = Layer::new((2, 2), repeat((10, 10), cell2));
+
+    // let grid3 = repeat_with((4, 4), |_| {
+    // Cell::new('3', Rgb(255, 0, 255), Rgb(0, 255, 0), ())
+    // });
+    // let layer3 = Layer::new((10, 10), grid3);
+    //
+    // layer3.render(stdout()).unwrap();
+    // stdout().flush().unwrap();
 
     canvas.render(stdout()).unwrap();
     stdout().flush().unwrap();

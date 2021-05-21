@@ -49,13 +49,3 @@ impl<Top: Over<Bottom>, Bottom> Under<Top> for Bottom {
 }
 
 pub struct Dedup<T>(pub T, pub T);
-
-pub trait ICell {
-    fn cell(&self) -> Cell;
-
-    // fn cell_mut(&mut self) -> &mut Cell;
-
-    fn damage(&self) -> Option<Cell>;
-
-    fn update(&mut self);
-}

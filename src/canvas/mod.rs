@@ -8,7 +8,11 @@ pub use layer::*;
 
 use super::*;
 use crate::{geometry::*, grid::*, style::*};
-use std::{io::Stdout, marker::PhantomData, ops::Deref};
+use std::{
+    io::{self, Stdout, Write},
+    marker::PhantomData,
+    ops::Deref,
+};
 
 pub trait WithPosition {
     fn position(&self) -> Point;
@@ -20,34 +24,45 @@ impl<T: Deref<Target = U>, U: WithPosition> WithPosition for T {
     }
 }
 
-// pub struct Screen<Cell> {
-// cells:  RowVec1D<Cell>,
-// stdout: Stdout,
-// }
+pub struct Screen<Canvas> {
+    canvas: Canvas,
+    stdout: Stdout,
+}
 
-// impl WithSize for Screen {
-// fn size(&self) -> Size {
-// self.cells.size()
-// }
-// }
+impl<Canvas> Screen<Canvas> {
+    pub fn frame(&mut self, rect: impl Index2D) -> Option<Frame<Self>>
+    where
+        Canvas: WithSize,
+    {
+        let rect = rect.checked(self.canvas.size())?;
 
-// impl Screen {
-// pub fn frame(&mut self, rect: impl Index2D) -> Option<Frame> {
-// let rect = rect.checked(self.size())?;
-// let position = rect.start();
-// let cells = unsafe { (&mut self.cells).crop_unchecked(rect) };
-//
-// Some(Frame {
-// position,
-// cells,
-// stdout: &mut self.stdout,
-// })
-// }
-// }
+        Some(Frame { rect, frame: self })
+    }
+}
 
-// pub struct Frame<'a, T> {
-// position: Point,
-// frame:    &'a mut T,
-// }
+pub struct Frame<'a, T> {
+    rect:  Rect,
+    // canvas:   Crop<&'a mut Canvas>,
+    // stdout:   &'a mut Stdout,
+    frame: &'a mut T,
+}
 // cells:    Crop<&'a mut RowVec1D<Cell<Rgb>>>,
 // stdout:   &'a mut Stdout,
+
+impl<'a, T> Frame<'a, T> {
+    pub fn frame(&mut self, rect: impl Index2D) -> Option<Frame<Self>>
+// where
+        // &'a mut T: WithSize,
+    {
+        // let rect = rect.checked(self.frame.size())?;
+        // let position = rect.start();
+        // let canvas = unsafe { (canvas).crop_unchecked(rect) };
+
+        Some(Frame {
+            rect:  self.rect.clone(),
+            frame: self,
+        })
+    }
+}
+/*
+ */
