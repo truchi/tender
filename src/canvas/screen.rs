@@ -60,6 +60,14 @@ impl<Canvas> Screen<Canvas> {
     pub fn flush(&mut self) -> io::Result<()> {
         self.stdout.flush()
     }
+
+    pub fn as_layer_ref(&self) -> Layer<&Canvas> {
+        Layer::new(Point::ZERO, &self.canvas)
+    }
+
+    pub fn as_layer_mut(&mut self) -> Layer<&mut Canvas> {
+        Layer::new(Point::ZERO, &mut self.canvas)
+    }
 }
 
 impl<Canvas> AsRef<Screen<Canvas>> for Screen<Canvas> {
@@ -71,5 +79,31 @@ impl<Canvas> AsRef<Screen<Canvas>> for Screen<Canvas> {
 impl<Canvas> AsMut<Screen<Canvas>> for Screen<Canvas> {
     fn as_mut(&mut self) -> &mut Self {
         self
+    }
+}
+
+impl<Canvas> Paint for Screen<Canvas>
+where
+    Canvas: GridRows,
+    Canvas::Item: AsMut<Cell>,
+{
+    type Output = ();
+
+    fn paint(self, painter: impl Painter) {
+        self.canvas
+            .flatten_rows()
+            .for_each(|mut cell| cell.as_mut().paint(painter));
+    }
+}
+
+impl<'a, Canvas> Paint for &'a mut Screen<Canvas>
+where
+    &'a mut Canvas: GridRows,
+    <&'a mut Canvas as Grid>::Item: AsMut<Cell>,
+{
+    type Output = ();
+
+    fn paint(self, painter: impl Painter) {
+        self.as_mut().paint(painter);
     }
 }

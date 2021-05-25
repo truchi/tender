@@ -74,7 +74,7 @@ where
     type Output = ();
 
     fn over(self, screen: &'screen mut Screen<Canvas>) {
-        self.over(Layer::new(Point::ZERO, &mut screen.canvas));
+        self.over(screen.as_layer_mut());
     }
 }
 
@@ -87,9 +87,33 @@ where
     type Output = ();
 
     fn over(self, frame: &'frame mut Frame<'_, Canvas>) {
-        self.over(Layer::new(Point::ZERO, unsafe {
-            frame.screen.canvas.crop_unchecked(frame.rect.clone())
-        }));
+        self.over(frame.as_layer_mut());
+    }
+}
+
+impl<T> Paint for Layer<T>
+where
+    T: GridRows,
+    T::Item: AsMut<Cell>,
+{
+    type Output = ();
+
+    fn paint(self, painter: impl Painter) {
+        self.grid
+            .flatten_rows()
+            .for_each(|mut cell| cell.as_mut().paint(painter));
+    }
+}
+
+impl<'a, T> Paint for &'a mut Layer<T>
+where
+    &'a mut T: GridRows,
+    <&'a mut T as Grid>::Item: AsMut<Cell>,
+{
+    type Output = ();
+
+    fn paint(self, painter: impl Painter) {
+        self.as_mut().paint(painter);
     }
 }
 
