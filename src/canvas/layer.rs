@@ -14,6 +14,13 @@ impl<T> Layer<T> {
         }
     }
 
+    pub fn size(&self) -> Size
+    where
+        T: WithSize,
+    {
+        self.grid.size()
+    }
+
     pub fn as_ref(&self) -> Layer<&T> {
         Layer::new(self.position, &self.grid)
     }
@@ -39,18 +46,6 @@ impl<T> Layer<T> {
     }
 }
 
-impl<T: WithSize> WithSize for Layer<T> {
-    fn size(&self) -> Size {
-        self.grid.size()
-    }
-}
-
-impl<T> WithPosition for Layer<T> {
-    fn position(&self) -> Point {
-        self.position
-    }
-}
-
 impl<Top, Bottom> Over<Layer<Bottom>> for Layer<Top>
 where
     Top: GridRows,
@@ -62,7 +57,7 @@ where
     fn over(self, bottom: Layer<Bottom>) {
         bottom
             .grid
-            .zip_at(self.position(), self.grid)
+            .zip_at(self.position, self.grid)
             .flatten_rows()
             .for_each(|(bottom, top)| {
                 top.over(bottom);

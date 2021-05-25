@@ -2,9 +2,9 @@ use super::*;
 
 #[derive(Debug)]
 pub struct Screen<Canvas> {
-    pub(super) position: Point,
-    pub(super) canvas:   Canvas,
-    pub(super) stdout:   Stdout,
+    pub position:      Point,
+    pub(super) canvas: Canvas,
+    pub(super) stdout: Stdout,
 }
 
 impl<Canvas> Screen<Canvas> {
@@ -16,11 +16,18 @@ impl<Canvas> Screen<Canvas> {
         }
     }
 
+    pub fn size(&self) -> Size
+    where
+        Canvas: WithSize,
+    {
+        self.canvas.size()
+    }
+
     pub fn frame(&mut self, rect: impl Index2D) -> Option<Frame<Canvas>>
     where
         Canvas: WithSize,
     {
-        let rect = rect.checked(self.canvas.size())?;
+        let rect = rect.checked(self.size())?;
 
         Some(Frame { rect, screen: self })
     }
@@ -29,7 +36,7 @@ impl<Canvas> Screen<Canvas> {
     where
         Canvas: WithSize,
     {
-        let rect = rect.unchecked(self.canvas.size());
+        let rect = rect.unchecked(self.size());
 
         Frame { rect, screen: self }
     }

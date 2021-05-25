@@ -7,8 +7,16 @@ pub struct Frame<'a, Canvas> {
 }
 
 impl<'a, Canvas> Frame<'a, Canvas> {
+    pub fn position(&self) -> Point {
+        self.screen.position + self.rect.start()
+    }
+
+    pub fn size(&self) -> Size {
+        self.rect.size()
+    }
+
     pub fn frame(&mut self, rect: impl Index2D) -> Option<Frame<Canvas>> {
-        let rect = rect.checked(self.rect.size())?;
+        let rect = rect.checked(self.size())?;
         let rect = rect.translate(self.rect.start());
 
         Some(Frame {
@@ -32,16 +40,13 @@ impl<'a, Canvas> Frame<'a, Canvas> {
         &'b Canvas: GridRows,
         <&'b Canvas as Grid>::Item: AsRef<Cell>,
     {
-        let screen = &mut self.screen;
+        let position = self.position();
         let rect = self.rect.clone();
+        let Screen { canvas, stdout, .. } = &self.screen;
 
         // SAFETY: rect is checked at creation
-        debug_assert!(rect.clone().checked((&screen.canvas).size()).is_some());
-        render(
-            screen.position + rect.start(),
-            unsafe { screen.canvas.crop_unchecked(rect) },
-            &mut screen.stdout,
-        )
+        debug_assert!(rect.clone().checked((canvas).size()).is_some());
+        render(position, unsafe { canvas.crop_unchecked(rect) }, stdout)
     }
 
     pub fn render_damage<'b>(&'b mut self) -> io::Result<()>
@@ -49,15 +54,12 @@ impl<'a, Canvas> Frame<'a, Canvas> {
         &'b mut Canvas: GridRows,
         <&'b mut Canvas as Grid>::Item: AsMut<Damaged>,
     {
-        let screen = &mut self.screen;
+        let position = self.position();
         let rect = self.rect.clone();
+        let Screen { canvas, stdout, .. } = &mut self.screen;
 
         // SAFETY: rect is checked at creation
-        render_damage(
-            screen.position + rect.start(),
-            unsafe { screen.canvas.crop_unchecked(rect) },
-            &mut screen.stdout,
-        )
+        render_damage(position, unsafe { canvas.crop_unchecked(rect) }, stdout)
     }
 
     pub fn flush(&mut self) -> io::Result<()> {
