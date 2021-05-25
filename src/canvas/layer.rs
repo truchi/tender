@@ -141,23 +141,23 @@ pub fn example() {
         repeat((10, 10), Cell::new('2', BLUE, Rgba(0, 255, 0, 127), ())),
     );
 
-    screen.render();
-    screen.flush();
+    screen.render().unwrap();
+    screen.flush().unwrap();
     sleep(Duration::from_millis(500));
 
     screen.as_mut().under(layer1.as_ref());
-    screen.render_damage();
-    screen.flush();
+    screen.render_damage().unwrap();
+    screen.flush().unwrap();
     sleep(Duration::from_millis(500));
 
     let frame = &mut screen.frame((10..30, 10..30)).unwrap();
     frame.under(layer2.as_ref());
-    frame.render_damage();
-    frame.flush();
+    frame.render_damage().unwrap();
+    frame.flush().unwrap();
     sleep(Duration::from_millis(500));
 
     let frame = &mut frame.frame((2..10, 2..10)).unwrap();
     frame.under(layer2.as_ref());
-    frame.render_damage();
-    frame.flush();
+    frame.render_damage().unwrap();
+    frame.flush().unwrap();
 }
