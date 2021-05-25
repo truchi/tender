@@ -1,10 +1,10 @@
 pub mod attributes;
-mod cell;
 pub mod color;
+
+mod cell;
 mod comp;
 mod damaged;
 mod paint;
-// mod cursor;
 
 pub use attributes::*;
 pub use cell::*;
@@ -12,7 +12,6 @@ pub use color::*;
 pub use comp::*;
 pub use damaged::*;
 pub use paint::*;
-// pub use cursor::*;
 
 pub trait Over<Bottom> {
     type Output;

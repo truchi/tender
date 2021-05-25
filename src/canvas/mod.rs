@@ -1,15 +1,17 @@
 mod layer;
+mod move_to;
 // mod canvas;
 // mod cell;
 
 pub use layer::*;
+pub use move_to::*;
 // pub use canvas::*;
 // pub use cell::*;
 
 use crate::{geometry::*, grid::*, style::*};
 use std::{
     io::{self, Stdout, Write},
-    ops::{Deref, DerefMut},
+    ops::Deref,
 };
 
 pub trait WithPosition {
