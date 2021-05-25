@@ -84,17 +84,18 @@ where
     }
 }
 
-impl<'frame, T, Top, Canvas: 'frame> Over<&'frame mut Frame<'_, T>> for Layer<Top>
+impl<'frame, Top, Canvas> Over<&'frame mut Frame<'_, Canvas>> for Layer<Top>
 where
-    T: DerefMut<Target = Screen<Canvas>>,
     Top: GridRows,
     &'frame mut Canvas: GridRows,
     Top::Item: Over<<&'frame mut Canvas as Grid>::Item>,
 {
     type Output = ();
 
-    fn over(self, screen: &'frame mut Frame<'_, T>) {
-        // self.over(Layer::new(Point::ZERO, &mut screen.canvas));
+    fn over(self, frame: &'frame mut Frame<'_, Canvas>) {
+        self.over(Layer::new(Point::ZERO, unsafe {
+            frame.screen.canvas.crop_unchecked(frame.rect.clone())
+        }));
     }
 }
 
@@ -154,17 +155,17 @@ pub fn example() {
     let cell2 = Cell::new('2', Rgb(0, 0, 255), Rgba(0, 255, 0, 127), ());
     let layer2 = Layer::new((2, 2), repeat((10, 10), cell2));
 
-    screen.render().unwrap();
-    stdout().flush().unwrap();
+    screen.render();
+    screen.flush();
     sleep(Duration::from_millis(500));
 
-    (&mut screen).under(layer1.as_ref());
-    screen.render_damage().unwrap();
-    stdout().flush().unwrap();
+    screen.as_mut().under(layer1.as_ref());
+    screen.render_damage();
+    screen.flush();
     sleep(Duration::from_millis(500));
 
     let frame = &mut screen.frame((10..15, 10..15)).unwrap();
     frame.under(layer2.as_ref());
-    // screen.render_damage().unwrap();
-    // stdout().flush().unwrap();
+    frame.render_damage();
+    frame.flush();
 }
