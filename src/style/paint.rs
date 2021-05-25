@@ -1,84 +1,97 @@
 use super::*;
 
-pub trait Paint {
-    fn paint(&mut self, painter: impl Painter);
+pub trait Paint: Sized {
+    type Output;
 
-    fn char(&mut self, char: char) {
-        self.paint(char);
+    fn paint(self, painter: impl Painter) -> Self::Output;
+
+    fn char(self, char: char) -> Self::Output {
+        self.paint(char)
     }
 
-    fn foreground<C: Color>(&mut self, foreground: C) {
-        self.paint(Foreground(foreground));
+    fn foreground<C: Color>(self, foreground: C) -> Self::Output {
+        self.paint(Foreground(foreground))
     }
 
-    fn background<C: Color>(&mut self, background: C) {
-        self.paint(Background(background));
+    fn background<C: Color>(self, background: C) -> Self::Output {
+        self.paint(Background(background))
     }
 
-    fn attributes(&mut self, attributes: Attributes) {
-        self.paint(attributes);
+    fn attributes(self, attributes: Attributes) -> Self::Output {
+        self.paint(attributes)
     }
 
-    fn weight(&mut self, weight: Weight) {
-        self.paint(weight);
+    fn weight(self, weight: Weight) -> Self::Output {
+        self.paint(weight)
     }
 
-    fn bold(&mut self) {
-        self.paint(Bold);
+    fn bold(self) -> Self::Output {
+        self.paint(Bold)
     }
 
-    fn light(&mut self) {
-        self.paint(Light);
+    fn light(self) -> Self::Output {
+        self.paint(Light)
     }
 
-    fn no_weight(&mut self) {
-        self.paint(NoWeight);
+    fn no_weight(self) -> Self::Output {
+        self.paint(NoWeight)
     }
 
-    fn slant(&mut self, slant: Slant) {
-        self.paint(slant);
+    fn slant(self, slant: Slant) -> Self::Output {
+        self.paint(slant)
     }
 
-    fn italic(&mut self) {
-        self.paint(Italic);
+    fn italic(self) -> Self::Output {
+        self.paint(Italic)
     }
 
-    fn no_slant(&mut self) {
-        self.paint(NoSlant);
+    fn no_slant(self) -> Self::Output {
+        self.paint(NoSlant)
     }
 
-    fn underline(&mut self, underline: Underline) {
-        self.paint(underline);
+    fn underline(self, underline: Underline) -> Self::Output {
+        self.paint(underline)
     }
 
-    fn underlined(&mut self) {
-        self.paint(Underlined);
+    fn underlined(self) -> Self::Output {
+        self.paint(Underlined)
     }
 
-    fn no_underline(&mut self) {
-        self.paint(NoUnderline);
+    fn no_underline(self) -> Self::Output {
+        self.paint(NoUnderline)
     }
 
-    fn strike(&mut self, strike: Strike) {
-        self.paint(strike);
+    fn strike(self, strike: Strike) -> Self::Output {
+        self.paint(strike)
     }
 
-    fn striked(&mut self) {
-        self.paint(Striked);
+    fn striked(self) -> Self::Output {
+        self.paint(Striked)
     }
 
-    fn no_strike(&mut self) {
-        self.paint(NoStrike);
+    fn no_strike(self) -> Self::Output {
+        self.paint(NoStrike)
     }
 }
 
 impl Paint for Cell {
-    fn paint(&mut self, painter: impl Painter) {
+    type Output = Self;
+
+    fn paint(mut self, painter: impl Painter) -> Self {
+        painter.paint(&mut self);
+        self
+    }
+}
+
+impl Paint for &mut Cell {
+    type Output = ();
+
+    fn paint(self, painter: impl Painter) {
         painter.paint(self);
     }
 }
 
-pub trait Painter {
+pub trait Painter: Copy {
     fn paint(self, cell: &mut Cell);
 }
 
