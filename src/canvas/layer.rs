@@ -164,7 +164,13 @@ pub fn example() {
     screen.flush();
     sleep(Duration::from_millis(500));
 
-    let frame = &mut screen.frame((10..15, 10..15)).unwrap();
+    let frame = &mut screen.frame((10..30, 10..30)).unwrap();
+    frame.under(layer2.as_ref());
+    frame.render_damage();
+    frame.flush();
+    sleep(Duration::from_millis(500));
+
+    let frame = &mut frame.frame((2..10, 2..10)).unwrap();
     frame.under(layer2.as_ref());
     frame.render_damage();
     frame.flush();
