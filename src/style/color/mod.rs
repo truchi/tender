@@ -20,6 +20,8 @@ macro_rules! web_colors {
         impl    Rgb  { $(pub const $Color:    Rgb  =    Rgb ($R, $G, $B);)* }
         impl    Rgba { $(pub const $Color:    Rgba =    Rgba($R, $G, $B, u8::MAX);)* }
         impl PreRgba { $(pub const $Color: PreRgba = PreRgba($R, $G, $B, u8::MAX);)* }
+
+        $(pub const $Color: Rgb = Rgb::$Color;)*
     };
 }
 

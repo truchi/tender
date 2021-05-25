@@ -142,18 +142,23 @@ pub fn example() {
     use std::{io::stdout, thread::sleep, time::Duration};
 
     let (w, h) = (151, 40);
-
-    let canvas_cell = Cell::new(' ', Rgb(0, 0, 0), Rgb(255, 0, 0), ());
-    let canvas_cell = Damaged::new(canvas_cell);
-    let grid = RowVec1D::new((w, h), vec![canvas_cell; w * h]).unwrap();
-    // let mut canvas = Layer::new((0, 0), grid.clone());
-    let mut screen = Screen::new((0, 0), grid, stdout());
-
-    let cell1 = Cell::new('1', Rgb(0, 255, 0), Rgba(0, 0, 0, 127), ());
-    let layer1 = Layer::new((0, 0), repeat((12, 12), cell1));
-
-    let cell2 = Cell::new('2', Rgb(0, 0, 255), Rgba(0, 255, 0, 127), ());
-    let layer2 = Layer::new((2, 2), repeat((10, 10), cell2));
+    let mut screen = Screen::new(
+        (0, 0),
+        RowVec1D::new((w, h), vec![
+            Damaged::new(Cell::new(' ', BLACK, RED, ()));
+            w * h
+        ])
+        .unwrap(),
+        stdout(),
+    );
+    let layer1 = Layer::new(
+        (0, 0),
+        repeat((12, 12), Cell::new('1', LIME, Rgba(0, 0, 0, 127), ())),
+    );
+    let layer2 = Layer::new(
+        (2, 2),
+        repeat((10, 10), Cell::new('2', BLUE, Rgba(0, 255, 0, 127), ())),
+    );
 
     screen.render();
     screen.flush();
