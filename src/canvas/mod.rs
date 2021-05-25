@@ -1,12 +1,12 @@
+mod frame;
 mod layer;
 mod move_to;
-// mod canvas;
-// mod cell;
+mod screen;
 
+pub use frame::*;
 pub use layer::*;
 pub use move_to::*;
-// pub use canvas::*;
-// pub use cell::*;
+pub use screen::*;
 
 use crate::{geometry::*, grid::*, style::*};
 use std::{
@@ -21,150 +21,6 @@ pub trait WithPosition {
 impl<T: Deref<Target = U>, U: WithPosition> WithPosition for T {
     fn position(&self) -> Size {
         self.deref().position()
-    }
-}
-
-#[derive(Debug)]
-pub struct Screen<Canvas> {
-    position: Point,
-    canvas:   Canvas,
-    stdout:   Stdout,
-}
-
-impl<Canvas> Screen<Canvas> {
-    pub fn new(position: impl Index0D, canvas: Canvas, stdout: Stdout) -> Self {
-        Self {
-            position: position.unchecked(),
-            canvas,
-            stdout,
-        }
-    }
-
-    pub fn frame(&mut self, rect: impl Index2D) -> Option<Frame<Canvas>>
-    where
-        Canvas: WithSize,
-    {
-        let rect = rect.checked(self.canvas.size())?;
-
-        Some(Frame { rect, screen: self })
-    }
-
-    pub unsafe fn frame_unchecked(&mut self, rect: impl Index2D) -> Frame<Canvas>
-    where
-        Canvas: WithSize,
-    {
-        let rect = rect.unchecked(self.canvas.size());
-
-        Frame { rect, screen: self }
-    }
-
-    pub fn render<'a>(&'a mut self) -> io::Result<()>
-    where
-        &'a Canvas: GridRows,
-        <&'a Canvas as Grid>::Item: AsRef<Cell>,
-    {
-        render(self.position, &self.canvas, &mut self.stdout)
-    }
-
-    pub fn render_damage<'a>(&'a mut self) -> io::Result<()>
-    where
-        &'a mut Canvas: GridRows,
-        <&'a mut Canvas as Grid>::Item: AsMut<Damaged>,
-    {
-        render_damage(self.position, &mut self.canvas, &mut self.stdout)
-    }
-
-    pub fn flush(&mut self) -> io::Result<()> {
-        self.stdout.flush()
-    }
-}
-
-impl<Canvas> AsRef<Screen<Canvas>> for Screen<Canvas> {
-    fn as_ref(&self) -> &Self {
-        self
-    }
-}
-
-impl<Canvas> AsMut<Screen<Canvas>> for Screen<Canvas> {
-    fn as_mut(&mut self) -> &mut Self {
-        self
-    }
-}
-
-#[derive(Debug)]
-pub struct Frame<'a, Canvas> {
-    rect:   Rect,
-    screen: &'a mut Screen<Canvas>,
-}
-
-impl<'a, Canvas> Frame<'a, Canvas> {
-    pub fn frame(&mut self, rect: impl Index2D) -> Option<Frame<Canvas>> {
-        let rect = rect.checked(self.rect.size())?;
-        let rect = rect.translate(self.rect.start());
-
-        Some(Frame {
-            rect,
-            screen: self.screen,
-        })
-    }
-
-    pub unsafe fn frame_unchecked(&mut self, rect: impl Index2D) -> Frame<Canvas> {
-        let rect = rect.unchecked(self.rect.size());
-        let rect = rect.translate(self.rect.start());
-
-        Frame {
-            rect,
-            screen: self.screen,
-        }
-    }
-
-    pub fn render<'b>(&'b mut self) -> io::Result<()>
-    where
-        &'b Canvas: GridRows,
-        <&'b Canvas as Grid>::Item: AsRef<Cell>,
-    {
-        let screen = &mut self.screen;
-        let rect = self.rect.clone();
-
-        // SAFETY: rect is checked at creation
-        debug_assert!(rect.clone().checked((&screen.canvas).size()).is_some());
-        render(
-            screen.position + rect.start(),
-            unsafe { screen.canvas.crop_unchecked(rect) },
-            &mut screen.stdout,
-        )
-    }
-
-    pub fn render_damage<'b>(&'b mut self) -> io::Result<()>
-    where
-        &'b mut Canvas: GridRows,
-        <&'b mut Canvas as Grid>::Item: AsMut<Damaged>,
-    {
-        let screen = &mut self.screen;
-        let rect = self.rect.clone();
-
-        // SAFETY: rect is checked at creation
-        render_damage(
-            screen.position + rect.start(),
-            unsafe { screen.canvas.crop_unchecked(rect) },
-            &mut screen.stdout,
-        )
-    }
-
-    pub fn flush(&mut self) -> io::Result<()> {
-        self.screen.flush()
-    }
-}
-
-impl<Canvas> AsRef<Screen<Canvas>> for Frame<'_, Canvas> {
-    fn as_ref(&self) -> &Screen<Canvas> {
-        self.screen.as_ref()
-    }
-}
-
-impl<Canvas> AsMut<Screen<Canvas>> for Frame<'_, Canvas> {
-    fn as_mut(&mut self) -> &mut Screen<Canvas> {
-        self.screen.as_mut()
     }
 }
 
