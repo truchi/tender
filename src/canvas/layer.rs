@@ -146,18 +146,21 @@ pub fn example() {
     sleep(Duration::from_millis(500));
 
     screen.as_mut().under(layer1.as_ref());
+    screen.paint(Italic);
     screen.render_damage().unwrap();
     screen.flush().unwrap();
     sleep(Duration::from_millis(500));
 
     let frame = &mut screen.frame((10..30, 10..30)).unwrap();
     frame.under(layer2.as_ref());
+    frame.bold();
     frame.render_damage().unwrap();
     frame.flush().unwrap();
     sleep(Duration::from_millis(500));
 
-    let frame = &mut frame.frame((2..10, 2..10)).unwrap();
-    frame.under(layer2.as_ref());
+    let frame = &mut frame.frame((4..10, 4..10)).unwrap();
+    frame.foreground(PURPLE);
+    frame.striked();
     frame.render_damage().unwrap();
     frame.flush().unwrap();
 }

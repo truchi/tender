@@ -98,20 +98,6 @@ impl<Canvas> AsMut<Screen<Canvas>> for Frame<'_, Canvas> {
     }
 }
 
-impl<'a, Canvas> Paint for Frame<'a, Canvas>
-where
-    &'a mut Canvas: GridRows,
-    <&'a mut Canvas as Grid>::Item: AsMut<Cell>,
-{
-    type Output = ();
-
-    fn paint(self, painter: impl Painter) {
-        unsafe { self.screen.canvas.crop_unchecked(self.rect.clone()) }
-            .flatten_rows()
-            .for_each(|mut cell| cell.as_mut().paint(painter));
-    }
-}
-
 impl<'a, Canvas> Paint for &'a mut Frame<'_, Canvas>
 where
     &'a mut Canvas: GridRows,
@@ -120,6 +106,6 @@ where
     type Output = ();
 
     fn paint(self, painter: impl Painter) {
-        self.as_mut().paint(painter);
+        self.as_layer_mut().paint(painter);
     }
 }

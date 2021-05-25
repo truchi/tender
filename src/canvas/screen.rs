@@ -82,20 +82,6 @@ impl<Canvas> AsMut<Screen<Canvas>> for Screen<Canvas> {
     }
 }
 
-impl<Canvas> Paint for Screen<Canvas>
-where
-    Canvas: GridRows,
-    Canvas::Item: AsMut<Cell>,
-{
-    type Output = ();
-
-    fn paint(self, painter: impl Painter) {
-        self.canvas
-            .flatten_rows()
-            .for_each(|mut cell| cell.as_mut().paint(painter));
-    }
-}
-
 impl<'a, Canvas> Paint for &'a mut Screen<Canvas>
 where
     &'a mut Canvas: GridRows,
@@ -104,6 +90,6 @@ where
     type Output = ();
 
     fn paint(self, painter: impl Painter) {
-        self.as_mut().paint(painter);
+        self.as_layer_mut().paint(painter);
     }
 }
