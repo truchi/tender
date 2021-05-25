@@ -6,12 +6,10 @@ pub use layer::*;
 // pub use canvas::*;
 // pub use cell::*;
 
-use super::*;
 use crate::{geometry::*, grid::*, style::*};
 use std::{
     io::{self, Stdout, Write},
-    marker::PhantomData,
-    ops::Deref,
+    ops::{Deref, DerefMut},
 };
 
 pub trait WithPosition {
@@ -24,6 +22,7 @@ impl<T: Deref<Target = U>, U: WithPosition> WithPosition for T {
     }
 }
 
+#[derive(Debug)]
 pub struct Screen<Canvas> {
     position: Point,
     canvas:   Canvas,
@@ -38,6 +37,14 @@ impl<Canvas> Screen<Canvas> {
             stdout,
         }
     }
+
+    // pub fn as_layer_ref(&self) -> Layer<&Canvas> {
+    // Layer::new(Point::ZERO, &self.canvas)
+    // }
+    //
+    // pub fn as_layer_mut(&mut self) -> Layer<&mut Canvas> {
+    // Layer::new(Point::ZERO, &mut self.canvas)
+    // }
 
     pub fn frame(&mut self, rect: impl Index2D) -> Option<Frame<Self>>
     where
@@ -86,12 +93,43 @@ impl<Canvas> AsMut<Screen<Canvas>> for Screen<Canvas> {
     }
 }
 
+#[derive(Debug)]
 pub struct Frame<'a, T> {
     rect:  Rect,
     frame: &'a mut T,
 }
 
 impl<'a, T> Frame<'a, T> {
+    // pub fn as_layer_ref<'b, Canvas: 'b>(&'b self) -> Layer<Crop<&Canvas>>
+    // where
+    // T: AsRef<Screen<Canvas>>,
+    // &'b Canvas: Grid,
+    // {
+    // Layer::new(Point::ZERO, unsafe {
+    // self.frame.as_ref().canvas.crop_unchecked(self.rect.clone())
+    // })
+    // }
+    //
+    // pub fn as_layer_mut<'b, Canvas: 'b>(&'b mut self) -> Layer<Crop<&mut Canvas>>
+    // where
+    // T: AsMut<Screen<Canvas>>,
+    // &'b mut Canvas: Grid,
+    // {
+    // Layer::new(Point::ZERO, unsafe {
+    // self.frame.as_mut().canvas.crop_unchecked(self.rect.clone())
+    // })
+    // }
+
+    pub fn frame2(&mut self, rect: impl Index2D) -> Option<Frame<T>> {
+        let rect = rect.checked(self.rect.size())?;
+        let rect = rect.translate(self.rect.start());
+
+        Some(Frame {
+            rect,
+            frame: self.frame,
+        })
+    }
+
     pub fn frame(&mut self, rect: impl Index2D) -> Option<Frame<Self>> {
         let rect = rect.checked(self.rect.size())?;
         let rect = rect.translate(self.rect.start());
@@ -113,12 +151,13 @@ impl<'a, T> Frame<'a, T> {
         <&'b Canvas as Grid>::Item: AsRef<Cell>,
     {
         let screen = self.frame.as_mut();
+        let rect = self.rect.clone();
 
         // SAFETY: rect is checked at creation
-        debug_assert!(self.rect.clone().checked((&screen.canvas).size()).is_some());
+        debug_assert!(rect.clone().checked((&screen.canvas).size()).is_some());
         render(
-            screen.position,
-            unsafe { screen.canvas.crop_unchecked(self.rect.clone()) },
+            screen.position + rect.start(),
+            unsafe { screen.canvas.crop_unchecked(rect) },
             &mut screen.stdout,
         )
     }

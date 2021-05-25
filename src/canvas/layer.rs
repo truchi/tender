@@ -15,6 +15,14 @@ impl<T> Layer<T> {
         }
     }
 
+    pub fn as_ref(&self) -> Layer<&T> {
+        Layer::new(self.position, &self.grid)
+    }
+
+    pub fn as_mut(&mut self) -> Layer<&mut T> {
+        Layer::new(self.position, &mut self.grid)
+    }
+
     pub fn render<'a>(&'a self, w: impl Write) -> io::Result<()>
     where
         &'a T: GridRows,
@@ -44,22 +52,49 @@ impl<T> WithPosition for Layer<T> {
     }
 }
 
-impl<'t, 'b, Top, Bottom> Over<&'b mut Layer<Bottom>> for &'t Layer<Top>
+impl<Top, Bottom> Over<Layer<Bottom>> for Layer<Top>
 where
-    &'t Top: GridRows,
-    &'b mut Bottom: GridRows,
-    <&'t Top as Grid>::Item: Over<<&'b mut Bottom as Grid>::Item>,
+    Top: GridRows,
+    Bottom: GridRows,
+    Top::Item: Over<Bottom::Item>,
 {
     type Output = ();
 
-    fn over(self, bottom: &'b mut Layer<Bottom>) {
+    fn over(self, bottom: Layer<Bottom>) {
         bottom
             .grid
-            .zip_at(self.position(), &self.grid)
+            .zip_at(self.position(), self.grid)
             .flatten_rows()
             .for_each(|(bottom, top)| {
                 top.over(bottom);
             });
+    }
+}
+
+impl<'screen, Top, Canvas: 'screen> Over<&'screen mut Screen<Canvas>> for Layer<Top>
+where
+    Top: GridRows,
+    &'screen mut Canvas: GridRows,
+    Top::Item: Over<<&'screen mut Canvas as Grid>::Item>,
+{
+    type Output = ();
+
+    fn over(self, screen: &'screen mut Screen<Canvas>) {
+        self.over(Layer::new(Point::ZERO, &mut screen.canvas));
+    }
+}
+
+impl<'frame, T, Top, Canvas: 'frame> Over<&'frame mut Frame<'_, T>> for Layer<Top>
+where
+    T: DerefMut<Target = Screen<Canvas>>,
+    Top: GridRows,
+    &'frame mut Canvas: GridRows,
+    Top::Item: Over<<&'frame mut Canvas as Grid>::Item>,
+{
+    type Output = ();
+
+    fn over(self, screen: &'frame mut Frame<'_, T>) {
+        // self.over(Layer::new(Point::ZERO, &mut screen.canvas));
     }
 }
 
@@ -110,28 +145,26 @@ pub fn example() {
     let canvas_cell = Cell::new(' ', Rgb(0, 0, 0), Rgb(255, 0, 0), ());
     let canvas_cell = Damaged::new(canvas_cell);
     let grid = RowVec1D::new((w, h), vec![canvas_cell; w * h]).unwrap();
-    let mut canvas = Layer::new((0, 0), grid.clone());
+    // let mut canvas = Layer::new((0, 0), grid.clone());
     let mut screen = Screen::new((0, 0), grid, stdout());
 
     let cell1 = Cell::new('1', Rgb(0, 255, 0), Rgba(0, 0, 0, 127), ());
-    let layer1 = Layer::new((1, 1), repeat((10, 10), cell1));
+    let layer1 = Layer::new((0, 0), repeat((12, 12), cell1));
 
     let cell2 = Cell::new('2', Rgb(0, 0, 255), Rgba(0, 255, 0, 127), ());
     let layer2 = Layer::new((2, 2), repeat((10, 10), cell2));
 
     screen.render().unwrap();
+    stdout().flush().unwrap();
+    sleep(Duration::from_millis(500));
+
+    (&mut screen).under(layer1.as_ref());
     screen.render_damage().unwrap();
     stdout().flush().unwrap();
     sleep(Duration::from_millis(500));
 
-    (&layer1).over(&mut canvas);
-    canvas.render(stdout()).unwrap();
-    // canvas.render_damage(stdout()).unwrap();
+    let frame = &mut screen.frame((10..15, 10..15)).unwrap();
+    frame.under(layer2.as_ref());
+    // screen.render_damage().unwrap();
     // stdout().flush().unwrap();
-    // sleep(Duration::from_millis(500));
-
-    // (&layer2).over(&mut canvas);
-    // canvas.render(stdout()).unwrap();
-    // stdout().flush().unwrap();
-    // sleep(Duration::from_millis(500));
 }
