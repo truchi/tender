@@ -164,7 +164,7 @@ pub fn example() {
     frame.flush().unwrap();
 }
 
-pub fn example2() -> (f64, std::time::Duration, std::time::Duration, usize) {
+pub fn example2() -> (f64, std::time::Duration, std::time::Duration) {
     use std::{
         thread::sleep,
         time::{Duration, Instant},
@@ -213,7 +213,7 @@ pub fn example2() -> (f64, std::time::Duration, std::time::Duration, usize) {
     screen.render().unwrap();
     screen.flush().unwrap();
 
-    (fps, elapsed, lag, screen.stdout.capacity())
+    (fps, elapsed, lag)
 }
 
 pub fn example3() -> String {
