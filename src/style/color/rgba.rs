@@ -5,7 +5,7 @@ use super::*;
 pub struct Rgba(pub u8, pub u8, pub u8, pub u8);
 
 impl Color for Rgba {
-    fn alpha(self) -> u8 {
+    fn get_alpha(self) -> u8 {
         self.3
     }
 }
@@ -21,7 +21,7 @@ impl TryFrom<PreRgba> for Rgba {
 
     fn try_from(pre_rgba: PreRgba) -> Result<Rgba, ()> {
         if pre_rgba.is_visible() {
-            let inv_alpha = pre_rgba.inv_alpha_f64();
+            let inv_alpha = pre_rgba.get_inv_alpha_f64();
 
             Ok(Rgba(
                 (pre_rgba.0 as f64 * inv_alpha).round() as _,

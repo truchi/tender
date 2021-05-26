@@ -134,11 +134,11 @@ pub fn example() {
     );
     let layer1 = Layer::new(
         (0, 0),
-        repeat((12, 12), Cell::new('1', LIME, Rgba(0, 0, 0, 127), ())),
+        repeat((12, 12), Cell::new('1', LIME, BLACK.alpha(127), ())),
     );
     let layer2 = Layer::new(
         (2, 2),
-        repeat((10, 10), Cell::new('2', BLUE, Rgba(0, 255, 0, 127), ())),
+        repeat((10, 10), Cell::new('2', BLUE, BLACK.alpha(127), ())),
     );
 
     screen.render().unwrap();

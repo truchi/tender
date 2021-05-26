@@ -12,7 +12,7 @@ impl PreRgba {
 }
 
 impl Color for PreRgba {
-    fn alpha(self) -> u8 {
+    fn get_alpha(self) -> u8 {
         self.3
     }
 }
@@ -25,7 +25,7 @@ impl From<Rgb> for PreRgba {
 
 impl From<Rgba> for PreRgba {
     fn from(rgba: Rgba) -> PreRgba {
-        let alpha = rgba.alpha_f64();
+        let alpha = rgba.get_alpha_f64();
 
         PreRgba(
             (rgba.0 as f64 * alpha).round() as _,
@@ -58,7 +58,7 @@ impl Over<Rgb> for PreRgba {
     type Output = Rgb;
 
     fn over(self, bottom: Rgb) -> Rgb {
-        let contr_alpha = self.contr_alpha_f64();
+        let contr_alpha = self.get_contr_alpha_f64();
 
         Rgb(
             self.0 + (bottom.0 as f64 * contr_alpha).round() as u8,
@@ -80,7 +80,7 @@ impl Over<PreRgba> for PreRgba {
     type Output = PreRgba;
 
     fn over(self, bottom: PreRgba) -> PreRgba {
-        let contr_alpha = self.contr_alpha_f64();
+        let contr_alpha = self.get_contr_alpha_f64();
 
         PreRgba(
             self.0 + (bottom.0 as f64 * contr_alpha).round() as u8,

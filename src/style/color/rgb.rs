@@ -5,8 +5,14 @@ use std::fmt::{self, Display, Formatter};
 #[derive(Copy, Clone, Eq, PartialEq, Default, Hash, Debug)]
 pub struct Rgb(pub u8, pub u8, pub u8);
 
+impl Rgb {
+    pub fn alpha(self, alpha: u8) -> Rgba {
+        Rgba(self.0, self.1, self.2, alpha)
+    }
+}
+
 impl Color for Rgb {
-    fn alpha(self) -> u8 {
+    fn get_alpha(self) -> u8 {
         u8::MAX
     }
 
