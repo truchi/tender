@@ -29,6 +29,23 @@ fn main() {
     leave();
     dbg!(&ret);
     dbg!(ret.len());
+
+    let cell = Cell::new('a', RED, WHITE, ());
+    let mut vec = vec![];
+    write!(&mut vec, "{}", cell);
+    let string = String::from_utf8(vec).unwrap();
+    dbg!(&string);
+    dbg!(string.len());
+    let cell_full =
+        "\u{1b}[38;2;255;0;0m\u{1b}[48;2;255;255;255m\u{1b}[22m\u{1b}[23m\u{1b}[24m\u{1b}[29ma";
+    let cell_short = "\u{1b}[38;2;255;0;0;48;2;255;255;255;22;23;24;29ma";
+    dbg!(&cell_full);
+    dbg!(cell_full.len());
+    dbg!(&cell_short);
+    dbg!(cell_short.len());
+
+    dbg!(90_000.0 * cell_short.len() as f64 / cell_full.len() as f64);
+
     /*
         let (w, h) = (151, 40);
 
