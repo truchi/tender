@@ -1,12 +1,12 @@
 use super::*;
 
 #[derive(Debug)]
-pub struct Frame<'a, 'lock, Canvas> {
+pub struct Frame<'a, Canvas> {
     pub(super) rect:   Rect,
-    pub(super) screen: &'a mut Screen<'lock, Canvas>,
+    pub(super) screen: &'a mut Screen<Canvas>,
 }
 
-impl<'a, 'lock, Canvas> Frame<'a, 'lock, Canvas> {
+impl<'a, Canvas> Frame<'a, Canvas> {
     pub fn position(&self) -> Point {
         self.screen.position + self.rect.start()
     }
@@ -15,7 +15,7 @@ impl<'a, 'lock, Canvas> Frame<'a, 'lock, Canvas> {
         self.rect.size()
     }
 
-    pub fn frame(&'a mut self, rect: impl Index2D) -> Option<Frame<'a, 'lock, Canvas>> {
+    pub fn frame(&mut self, rect: impl Index2D) -> Option<Frame<Canvas>> {
         let rect = rect.checked(self.size())?;
         let rect = rect.translate(self.rect.start());
 
@@ -25,7 +25,7 @@ impl<'a, 'lock, Canvas> Frame<'a, 'lock, Canvas> {
         })
     }
 
-    pub unsafe fn frame_unchecked(&'a mut self, rect: impl Index2D) -> Frame<'a, 'lock, Canvas> {
+    pub unsafe fn frame_unchecked(&mut self, rect: impl Index2D) -> Frame<Canvas> {
         let rect = rect.unchecked(self.rect.size());
         let rect = rect.translate(self.rect.start());
 
@@ -86,19 +86,19 @@ impl<'a, 'lock, Canvas> Frame<'a, 'lock, Canvas> {
     }
 }
 
-impl<'a, 'lock, Canvas> AsRef<Screen<'lock, Canvas>> for Frame<'a, 'lock, Canvas> {
-    fn as_ref(&self) -> &Screen<'lock, Canvas> {
+impl<'a, Canvas> AsRef<Screen<Canvas>> for Frame<'a, Canvas> {
+    fn as_ref(&self) -> &Screen<Canvas> {
         self.screen.as_ref()
     }
 }
 
-impl<'a, 'lock, Canvas> AsMut<Screen<'lock, Canvas>> for Frame<'a, 'lock, Canvas> {
-    fn as_mut(&mut self) -> &mut Screen<'lock, Canvas> {
+impl<'a, Canvas> AsMut<Screen<Canvas>> for Frame<'a, Canvas> {
+    fn as_mut(&mut self) -> &mut Screen<Canvas> {
         self.screen.as_mut()
     }
 }
 
-impl<'a, Canvas> Paint for &'a mut Frame<'_, '_, Canvas>
+impl<'a, Canvas> Paint for &'a mut Frame<'_, Canvas>
 where
     &'a mut Canvas: GridRows,
     <&'a mut Canvas as Grid>::Item: AsMut<Cell>,

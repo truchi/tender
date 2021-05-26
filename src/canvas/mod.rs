@@ -9,7 +9,7 @@ pub use move_to::*;
 pub use screen::*;
 
 use crate::{geometry::*, grid::*, style::*};
-use std::io::{self, BufWriter, Stdout, StdoutLock, Write};
+use std::io::{self, stdout, BufWriter, Stdout, Write};
 
 pub fn render<T>(position: Point, grid: T, mut w: impl Write) -> io::Result<()>
 where

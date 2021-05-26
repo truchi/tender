@@ -65,7 +65,7 @@ where
     }
 }
 
-impl<'screen, Top, Canvas: 'screen> Over<&'screen mut Screen<'screen, Canvas>> for Layer<Top>
+impl<'screen, Top, Canvas: 'screen> Over<&'screen mut Screen<Canvas>> for Layer<Top>
 where
     Top: GridRows,
     &'screen mut Canvas: GridRows,
@@ -78,7 +78,7 @@ where
     }
 }
 
-impl<'frame, Top, Canvas> Over<&'frame mut Frame<'_, '_, Canvas>> for Layer<Top>
+impl<'frame, Top, Canvas> Over<&'frame mut Frame<'_, Canvas>> for Layer<Top>
 where
     Top: GridRows,
     &'frame mut Canvas: GridRows,
@@ -86,7 +86,7 @@ where
 {
     type Output = ();
 
-    fn over(self, frame: &'frame mut Frame<'_, '_, Canvas>) {
+    fn over(self, frame: &'frame mut Frame<'_, Canvas>) {
         self.over(frame.as_layer_mut());
     }
 }
@@ -120,8 +120,7 @@ where
 // ===================================================================
 
 pub fn example() {
-    use std::{io::stdout, thread::sleep, time::Duration};
-    let out = stdout();
+    use std::{thread::sleep, time::Duration};
 
     let (w, h) = (151, 40);
     let mut screen = Screen::new(
@@ -131,7 +130,6 @@ pub fn example() {
             w * h
         ])
         .unwrap(),
-        &out,
     );
     let layer1 = Layer::new(
         (0, 0),
@@ -152,33 +150,30 @@ pub fn example() {
     screen.flush().unwrap();
     sleep(Duration::from_millis(500));
 
-    // let frame = &mut screen.frame((10..30, 10..30)).unwrap();
-    // frame.under(layer2.as_ref());
-    // frame.bold();
-    // frame.render_damage().unwrap();
-    // frame.flush().unwrap();
-    // sleep(Duration::from_millis(500));
-    //
-    // let frame = &mut frame.frame((4..10, 4..10)).unwrap();
-    // frame.foreground(PURPLE);
-    // frame.striked();
-    // frame.render_damage().unwrap();
-    // frame.flush().unwrap();
+    let frame = &mut screen.frame((10..30, 10..30)).unwrap();
+    frame.under(layer2.as_ref());
+    frame.bold();
+    frame.render_damage().unwrap();
+    frame.flush().unwrap();
+    sleep(Duration::from_millis(500));
+
+    let frame = &mut frame.frame((4..10, 4..10)).unwrap();
+    frame.foreground(PURPLE);
+    frame.striked();
+    frame.render_damage().unwrap();
+    frame.flush().unwrap();
 }
 
 pub fn example2() -> (f64, std::time::Duration, std::time::Duration, usize) {
     use std::{
-        io::stdout,
         thread::sleep,
         time::{Duration, Instant},
     };
-    let out = stdout();
 
     let (w, h) = (150, 40);
     let mut screen = Screen::new(
         (0, 0),
         RowVec1D::new((w, h), vec![Damaged::default(); w * h]).unwrap(),
-        &out,
     );
     let background = Layer::new(
         (0, 0),
@@ -223,11 +218,9 @@ pub fn example2() -> (f64, std::time::Duration, std::time::Duration, usize) {
 
 pub fn example3() -> String {
     use std::{
-        io::stdout,
         thread::sleep,
         time::{Duration, Instant},
     };
-    let out = stdout();
 
     let (w, h) = (150, 40);
     let mut screen = Layer::new(
