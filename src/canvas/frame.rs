@@ -1,12 +1,12 @@
 use super::*;
 
 #[derive(Debug)]
-pub struct Frame<'a, Canvas> {
+pub struct Frame<'a, 'lock, Canvas> {
     pub(super) rect:   Rect,
-    pub(super) screen: &'a mut Screen<Canvas>,
+    pub(super) screen: &'a mut Screen<'lock, Canvas>,
 }
 
-impl<'a, Canvas> Frame<'a, Canvas> {
+impl<'a, 'lock, Canvas> Frame<'a, 'lock, Canvas> {
     pub fn position(&self) -> Point {
         self.screen.position + self.rect.start()
     }
@@ -15,7 +15,7 @@ impl<'a, Canvas> Frame<'a, Canvas> {
         self.rect.size()
     }
 
-    pub fn frame(&mut self, rect: impl Index2D) -> Option<Frame<Canvas>> {
+    pub fn frame(&'a mut self, rect: impl Index2D) -> Option<Frame<'a, 'lock, Canvas>> {
         let rect = rect.checked(self.size())?;
         let rect = rect.translate(self.rect.start());
 
@@ -25,7 +25,7 @@ impl<'a, Canvas> Frame<'a, Canvas> {
         })
     }
 
-    pub unsafe fn frame_unchecked(&mut self, rect: impl Index2D) -> Frame<Canvas> {
+    pub unsafe fn frame_unchecked(&'a mut self, rect: impl Index2D) -> Frame<'a, 'lock, Canvas> {
         let rect = rect.unchecked(self.rect.size());
         let rect = rect.translate(self.rect.start());
 
@@ -42,7 +42,7 @@ impl<'a, Canvas> Frame<'a, Canvas> {
     {
         let position = self.position();
         let rect = self.rect.clone();
-        let Screen { canvas, stdout, .. } = &self.screen;
+        let Screen { canvas, stdout, .. } = &mut self.screen;
 
         // SAFETY: rect is checked at creation
         render(position, unsafe { canvas.crop_unchecked(rect) }, stdout)
@@ -86,19 +86,19 @@ impl<'a, Canvas> Frame<'a, Canvas> {
     }
 }
 
-impl<Canvas> AsRef<Screen<Canvas>> for Frame<'_, Canvas> {
-    fn as_ref(&self) -> &Screen<Canvas> {
+impl<'a, 'lock, Canvas> AsRef<Screen<'lock, Canvas>> for Frame<'a, 'lock, Canvas> {
+    fn as_ref(&self) -> &Screen<'lock, Canvas> {
         self.screen.as_ref()
     }
 }
 
-impl<Canvas> AsMut<Screen<Canvas>> for Frame<'_, Canvas> {
-    fn as_mut(&mut self) -> &mut Screen<Canvas> {
+impl<'a, 'lock, Canvas> AsMut<Screen<'lock, Canvas>> for Frame<'a, 'lock, Canvas> {
+    fn as_mut(&mut self) -> &mut Screen<'lock, Canvas> {
         self.screen.as_mut()
     }
 }
 
-impl<'a, Canvas> Paint for &'a mut Frame<'_, Canvas>
+impl<'a, Canvas> Paint for &'a mut Frame<'_, '_, Canvas>
 where
     &'a mut Canvas: GridRows,
     <&'a mut Canvas as Grid>::Item: AsMut<Cell>,

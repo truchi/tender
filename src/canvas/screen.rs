@@ -1,18 +1,18 @@
 use super::*;
 
 #[derive(Debug)]
-pub struct Screen<Canvas> {
+pub struct Screen<'lock, Canvas> {
     pub position:      Point,
     pub(super) canvas: Canvas,
-    pub(super) stdout: Stdout,
+    pub(super) stdout: BufWriter<StdoutLock<'lock>>,
 }
 
-impl<Canvas> Screen<Canvas> {
-    pub fn new(position: impl Index0D, canvas: Canvas, stdout: Stdout) -> Self {
+impl<'lock, Canvas> Screen<'lock, Canvas> {
+    pub fn new(position: impl Index0D, canvas: Canvas, stdout: &'lock Stdout) -> Self {
         Self {
             position: position.unchecked(),
             canvas,
-            stdout,
+            stdout: BufWriter::new(stdout.lock()),
         }
     }
 
@@ -23,7 +23,7 @@ impl<Canvas> Screen<Canvas> {
         self.canvas.size()
     }
 
-    pub fn frame(&mut self, rect: impl Index2D) -> Option<Frame<Canvas>>
+    pub fn frame(&'lock mut self, rect: impl Index2D) -> Option<Frame<Canvas>>
     where
         Canvas: WithSize,
     {
@@ -32,7 +32,7 @@ impl<Canvas> Screen<Canvas> {
         Some(Frame { rect, screen: self })
     }
 
-    pub unsafe fn frame_unchecked(&mut self, rect: impl Index2D) -> Frame<Canvas>
+    pub unsafe fn frame_unchecked(&'lock mut self, rect: impl Index2D) -> Frame<Canvas>
     where
         Canvas: WithSize,
     {
@@ -70,19 +70,19 @@ impl<Canvas> Screen<Canvas> {
     }
 }
 
-impl<Canvas> AsRef<Screen<Canvas>> for Screen<Canvas> {
+impl<'lock, Canvas> AsRef<Screen<'lock, Canvas>> for Screen<'lock, Canvas> {
     fn as_ref(&self) -> &Self {
         self
     }
 }
 
-impl<Canvas> AsMut<Screen<Canvas>> for Screen<Canvas> {
+impl<'lock, Canvas> AsMut<Screen<'lock, Canvas>> for Screen<'lock, Canvas> {
     fn as_mut(&mut self) -> &mut Self {
         self
     }
 }
 
-impl<'a, Canvas> Paint for &'a mut Screen<Canvas>
+impl<'a, Canvas> Paint for &'a mut Screen<'_, Canvas>
 where
     &'a mut Canvas: GridRows,
     <&'a mut Canvas as Grid>::Item: AsMut<Cell>,

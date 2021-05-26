@@ -65,7 +65,7 @@ where
     }
 }
 
-impl<'screen, Top, Canvas: 'screen> Over<&'screen mut Screen<Canvas>> for Layer<Top>
+impl<'screen, Top, Canvas: 'screen> Over<&'screen mut Screen<'screen, Canvas>> for Layer<Top>
 where
     Top: GridRows,
     &'screen mut Canvas: GridRows,
@@ -78,7 +78,7 @@ where
     }
 }
 
-impl<'frame, Top, Canvas> Over<&'frame mut Frame<'_, Canvas>> for Layer<Top>
+impl<'frame, Top, Canvas> Over<&'frame mut Frame<'_, '_, Canvas>> for Layer<Top>
 where
     Top: GridRows,
     &'frame mut Canvas: GridRows,
@@ -86,7 +86,7 @@ where
 {
     type Output = ();
 
-    fn over(self, frame: &'frame mut Frame<'_, Canvas>) {
+    fn over(self, frame: &'frame mut Frame<'_, '_, Canvas>) {
         self.over(frame.as_layer_mut());
     }
 }
@@ -121,6 +121,7 @@ where
 
 pub fn example() {
     use std::{io::stdout, thread::sleep, time::Duration};
+    let out = stdout();
 
     let (w, h) = (151, 40);
     let mut screen = Screen::new(
@@ -130,7 +131,7 @@ pub fn example() {
             w * h
         ])
         .unwrap(),
-        stdout(),
+        &out,
     );
     let layer1 = Layer::new(
         (0, 0),
@@ -145,22 +146,108 @@ pub fn example() {
     screen.flush().unwrap();
     sleep(Duration::from_millis(500));
 
-    screen.as_mut().under(layer1.as_ref());
+    screen.as_layer_mut().under(layer1.as_ref());
     screen.paint(Italic);
     screen.render_damage().unwrap();
     screen.flush().unwrap();
     sleep(Duration::from_millis(500));
 
-    let frame = &mut screen.frame((10..30, 10..30)).unwrap();
-    frame.under(layer2.as_ref());
-    frame.bold();
-    frame.render_damage().unwrap();
-    frame.flush().unwrap();
-    sleep(Duration::from_millis(500));
+    // let frame = &mut screen.frame((10..30, 10..30)).unwrap();
+    // frame.under(layer2.as_ref());
+    // frame.bold();
+    // frame.render_damage().unwrap();
+    // frame.flush().unwrap();
+    // sleep(Duration::from_millis(500));
+    //
+    // let frame = &mut frame.frame((4..10, 4..10)).unwrap();
+    // frame.foreground(PURPLE);
+    // frame.striked();
+    // frame.render_damage().unwrap();
+    // frame.flush().unwrap();
+}
 
-    let frame = &mut frame.frame((4..10, 4..10)).unwrap();
-    frame.foreground(PURPLE);
-    frame.striked();
-    frame.render_damage().unwrap();
-    frame.flush().unwrap();
+pub fn example2() -> (f64, std::time::Duration, std::time::Duration, usize) {
+    use std::{
+        io::stdout,
+        thread::sleep,
+        time::{Duration, Instant},
+    };
+    let out = stdout();
+
+    let (w, h) = (150, 40);
+    let mut screen = Screen::new(
+        (0, 0),
+        RowVec1D::new((w, h), vec![Damaged::default(); w * h]).unwrap(),
+        &out,
+    );
+    let background = Layer::new(
+        (0, 0),
+        repeat_with((w, h), |Point { x, y }| {
+            if x % 2 == 0 {
+                Cell::new('A', BLACK, GREEN, ())
+            } else {
+                Cell::new('B', BLACK, RED, ())
+            }
+        }),
+    );
+
+    screen.as_layer_mut().under(background.as_ref());
+    screen.render().unwrap();
+    screen.flush().unwrap();
+
+    let fps = 15.0;
+    let spf = Duration::from_secs_f64(1.0 / fps);
+    let now = Instant::now();
+    let mut lag = Duration::from_millis(0);
+
+    for i in 0..(fps as u8 * 5) {
+        let before = Instant::now();
+        screen.char(if i % 2 == 0 { 'X' } else { 'O' });
+        screen.render().unwrap();
+        screen.flush().unwrap();
+        let after = before.elapsed();
+        if spf > after {
+            sleep(spf - after);
+        } else {
+            lag += after - spf;
+        }
+    }
+    let elapsed = now.elapsed();
+
+    screen.background(WHITE);
+    screen.render().unwrap();
+    screen.flush().unwrap();
+
+    (fps, elapsed, lag, screen.stdout.capacity())
+}
+
+pub fn example3() -> String {
+    use std::{
+        io::stdout,
+        thread::sleep,
+        time::{Duration, Instant},
+    };
+    let out = stdout();
+
+    let (w, h) = (150, 40);
+    let mut screen = Layer::new(
+        (0, 0),
+        RowVec1D::new((w, h), vec![Damaged::default(); w * h]).unwrap(),
+    );
+    let background = Layer::new(
+        (0, 0),
+        repeat_with((w, h), |Point { x, y }| {
+            if x % 2 == 0 {
+                Cell::new('A', BLACK, GREEN, ())
+            } else {
+                Cell::new('B', BLACK, RED, ())
+            }
+        }),
+    );
+
+    let mut vec = vec![];
+    screen.as_mut().under(background.as_ref());
+    screen.render(&mut vec).unwrap();
+
+    String::from_utf8(vec).unwrap()
 }

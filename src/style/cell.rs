@@ -99,6 +99,19 @@ where
     }
 }
 
+impl<Fg, Bg> Over<&mut Damaged> for Cell<Fg, Bg>
+where
+    Fg: Color,
+    Bg: Color,
+    Cell<Fg, Bg>: Into<Comp>,
+{
+    type Output = ();
+
+    fn over(self, damaged: &mut Damaged) {
+        *damaged = self.over(*damaged);
+    }
+}
+
 impl<Fg, Bg> AsRef<Cell<Fg, Bg>> for Cell<Fg, Bg> {
     fn as_ref(&self) -> &Cell<Fg, Bg> {
         self

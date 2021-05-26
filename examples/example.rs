@@ -25,8 +25,10 @@ use tender::{canvas::*, grid::*, style::*};
 
 fn main() {
     enter();
-    example();
+    let ret = example3();
     leave();
+    dbg!(&ret);
+    dbg!(ret.len());
     /*
         let (w, h) = (151, 40);
 
