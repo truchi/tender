@@ -9,20 +9,7 @@ pub use move_to::*;
 pub use screen::*;
 
 use crate::{geometry::*, grid::*, style::*};
-use std::{
-    io::{self, Stdout, Write},
-    ops::Deref,
-};
-
-pub trait WithPosition {
-    fn position(&self) -> Point;
-}
-
-impl<T: Deref<Target = U>, U: WithPosition> WithPosition for T {
-    fn position(&self) -> Size {
-        self.deref().position()
-    }
-}
+use std::io::{self, Stdout, Write};
 
 pub fn render<T>(position: Point, grid: T, mut w: impl Write) -> io::Result<()>
 where
