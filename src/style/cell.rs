@@ -24,6 +24,30 @@ impl<Fg, Bg> Cell<Fg, Bg> {
             attributes: attributes.into().into(),
         }
     }
+
+    fn styles(
+        &self,
+    ) -> (
+        Foreground<Fg>,
+        Background<Bg>,
+        Weight,
+        Slant,
+        Underline,
+        Strike,
+    )
+    where
+        Fg: Copy,
+        Bg: Copy,
+    {
+        (
+            Foreground(self.foreground),
+            Background(self.background),
+            self.attributes.get_weight(),
+            self.attributes.get_slant(),
+            self.attributes.get_underline(),
+            self.attributes.get_strike(),
+        )
+    }
 }
 
 impl<Fg: Default, Bg: Default> Default for Cell<Fg, Bg> {
@@ -62,25 +86,7 @@ impl Display for CS<Dedup<Cell>> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let Dedup(previous, current) = self.0;
 
-        CS(Dedup(
-            (
-                Foreground(previous.foreground),
-                Background(previous.background),
-                previous.attributes.get_weight(),
-                previous.attributes.get_slant(),
-                previous.attributes.get_underline(),
-                previous.attributes.get_strike(),
-            ),
-            (
-                Foreground(current.foreground),
-                Background(current.background),
-                current.attributes.get_weight(),
-                current.attributes.get_slant(),
-                current.attributes.get_underline(),
-                current.attributes.get_strike(),
-            ),
-        ))
-        .fmt(f)
+        CS(Dedup(previous.styles(), current.styles())).fmt(f)
     }
 }
 

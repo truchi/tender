@@ -231,9 +231,13 @@ pub fn example3() -> String {
         (0, 0),
         repeat_with((w, h), |Point { x, .. }| {
             if x % 2 == 0 {
-                Cell::new('A', BLACK, GREEN, ())
+                Cell::new('A', RED, BLUE, ())
+                // Cell::new('A', RED, BLUE, (NoWeight, NoSlant, NoUnderline,
+                // NoStrike))
             } else {
-                Cell::new('B', BLACK, RED, ())
+                Cell::new('B', BLUE, RED, ())
+                // Cell::new('B', BLUE, RED, (Bold, Italic, Underlined,
+                // Striked))
             }
         }),
     );
