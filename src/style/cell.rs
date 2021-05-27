@@ -26,29 +26,62 @@ impl<Fg, Bg> Cell<Fg, Bg> {
     }
 }
 
-impl<Fg: Color> Display for Cell<Fg, Rgb> {
+impl<Fg: Color> Display for CS<Cell<Fg, Rgb>> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        let Cell {
+            foreground,
+            background,
+            attributes,
+            ..
+        } = self.0;
+
         write!(
             f,
-            "{}{}{}{}",
-            Foreground(self.foreground.over(self.background)),
-            Background(self.background),
-            self.attributes,
-            self.char,
+            "{}",
+            CS((
+                (Foreground(foreground.over(background))),
+                (Background(background)),
+                attributes,
+            ))
         )
+    }
+}
+
+impl Display for CS<Dedup<Cell>> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        let Dedup(previous, current) = self.0;
+
+        CS(Dedup(
+            (
+                Foreground(previous.foreground),
+                Background(previous.background),
+                previous.attributes.get_weight(),
+                previous.attributes.get_slant(),
+                previous.attributes.get_underline(),
+                previous.attributes.get_strike(),
+            ),
+            (
+                Foreground(current.foreground),
+                Background(current.background),
+                current.attributes.get_weight(),
+                current.attributes.get_slant(),
+                current.attributes.get_underline(),
+                current.attributes.get_strike(),
+            ),
+        ))
+        .fmt(f)
+    }
+}
+
+impl<Fg: Color> Display for Cell<Fg, Rgb> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "{}{}", CS(*self), self.char)
     }
 }
 
 impl Display for Dedup<Cell> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(
-            f,
-            "{}{}{}{}",
-            Dedup(Foreground(self.0.foreground), Foreground(self.1.foreground)),
-            Dedup(Background(self.0.background), Background(self.1.background)),
-            Dedup(self.0.attributes, self.1.attributes),
-            self.1.char,
-        )
+        write!(f, "{}{}", CS(*self), self.1.char)
     }
 }
 

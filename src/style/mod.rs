@@ -13,6 +13,8 @@ pub use comp::*;
 pub use damaged::*;
 pub use paint::*;
 
+use std::fmt::{self, Display, Formatter};
+
 pub trait Over<Bottom> {
     type Output;
 
@@ -49,4 +51,46 @@ impl<Top: Over<Bottom>, Bottom> Under<Top> for Bottom {
     }
 }
 
+#[derive(Copy, Clone, Debug)]
 pub struct Dedup<T>(pub T, pub T);
+
+#[derive(Copy, Clone, Debug)]
+pub struct CS<T>(pub T);
+
+macro_rules! csi_tuples {
+    ($([$fmt:literal $($field:tt $T:ident)*])*) => {
+        $(impl<$($T,)*> Display for CS<Dedup<($($T,)*)>>
+        where
+            $($T: PartialEq + Copy,)*
+            $(CS<$T>: Display,)*
+        {
+            fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+                let Dedup(previous, current) = self.0;
+
+                $(if previous.$field != current.$field {
+                    write!(f, "{}", CS(current.$field))?;
+                })*
+
+                Ok(())
+            }
+        })*
+
+        $(impl<$($T,)*> Display for CS<($($T,)*)>
+        where
+            $($T: Copy,)*
+            $(CS<$T>: Display,)*
+        {
+            fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+                write!(f, $fmt, $(CS(self.0.$field),)*)
+            }
+        })*
+    };
+}
+
+csi_tuples!(
+    ["{}{}"         0 T1 1 T2]
+    ["{}{}{}"       0 T1 1 T2 2 T3]
+    ["{}{}{}{}"     0 T1 1 T2 2 T3 3 T4]
+    ["{}{}{}{}{}"   0 T1 1 T2 2 T3 3 T4 4 T5]
+    ["{}{}{}{}{}{}" 0 T1 1 T2 2 T3 3 T4 4 T5 5 T6]
+);

@@ -4,6 +4,80 @@
 use super::*;
 use std::fmt::{self, Debug, Display, Formatter};
 
+macro_rules! attr {
+    ($(
+        $(#[$attr_meta:meta])*
+        $Attr:ident { $(
+            $(#[$variant_meta:meta])*
+            $Variant:ident ($variant_csi:literal)
+        )*;
+            $(#[$default_meta:meta])*
+            $Default:ident ($default_csi:literal)
+        }
+    )*) => { $(
+        pub use $Attr::*;
+
+        $(#[$attr_meta])*
+        #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+        pub enum $Attr {
+            $(
+                $(#[$variant_meta])*
+                $Variant,
+            )*
+            $(#[$default_meta])*
+            $Default
+        }
+
+        impl Default for $Attr {
+            fn default() -> Self {
+                $Attr::$Default
+            }
+        }
+
+        impl Display for CS<$Attr> {
+            fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+                match self.0 {
+                    $($Attr::$Variant => write!(f, "{}", $variant_csi),)*
+                    $Attr::$Default => write!(f, "{}", $default_csi),
+                }
+            }
+        }
+    )* };
+}
+
+attr!(
+    /// `Weight` (`Bold`, `Light`, `NoWeight`).
+    Weight {
+        ///
+        Bold (1)
+        ///
+        Light (2);
+        ///
+        NoWeight (22)
+    }
+    /// `Slant` (`Italic`, `NoSlant`).
+    Slant {
+        ///
+        Italic (3);
+        ///
+        NoSlant (23)
+    }
+    /// `Underline` (`Underlined`, `NoUnderline`).
+    Underline {
+        ///
+        Underlined (4);
+        ///
+        NoUnderline (24)
+    }
+    /// `Strike` (`Striked`, `NoStrike`).
+    Strike {
+        ///
+        Striked (9);
+        ///
+        NoStrike (29)
+    }
+);
+
 // ------------------------------------------------------------------ //
 //                                                                    //
 // *************************** ATTRIBUTES *************************** //
@@ -48,80 +122,6 @@ impl From<Attributes> for (Weight, Slant, Underline, Strike) {
         (weight, slant, underline, strike)
     }
 }
-
-macro_rules! attr {
-    ($(
-        $(#[$attr_meta:meta])*
-        $Attr:ident { $(
-            $(#[$variant_meta:meta])*
-            $Variant:ident ($variant_csi:literal)
-        )*;
-            $(#[$default_meta:meta])*
-            $Default:ident ($default_csi:literal)
-        }
-    )*) => { $(
-        pub use $Attr::*;
-
-        $(#[$attr_meta])*
-        #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
-        pub enum $Attr {
-            $(
-                $(#[$variant_meta])*
-                $Variant,
-            )*
-            $(#[$default_meta])*
-            $Default
-        }
-
-        impl Default for $Attr {
-            fn default() -> Self {
-                $Attr::$Default
-            }
-        }
-
-        impl Display for $Attr {
-            fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-                match self {
-                    $(Self::$Variant => write!(f, "\x1B[{}m", $variant_csi),)*
-                    Self::$Default => write!(f, "\x1B[{}m", $default_csi),
-                }
-            }
-        }
-    )* };
-}
-
-attr!(
-    /// `Weight` (`Bold`, `Light`, `NoWeight`).
-    Weight {
-        ///
-        Bold (1)
-        ///
-        Light (2);
-        ///
-        NoWeight (22)
-    }
-    /// `Slant` (`Italic`, `NoSlant`).
-    Slant {
-        ///
-        Italic (3);
-        ///
-        NoSlant (23)
-    }
-    /// `Underline` (`Underlined`, `NoUnderline`).
-    Underline {
-        ///
-        Underlined (4);
-        ///
-        NoUnderline (24)
-    }
-    /// `Strike` (`Striked`, `NoStrike`).
-    Strike {
-        ///
-        Striked (9);
-        ///
-        NoStrike (29)
-    }
-);
 
 // --------------------------------------------------------------------- //
 //                                                                       //
@@ -291,50 +291,12 @@ impl From<AttributesU8> for Attributes {
     }
 }
 
-impl Display for AttributesU8 {
+impl Display for CS<AttributesU8> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        let Attributes {
-            weight,
-            slant,
-            underline,
-            strike,
-        } = (*self).into();
+        let attributes: Attributes = self.0.into();
+        let attributes: (Weight, Slant, Underline, Strike) = attributes.into();
 
-        write!(f, "{}{}{}{}", weight, slant, underline, strike)
-    }
-}
-
-impl Display for Dedup<AttributesU8> {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        let (
-            Attributes {
-                weight: previous_weight,
-                slant: previous_slant,
-                underline: previous_underline,
-                strike: previous_strike,
-            },
-            Attributes {
-                weight,
-                slant,
-                underline,
-                strike,
-            },
-        ) = (self.0.into(), self.1.into());
-
-        if weight != previous_weight {
-            write!(f, "{}", weight)?;
-        }
-        if slant != previous_slant {
-            write!(f, "{}", slant)?;
-        }
-        if underline != previous_underline {
-            write!(f, "{}", underline)?;
-        }
-        if strike != previous_strike {
-            write!(f, "{}", strike)?;
-        }
-
-        Ok(())
+        write!(f, "{}", CS(attributes))
     }
 }
 

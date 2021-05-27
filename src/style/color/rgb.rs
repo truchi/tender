@@ -1,5 +1,4 @@
 use super::*;
-use std::fmt::{self, Display, Formatter};
 
 /// Rgb color.
 #[derive(Copy, Clone, Eq, PartialEq, Default, Hash, Debug)]
@@ -70,12 +69,6 @@ impl PartialEq<PreRgba> for Rgb {
         Rgb::try_from(*pre_rgba)
             .map(|rgb| *self == rgb)
             .unwrap_or(false)
-    }
-}
-
-impl Display for Rgb {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "2;{};{};{}", self.0, self.1, self.2)
     }
 }
 
