@@ -55,6 +55,18 @@ impl<Top: Over<Bottom>, Bottom> Under<Top> for Bottom {
 pub struct Dedup<T>(pub T, pub T);
 
 #[derive(Copy, Clone, Debug)]
+pub struct CSI<T>(pub T);
+
+impl<T: Copy> Display for CSI<T>
+where
+    CS<T>: Display,
+{
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "\x1B[{}m", CS(self.0))
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
 pub struct CS<T>(pub T);
 
 macro_rules! csi_tuples {

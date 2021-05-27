@@ -5,14 +5,14 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use std::io::{stdout, Write};
-use tender::style::*;
+use tender::canvas::*;
 
 fn main() {
     enter();
-    let ret = example3();
+    let ret = example2();
     leave();
     dbg!(&ret);
-    dbg!(ret.len());
+    // dbg!(ret.len());
 }
 
 fn enter() {
