@@ -22,7 +22,7 @@ where
     ) -> io::Result<()> {
         for icell in row {
             let cell = *icell.as_ref();
-            write!(w, "{}{}", CSI(Dedup(*previous, cell)), cell.char)?;
+            write!(w, "{}", Dedup(*previous, cell))?;
             *previous = cell;
         }
         move_to.next_row();
@@ -39,7 +39,7 @@ where
         // Render first cell as is
         if let Some(cell) = row.next() {
             let mut previous = *cell.as_ref();
-            write!(w, "{}{}{}", move_to, CSI(previous), previous.char)?;
+            write!(w, "{}{}", move_to, previous)?;
 
             // Finish rendering this row, deduping
             render_row(&mut w, row, &mut previous, &mut move_to)?;
@@ -76,7 +76,7 @@ where
                 if !rendered {
                     write!(w, "{}", move_to)?;
                 }
-                write!(w, "{}{}", CSI(Dedup(*previous, cell)), cell.char)?;
+                write!(w, "{}", Dedup(*previous, cell))?;
                 *previous = cell;
                 rendered = true;
             } else {
@@ -102,7 +102,7 @@ where
             if let Some(cell) = damaged.as_mut().damage() {
                 let mut previous = cell;
 
-                write!(w, "{}{}{}", move_to, CSI(previous), previous.char)?;
+                write!(w, "{}{}", move_to, previous)?;
 
                 // Finish rendering this row, deduping
                 move_to.next_col();

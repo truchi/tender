@@ -86,13 +86,13 @@ impl Display for CS<Dedup<Cell>> {
 
 impl<Fg: Color> Display for Cell<Fg, Rgb> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{}{}", CS(*self), self.char)
+        write!(f, "{}{}", CSI(*self), self.char)
     }
 }
 
 impl Display for Dedup<Cell> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{}{}", CS(*self), self.1.char)
+        write!(f, "{}{}", CSI(*self), self.1.char)
     }
 }
 
