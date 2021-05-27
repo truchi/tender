@@ -9,12 +9,10 @@ use tender::*;
 
 fn main() {
     enter();
-    let ret = example3();
+    let ret = example8();
     leave();
     dbg!(&ret);
-    dbg!(ret.len());
-    // 174283 / 306271
-    // 234271 / 294271
+    // dbg!(ret.len());
 }
 
 fn enter() {

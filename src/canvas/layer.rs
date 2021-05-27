@@ -494,3 +494,73 @@ pub fn example7() -> (f64, std::time::Duration, std::time::Duration) {
 
     (fps, elapsed, lag)
 }
+
+pub fn example8() -> (f64, std::time::Duration, std::time::Duration) {
+    use std::{
+        thread::sleep,
+        time::{Duration, Instant},
+    };
+
+    let out = stdout();
+    let mut out = out.lock();
+    let (w, h) = (150, 40);
+
+    let fps = 30.0;
+    let spf = Duration::from_secs_f64(1.0 / fps);
+    let now = Instant::now();
+
+    let mut lag = Duration::from_millis(0);
+    let mut layer = Vec::with_capacity(w * h);
+    for _ in 0..h {
+        for i in 0..w {
+            layer.push(Damaged::new(if i % 2 == 0 {
+                Cell::new('X', RED, GREEN, ())
+            } else {
+                Cell::new('O', GREEN, RED, ())
+            }));
+        }
+    }
+    let mut layer = Layer::new((0, 0), RowVec1D::new((w, h), layer).unwrap());
+
+    layer.render(&mut out).unwrap();
+    out.flush().unwrap();
+
+    let mut x = 0;
+    let mut y = 0;
+    let mut previous: Option<(Cell, usize, usize)> = None;
+    for _ in 0..(fps as u64 * 3) {
+        let before = Instant::now();
+
+        if let Some((cell, x, y)) = previous {
+            (&mut layer.grid).item((x, y)).unwrap().current = cell;
+        }
+
+        let cell: &mut Cell = &mut (&mut layer.grid).item((x, y)).unwrap().current;
+        previous = Some((*cell, x, y));
+
+        *cell = Default::default();
+
+        if x + 1 < w {
+            x += 1;
+        } else if y + 1 < h {
+            x = 0;
+            y += 1;
+        } else {
+            x = 0;
+            y = 0;
+        }
+
+        layer.render_damage(&mut out).unwrap();
+        out.flush().unwrap();
+
+        let after = before.elapsed();
+        if spf > after {
+            sleep(spf - after);
+        } else {
+            lag += after - spf;
+        }
+    }
+    let elapsed = now.elapsed();
+
+    (fps, elapsed, lag)
+}
