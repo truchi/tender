@@ -91,6 +91,14 @@ impl Paint for &mut Cell {
     }
 }
 
+impl Paint for char {
+    type Output = Cell;
+
+    fn paint(self, painter: impl Painter) -> Cell {
+        Cell::default().char(self).paint(painter)
+    }
+}
+
 pub trait Painter: Copy {
     fn paint(self, cell: &mut Cell);
 }

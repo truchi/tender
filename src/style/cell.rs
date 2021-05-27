@@ -2,7 +2,7 @@ use super::*;
 use std::fmt::{self, Display, Formatter};
 
 /// A terminal `Cell`.
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub struct Cell<Fg = Rgb, Bg = Rgb> {
     pub char:       char,
     pub foreground: Fg,
@@ -22,6 +22,17 @@ impl<Fg, Bg> Cell<Fg, Bg> {
             foreground,
             background,
             attributes: attributes.into().into(),
+        }
+    }
+}
+
+impl<Fg: Default, Bg: Default> Default for Cell<Fg, Bg> {
+    fn default() -> Self {
+        Self {
+            char:       ' ',
+            foreground: Default::default(),
+            background: Default::default(),
+            attributes: Default::default(),
         }
     }
 }
