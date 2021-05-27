@@ -4,6 +4,7 @@ use super::*;
 pub struct Screen<Canvas> {
     pub position:      Point,
     pub(super) canvas: Canvas,
+    // pub(super) stdout: Stdout,
     pub(super) stdout: BufWriter<Stdout>,
 }
 
@@ -12,7 +13,8 @@ impl<Canvas> Screen<Canvas> {
         Self {
             position: position.unchecked(),
             canvas,
-            stdout: BufWriter::new(stdout()),
+            // stdout: stdout(),
+            stdout: BufWriter::with_capacity(16_000, stdout()),
         }
     }
 
