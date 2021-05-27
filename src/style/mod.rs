@@ -64,11 +64,18 @@ macro_rules! csi_tuples {
             $($T: PartialEq + Copy,)*
             $(CS<$T>: Display,)*
         {
+            #[allow(unused_assignments)]
             fn fmt(&self, f: &mut Formatter) -> fmt::Result {
                 let Dedup(previous, current) = self.0;
+                let mut separator = false;
 
                 $(if previous.$field != current.$field {
-                    write!(f, "{}", CS(current.$field))?;
+                    if separator {
+                        write!(f, ";{}", CS(current.$field))?;
+                    } else {
+                        write!(f, "{}", CS(current.$field))?;
+                        separator = true;
+                    }
                 })*
 
                 Ok(())
@@ -88,9 +95,9 @@ macro_rules! csi_tuples {
 }
 
 csi_tuples!(
-    ["{}{}"         0 T1 1 T2]
-    ["{}{}{}"       0 T1 1 T2 2 T3]
-    ["{}{}{}{}"     0 T1 1 T2 2 T3 3 T4]
-    ["{}{}{}{}{}"   0 T1 1 T2 2 T3 3 T4 4 T5]
-    ["{}{}{}{}{}{}" 0 T1 1 T2 2 T3 3 T4 4 T5 5 T6]
+    ["{};{}"             0 T1 1 T2]
+    ["{};{};{}"          0 T1 1 T2 2 T3]
+    ["{};{};{};{}"       0 T1 1 T2 2 T3 3 T4]
+    ["{};{};{};{};{}"    0 T1 1 T2 2 T3 3 T4 4 T5]
+    ["{};{};{};{};{};{}" 0 T1 1 T2 2 T3 3 T4 4 T5 5 T6]
 );
