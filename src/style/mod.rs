@@ -1,5 +1,6 @@
 pub mod attributes;
 pub mod color;
+pub mod move_to;
 
 mod cell;
 mod comp;
@@ -11,6 +12,7 @@ pub use cell::*;
 pub use color::*;
 pub use comp::*;
 pub use damaged::*;
+pub use move_to::*;
 pub use paint::*;
 
 use std::fmt::{self, Display, Formatter};

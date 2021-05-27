@@ -1,4 +1,4 @@
-use super::*;
+use crate::geometry::*;
 use std::fmt::{self, Display, Formatter};
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Default, Debug)]

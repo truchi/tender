@@ -1,11 +1,9 @@
 mod frame;
 mod layer;
-mod move_to;
 mod screen;
 
 pub use frame::*;
 pub use layer::*;
-pub use move_to::*;
 pub use screen::*;
 
 use crate::{geometry::*, grid::*, style::*};
