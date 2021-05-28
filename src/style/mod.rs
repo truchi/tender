@@ -71,7 +71,7 @@ where
 #[derive(Copy, Clone, Debug)]
 pub struct CS<T>(pub T);
 
-macro_rules! csi_tuples {
+macro_rules! cs_tuples {
     ($([$fmt:literal $($field:tt $T:ident)*])*) => {
         $(impl<$($T,)*> Display for CS<Dedup<($($T,)*)>>
         where
@@ -108,7 +108,7 @@ macro_rules! csi_tuples {
     };
 }
 
-csi_tuples!(
+cs_tuples!(
     ["{};{}"             0 T1 1 T2]
     ["{};{};{}"          0 T1 1 T2 2 T3]
     ["{};{};{};{}"       0 T1 1 T2 2 T3 3 T4]
