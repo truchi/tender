@@ -82,14 +82,6 @@ impl<Fg: Color> Display for CS<Cell<Fg, Rgb>> {
     }
 }
 
-impl Display for CS<Dedup<Cell>> {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        let Dedup(previous, current) = self.0;
-
-        CS(Dedup(previous.styles(), current.styles())).fmt(f)
-    }
-}
-
 impl<Fg: Color> Display for Cell<Fg, Rgb> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "{}{}", CSI(*self), self.char)
@@ -98,7 +90,30 @@ impl<Fg: Color> Display for Cell<Fg, Rgb> {
 
 impl Display for Dedup<Cell> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{}{}", CSI(*self), self.1.char)
+        let Dedup(previous, current) = self;
+        let (previous, current, char) = (previous.styles(), current.styles(), current.char);
+        let mut empty = true;
+
+        macro_rules! dedup {
+            ($($i:tt)*) => { $(
+                if previous.$i != current.$i {
+                    if empty {
+                        write!(f, "\x1B[{}", CS(current.$i))?;
+                        empty = false;
+                    } else {
+                        write!(f, ";{}", CS(current.$i))?;
+                    }
+                }
+            )* }
+        }
+
+        dedup!(0 1 2 3 4 5);
+
+        if empty {
+            write!(f, "{}", char)
+        } else {
+            write!(f, "m{}", char)
+        }
     }
 }
 

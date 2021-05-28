@@ -73,29 +73,6 @@ pub struct CS<T>(pub T);
 
 macro_rules! cs_tuples {
     ($([$fmt:literal $($field:tt $T:ident)*])*) => {
-        $(impl<$($T,)*> Display for CS<Dedup<($($T,)*)>>
-        where
-            $($T: PartialEq + Copy,)*
-            $(CS<$T>: Display,)*
-        {
-            #[allow(unused_assignments)]
-            fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-                let Dedup(previous, current) = self.0;
-                let mut separator = false;
-
-                $(if previous.$field != current.$field {
-                    if separator {
-                        write!(f, ";{}", CS(current.$field))?;
-                    } else {
-                        write!(f, "{}", CS(current.$field))?;
-                        separator = true;
-                    }
-                })*
-
-                Ok(())
-            }
-        })*
-
         $(impl<$($T,)*> Display for CS<($($T,)*)>
         where
             $($T: Copy,)*
