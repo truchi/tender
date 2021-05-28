@@ -1,3 +1,5 @@
+pub mod examples;
+
 mod frame;
 mod layer;
 mod screen;
