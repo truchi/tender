@@ -21,8 +21,12 @@ impl Damaged {
             Some(self.current)
         };
 
-        self.previous = self.current;
+        self.update();
         damage
+    }
+
+    pub(super) fn update(&mut self) {
+        self.previous = self.current;
     }
 }
 

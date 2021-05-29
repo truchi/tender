@@ -11,6 +11,56 @@ pub use screen::*;
 use crate::{geometry::*, grid::*, style::*};
 use std::io::{self, stdout, BufWriter, Stdout, Write};
 
+pub fn render2<T>(position: Point, grid: T, mut w: impl Write) -> io::Result<()>
+where
+    T: GridRows,
+    T::Item: ICell,
+{
+    fn render_row<C: ICell>(
+        mut w: impl Write,
+        row: impl IntoIterator<Item = C>,
+        previous: &mut Cell,
+        move_to: &mut MoveTo,
+    ) -> io::Result<()> {
+        for cell in row {
+            let cell = cell.cell();
+            write!(w, "{}", Dedup(*previous, cell))?;
+            *previous = cell;
+        }
+        move_to.next_row();
+
+        Ok(())
+    }
+
+    let mut rows = unsafe { grid.rows_unchecked(..) }.into_iter();
+    let mut move_to = MoveTo::new(position);
+
+    if let Some(row) = rows.next() {
+        let mut row = row.into_iter();
+
+        // Render first cell as is
+        if let Some(cell) = row.next() {
+            let mut previous = cell.cell();
+            write!(w, "{}{}", move_to, previous)?;
+
+            // Finish rendering this row, deduping
+            render_row(&mut w, row, &mut previous, &mut move_to)?;
+
+            // Render remaining rows, deduping
+            for row in rows {
+                write!(w, "{}", move_to)?;
+                render_row(&mut w, row, &mut previous, &mut move_to)?;
+            }
+
+            // Done
+            return Ok(());
+        }
+    }
+
+    // Was empty
+    Ok(())
+}
+
 pub fn render<T>(position: Point, grid: T, mut w: impl Write) -> io::Result<()>
 where
     T: GridRows,

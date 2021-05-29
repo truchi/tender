@@ -130,7 +130,7 @@ where
     &'a T: GridRows<Item = &'a Cell>,
 {
     fn render(self) -> io::Result<()> {
-        render(self.0.position, self.0.grid, self.1)
+        render2(self.0.position, self.0.grid, self.1)
     }
 }
 
@@ -143,7 +143,7 @@ where
 
         if layer.first.is_first() {
             layer.first.unset();
-            render(layer.position, layer.grid, out)
+            render2(layer.position, layer.grid, out)
         } else {
             render_damage(layer.position, layer.grid, out)
         }
@@ -178,8 +178,11 @@ pub fn test2() -> String {
 
     layer.as_mut().under(repeated.as_ref());
 
-    (layer.as_mut(), &mut out).render().unwrap();
+    let mut v = vec![];
+    (layer.as_mut(), &mut v).render().unwrap();
     out.flush().unwrap();
+
+    dbg!(layer.first);
 
     // repeated.position = repeated.position + Point::from((11, 11));
 

@@ -92,3 +92,26 @@ cs_tuples!(
     ["{};{};{};{};{}"    0 T1 1 T2 2 T3 3 T4 4 T5]
     ["{};{};{};{};{};{}" 0 T1 1 T2 2 T3 3 T4 4 T5 5 T6]
 );
+
+pub trait ICell: Sized {
+    fn cell(&self) -> Cell;
+    fn update(&mut self);
+}
+
+impl ICell for &Cell {
+    fn cell(&self) -> Cell {
+        **self
+    }
+
+    fn update(&mut self) {}
+}
+
+impl ICell for &mut Damaged {
+    fn cell(&self) -> Cell {
+        self.current
+    }
+
+    fn update(&mut self) {
+        (*self).update();
+    }
+}

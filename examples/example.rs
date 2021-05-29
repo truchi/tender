@@ -8,10 +8,10 @@ use std::io::{stdout, Write};
 use tender::*;
 
 fn main() {
-    enter();
+    // enter();
     let ret = test2();
-    leave();
-    dbg!(&ret);
+    // leave();
+    // dbg!(&ret);
     dbg!(ret.len());
 }
 
