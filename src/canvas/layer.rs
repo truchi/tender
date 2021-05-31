@@ -1,6 +1,6 @@
 use super::*;
 
-pub trait First {
+pub trait First: Copy {
     fn new() -> Self;
     fn is_first(&self) -> bool;
     fn unset(&mut self);
@@ -47,7 +47,7 @@ impl Options for Damaged {
     type First = bool;
 }
 
-pub struct Layer2<T, C: Options> {
+pub struct Layer2<T, C: Options = Cell> {
     pub position: Point,
     grid:         T,
     first:        C::First,
@@ -61,26 +61,37 @@ impl<T, C: Options> Layer2<T, C> {
             first: C::First::new(),
         }
     }
-}
 
-impl<Top, Bottom> Over<Layer2<Bottom, Bottom::Item>> for Layer2<Top, Top::Item>
-where
-    Top: GridRows,
-    Bottom: GridRows,
-    Top::Item: Options,
-    Bottom::Item: Options,
-    Top::Item: Over<Bottom::Item>,
-{
-    type Output = ();
+    pub fn frame_ref<'a>(&'a self, rect: impl Index2D) -> Option<Layer2<Crop<&'a T>, C>>
+    where
+        T: WithSize,
+        &'a T: Grid,
+    {
+        let rect = rect.checked(self.grid.size())?;
+        let position = self.position + rect.start();
+        let grid = unsafe { self.grid.crop_unchecked(rect) };
 
-    fn over(self, bottom: Layer2<Bottom, Bottom::Item>) {
-        bottom
-            .grid
-            .zip_at(self.position, self.grid)
-            .flatten_rows()
-            .for_each(|(bottom, top)| {
-                top.over(bottom);
-            });
+        Some(Layer2 {
+            position,
+            grid,
+            first: self.first,
+        })
+    }
+
+    pub fn frame_mut<'a>(&'a mut self, rect: impl Index2D) -> Option<Layer2<Crop<&'a mut T>, C>>
+    where
+        T: WithSize,
+        &'a mut T: Grid,
+    {
+        let rect = rect.checked(self.grid.size())?;
+        let position = self.position + rect.start();
+        let grid = unsafe { (&mut self.grid).crop_unchecked(rect) };
+
+        Some(Layer2 {
+            position,
+            grid,
+            first: self.first,
+        })
     }
 }
 
@@ -192,12 +203,16 @@ pub fn test2() -> String {
     (&mut layer, &mut out).render().unwrap();
     out.flush().unwrap();
 
-    String::from_utf8(vec).unwrap()
+    repeated.position = Point::from((0, 0));
 
-    // let frame = layer.frame_ref(..).unwrap();
-    // frame.render(&mut vec![]).unwrap();
-    /*
-     */
+    let mut frame = layer.frame_mut((30..40, 30..40)).unwrap();
+    (&mut frame).under(&repeated);
+    (&mut frame).no_weight();
+    (&mut frame, &mut out).render().unwrap();
+    (&mut frame, &mut vec).render().unwrap();
+    out.flush().unwrap();
+
+    String::from_utf8(vec).unwrap()
 }
 
 // ===========================================================================
