@@ -34,7 +34,7 @@ impl<G, O: Options> Layer<G, O> {
         }
     }
 
-    pub fn frame_ref<'a>(&'a self, rect: impl Index2D) -> Option<Layer<Crop<&'a G>, O>>
+    pub fn frame<'a>(&'a self, rect: impl Index2D) -> Option<Layer<Crop<&'a G>, O>>
     where
         G: WithSize,
         &'a G: Grid,
