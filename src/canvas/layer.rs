@@ -39,15 +39,7 @@ impl<G, O: Options> Layer<G, O> {
         G: WithSize,
         &'a G: Grid,
     {
-        let rect = rect.checked(self.grid.size())?;
-        let position = self.position + rect.start();
-        let grid = unsafe { self.grid.crop_unchecked(rect) };
-
-        Some(Layer {
-            position,
-            grid,
-            first: self.first,
-        })
+        Some(unsafe { Self::frame_unchecked(self, rect.checked(self.grid.size())?) })
     }
 
     pub fn frame_mut<'a>(&'a mut self, rect: impl Index2D) -> Option<Layer<Crop<&'a mut G>, O>>
@@ -55,15 +47,42 @@ impl<G, O: Options> Layer<G, O> {
         G: WithSize,
         &'a mut G: Grid,
     {
-        let rect = rect.checked(self.grid.size())?;
-        let position = self.position + rect.start();
-        let grid = unsafe { (&mut self.grid).crop_unchecked(rect) };
+        Some(unsafe { Self::frame_mut_unchecked(self, rect.checked(self.grid.size())?) })
+    }
 
-        Some(Layer {
+    pub unsafe fn frame_unchecked<'a>(&'a self, rect: impl Index2D) -> Layer<Crop<&'a G>, O>
+    where
+        G: WithSize,
+        &'a G: Grid,
+    {
+        let rect = rect.unchecked(self.grid.size());
+        let position = self.position + rect.start();
+        let grid = self.grid.crop_unchecked(rect);
+
+        Layer {
             position,
             grid,
             first: self.first,
-        })
+        }
+    }
+
+    pub unsafe fn frame_mut_unchecked<'a>(
+        &'a mut self,
+        rect: impl Index2D,
+    ) -> Layer<Crop<&'a mut G>, O>
+    where
+        G: WithSize,
+        &'a mut G: Grid,
+    {
+        let rect = rect.unchecked(self.grid.size());
+        let position = self.position + rect.start();
+        let grid = (&mut self.grid).crop_unchecked(rect);
+
+        Layer {
+            position,
+            grid,
+            first: self.first,
+        }
     }
 }
 
