@@ -6,6 +6,25 @@ pub struct Layer<G, O: Options = Cell> {
     first:        O::First,
 }
 
+impl<G: Debug> Debug for Layer<G, Cell> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        f.debug_struct("Layer")
+            .field("position", &self.position)
+            .field("grid", &self.grid)
+            .finish()
+    }
+}
+
+impl<G: Debug> Debug for Layer<G, Damaged> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        f.debug_struct("Layer")
+            .field("position", &self.position)
+            .field("first", &self.first)
+            .field("grid", &self.grid)
+            .finish()
+    }
+}
+
 impl<G, O: Options> Layer<G, O> {
     pub fn new(position: impl Into<Point>, grid: G) -> Self {
         Self {
@@ -107,4 +126,10 @@ where
             render_damage(layer.position, &mut layer.grid, out)
         }
     }
+}
+
+pub fn test2() {
+    use super::*;
+    let layer = Layer::<_, Damaged>::new((0, 0), repeat((10, 10), Damaged::new('a'.italic())));
+    dbg!(layer);
 }
