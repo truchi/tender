@@ -1,17 +1,72 @@
 // pub mod examples;
 
-mod frame;
+// mod frame;
 mod layer;
-mod screen;
+// mod screen;
 
-pub use frame::*;
+// pub use frame::*;
 pub use layer::*;
-pub use screen::*;
+// pub use screen::*;
 
 use crate::{geometry::*, grid::*, style::*};
 use std::io::{self, stdout, BufWriter, Stdout, Write};
 
-pub fn render2<T>(position: Point, grid: T, mut w: impl Write) -> io::Result<()>
+pub trait Render: Sized {
+    fn render(self) -> io::Result<()> {
+        Ok(())
+    }
+}
+
+pub trait First: Copy {
+    fn new() -> Self;
+    fn is_first(&self) -> bool;
+    fn unset(&mut self);
+}
+
+impl First for () {
+    fn new() -> Self {
+        ()
+    }
+
+    fn is_first(&self) -> bool {
+        // There is no reason to be here
+        debug_assert!(
+            false,
+            "Calling `is_first()` on `()` (Layer is made of Cells)"
+        );
+        true
+    }
+
+    fn unset(&mut self) {}
+}
+
+impl First for bool {
+    fn new() -> Self {
+        true
+    }
+
+    fn is_first(&self) -> bool {
+        *self
+    }
+
+    fn unset(&mut self) {
+        *self = false;
+    }
+}
+
+pub trait Options {
+    type First: First;
+}
+
+impl Options for Cell {
+    type First = ();
+}
+
+impl Options for Damaged {
+    type First = bool;
+}
+
+pub fn render<T>(position: Point, grid: T, mut w: impl Write) -> io::Result<()>
 where
     T: GridRows,
     T::Item: ICell,
@@ -41,56 +96,6 @@ where
         // Render first cell as is
         if let Some(cell) = row.next() {
             let mut previous = cell.update();
-            write!(w, "{}{}", move_to, previous)?;
-
-            // Finish rendering this row, deduping
-            render_row(&mut w, row, &mut previous, &mut move_to)?;
-
-            // Render remaining rows, deduping
-            for row in rows {
-                write!(w, "{}", move_to)?;
-                render_row(&mut w, row, &mut previous, &mut move_to)?;
-            }
-
-            // Done
-            return Ok(());
-        }
-    }
-
-    // Was empty
-    Ok(())
-}
-
-pub fn render<T>(position: Point, grid: T, mut w: impl Write) -> io::Result<()>
-where
-    T: GridRows,
-    T::Item: AsRef<Cell>,
-{
-    fn render_row<C: AsRef<Cell>>(
-        mut w: impl Write,
-        row: impl IntoIterator<Item = C>,
-        previous: &mut Cell,
-        move_to: &mut MoveTo,
-    ) -> io::Result<()> {
-        for icell in row {
-            let cell = *icell.as_ref();
-            write!(w, "{}", Dedup(*previous, cell))?;
-            *previous = cell;
-        }
-        move_to.next_row();
-
-        Ok(())
-    }
-
-    let mut rows = unsafe { grid.rows_unchecked(..) }.into_iter();
-    let mut move_to = MoveTo::new(position);
-
-    if let Some(row) = rows.next() {
-        let mut row = row.into_iter();
-
-        // Render first cell as is
-        if let Some(cell) = row.next() {
-            let mut previous = *cell.as_ref();
             write!(w, "{}{}", move_to, previous)?;
 
             // Finish rendering this row, deduping
