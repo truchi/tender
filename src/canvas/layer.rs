@@ -34,12 +34,19 @@ impl<G, O: Options> Layer<G, O> {
         }
     }
 
+    pub fn size(&self) -> Size
+    where
+        G: WithSize,
+    {
+        self.grid.size()
+    }
+
     pub fn frame<'a>(&'a self, rect: impl Index2D) -> Option<Layer<Crop<&'a G>, O>>
     where
         G: WithSize,
         &'a G: Grid,
     {
-        Some(unsafe { Self::frame_unchecked(self, rect.checked(self.grid.size())?) })
+        Some(unsafe { Self::frame_unchecked(self, rect.checked(self.size())?) })
     }
 
     pub fn frame_mut<'a>(&'a mut self, rect: impl Index2D) -> Option<Layer<Crop<&'a mut G>, O>>
@@ -47,7 +54,7 @@ impl<G, O: Options> Layer<G, O> {
         G: WithSize,
         &'a mut G: Grid,
     {
-        Some(unsafe { Self::frame_mut_unchecked(self, rect.checked(self.grid.size())?) })
+        Some(unsafe { Self::frame_mut_unchecked(self, rect.checked(self.size())?) })
     }
 
     pub unsafe fn frame_unchecked<'a>(&'a self, rect: impl Index2D) -> Layer<Crop<&'a G>, O>
@@ -55,7 +62,7 @@ impl<G, O: Options> Layer<G, O> {
         G: WithSize,
         &'a G: Grid,
     {
-        let rect = rect.unchecked(self.grid.size());
+        let rect = rect.unchecked(self.size());
         let position = self.position + rect.start();
         let grid = self.grid.crop_unchecked(rect);
 
@@ -74,7 +81,7 @@ impl<G, O: Options> Layer<G, O> {
         G: WithSize,
         &'a mut G: Grid,
     {
-        let rect = rect.unchecked(self.grid.size());
+        let rect = rect.unchecked(self.size());
         let position = self.position + rect.start();
         let grid = (&mut self.grid).crop_unchecked(rect);
 
@@ -145,10 +152,4 @@ where
             render_damage(layer.position, &mut layer.grid, out)
         }
     }
-}
-
-pub fn test2() {
-    use super::*;
-    let layer = Layer::<_, Damaged>::new((0, 0), repeat((10, 10), Damaged::new('a'.italic())));
-    dbg!(layer);
 }
