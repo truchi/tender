@@ -1,24 +1,24 @@
 use super::*;
 
-pub struct Layer<T, C: Options = Cell> {
+pub struct Layer<G, O: Options = Cell> {
     pub position: Point,
-    grid:         T,
-    first:        C::First,
+    grid:         G,
+    first:        O::First,
 }
 
-impl<T, C: Options> Layer<T, C> {
-    pub fn new(position: impl Into<Point>, grid: T) -> Self {
+impl<G, O: Options> Layer<G, O> {
+    pub fn new(position: impl Into<Point>, grid: G) -> Self {
         Self {
             position: position.into(),
             grid,
-            first: C::First::new(),
+            first: O::First::new(),
         }
     }
 
-    pub fn frame_ref<'a>(&'a self, rect: impl Index2D) -> Option<Layer<Crop<&'a T>, C>>
+    pub fn frame_ref<'a>(&'a self, rect: impl Index2D) -> Option<Layer<Crop<&'a G>, O>>
     where
-        T: WithSize,
-        &'a T: Grid,
+        G: WithSize,
+        &'a G: Grid,
     {
         let rect = rect.checked(self.grid.size())?;
         let position = self.position + rect.start();
@@ -31,10 +31,10 @@ impl<T, C: Options> Layer<T, C> {
         })
     }
 
-    pub fn frame_mut<'a>(&'a mut self, rect: impl Index2D) -> Option<Layer<Crop<&'a mut T>, C>>
+    pub fn frame_mut<'a>(&'a mut self, rect: impl Index2D) -> Option<Layer<Crop<&'a mut G>, O>>
     where
-        T: WithSize,
-        &'a mut T: Grid,
+        G: WithSize,
+        &'a mut G: Grid,
     {
         let rect = rect.checked(self.grid.size())?;
         let position = self.position + rect.start();
@@ -69,11 +69,11 @@ where
     }
 }
 
-impl<'a, T, O> Paint for &'a mut Layer<T, O>
+impl<'a, G, O> Paint for &'a mut Layer<G, O>
 where
     O: Options,
-    &'a mut T: GridRows,
-    <&'a mut T as Grid>::Item: AsMut<Cell>,
+    &'a mut G: GridRows,
+    <&'a mut G as Grid>::Item: AsMut<Cell>,
 {
     type Output = ();
 
@@ -84,18 +84,18 @@ where
     }
 }
 
-impl<'a, T, W: Write> Render for (&'a Layer<T, Cell>, W)
+impl<'a, G, W: Write> Render for (&'a Layer<G, Cell>, W)
 where
-    &'a T: GridRows<Item = &'a Cell>,
+    &'a G: GridRows<Item = &'a Cell>,
 {
     fn render(self) -> io::Result<()> {
         render(self.0.position, &self.0.grid, self.1)
     }
 }
 
-impl<'a, T: 'a, W: Write> Render for (&'a mut Layer<T, Damaged>, W)
+impl<'a, G: 'a, W: Write> Render for (&'a mut Layer<G, Damaged>, W)
 where
-    &'a mut T: GridRows<Item = &'a mut Damaged>,
+    &'a mut G: GridRows<Item = &'a mut Damaged>,
 {
     fn render(self) -> io::Result<()> {
         let (layer, out) = self;
