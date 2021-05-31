@@ -94,24 +94,18 @@ cs_tuples!(
 );
 
 pub trait ICell: Sized {
-    fn cell(&self) -> Cell;
-    fn update(&mut self);
+    fn update(self) -> Cell;
 }
 
 impl ICell for &Cell {
-    fn cell(&self) -> Cell {
-        **self
+    fn update(self) -> Cell {
+        *self
     }
-
-    fn update(&mut self) {}
 }
 
 impl ICell for &mut Damaged {
-    fn cell(&self) -> Cell {
+    fn update(self) -> Cell {
+        self.previous = self.current;
         self.current
-    }
-
-    fn update(&mut self) {
-        (*self).update();
     }
 }

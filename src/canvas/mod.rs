@@ -23,7 +23,7 @@ where
         move_to: &mut MoveTo,
     ) -> io::Result<()> {
         for cell in row {
-            let cell = cell.cell();
+            let cell = cell.update();
             write!(w, "{}", Dedup(*previous, cell))?;
             *previous = cell;
         }
@@ -40,7 +40,7 @@ where
 
         // Render first cell as is
         if let Some(cell) = row.next() {
-            let mut previous = cell.cell();
+            let mut previous = cell.update();
             write!(w, "{}{}", move_to, previous)?;
 
             // Finish rendering this row, deduping

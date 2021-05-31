@@ -13,7 +13,10 @@ impl First for () {
 
     fn is_first(&self) -> bool {
         // There is no reason to be here
-        debug_assert!(false);
+        debug_assert!(
+            false,
+            "Calling `is_first()` on `()` (Layer is made of Cells)"
+        );
         true
     }
 
@@ -40,16 +43,7 @@ pub trait Options {
 impl Options for Cell {
     type First = ();
 }
-impl Options for &Cell {
-    type First = ();
-}
-impl Options for &mut Cell {
-    type First = ();
-}
 impl Options for Damaged {
-    type First = bool;
-}
-impl Options for &mut Damaged {
     type First = bool;
 }
 
@@ -66,20 +60,6 @@ impl<T, C: Options> Layer2<T, C> {
             grid,
             first: C::First::new(),
         }
-    }
-
-    pub fn as_ref<'a>(&'a self) -> Layer2<&'a T, &'a C>
-    where
-        &'a C: Options,
-    {
-        Layer2::new(self.position, &self.grid)
-    }
-
-    pub fn as_mut<'a>(&'a mut self) -> Layer2<&'a mut T, &'a mut C>
-    where
-        &'a mut C: Options,
-    {
-        Layer2::new(self.position, &mut self.grid)
     }
 }
 
@@ -104,17 +84,38 @@ where
     }
 }
 
-impl<T> Paint for Layer2<T, T::Item>
+impl<'t, 'b, Top, Bottom, T, B> Over<&'b mut Layer2<Bottom, B>> for &'t Layer2<Top, T>
 where
-    T: GridRows,
-    T::Item: Options,
-    T::Item: Paint,
+    T: Options,
+    B: Options,
+    &'t Top: GridRows,
+    &'b mut Bottom: GridRows,
+    <&'t Top as Grid>::Item: Over<<&'b mut Bottom as Grid>::Item>,
+{
+    type Output = ();
+
+    fn over(self, bottom: &'b mut Layer2<Bottom, B>) {
+        bottom
+            .grid
+            .zip_at(self.position, &self.grid)
+            .flatten_rows()
+            .for_each(|(bottom, top)| {
+                top.over(bottom);
+            });
+    }
+}
+
+impl<'a, T, O> Paint for &'a mut Layer2<T, O>
+where
+    O: Options,
+    &'a mut T: GridRows,
+    <&'a mut T as Grid>::Item: AsMut<Cell>,
 {
     type Output = ();
 
     fn paint(self, painter: impl Painter) {
-        self.grid.flatten_rows().for_each(|cell| {
-            cell.paint(painter);
+        self.grid.flatten_rows().for_each(|mut cell| {
+            cell.as_mut().paint(painter);
         });
     }
 }
@@ -125,27 +126,27 @@ pub trait Render: Sized {
     }
 }
 
-impl<'a, T, W: Write> Render for (Layer2<&'a T, &'a Cell>, W)
+impl<'a, T, W: Write> Render for (&'a Layer2<T, Cell>, W)
 where
     &'a T: GridRows<Item = &'a Cell>,
 {
     fn render(self) -> io::Result<()> {
-        render2(self.0.position, self.0.grid, self.1)
+        render2(self.0.position, &self.0.grid, self.1)
     }
 }
 
-impl<'a, T, W: Write> Render for (Layer2<&'a mut T, &'a mut Damaged>, W)
+impl<'a, T: 'a, W: Write> Render for (&'a mut Layer2<T, Damaged>, W)
 where
     &'a mut T: GridRows<Item = &'a mut Damaged>,
 {
     fn render(self) -> io::Result<()> {
-        let (mut layer, out) = self;
+        let (layer, out) = self;
 
         if layer.first.is_first() {
             layer.first.unset();
-            render2(layer.position, layer.grid, out)
+            render2(layer.position, &mut layer.grid, out)
         } else {
-            render_damage(layer.position, layer.grid, out)
+            render_damage(layer.position, &mut layer.grid, out)
         }
     }
 }
@@ -176,17 +177,19 @@ pub fn test2() -> String {
     // dbg!(&layer);
     // dbg!(&repeated);
 
-    layer.as_mut().under(repeated.as_ref());
+    (&mut layer).under(&repeated);
 
-    let mut v = vec![];
-    (layer.as_mut(), &mut v).render().unwrap();
+    // let mut v = vec![];
+    (&mut layer, &mut out).render().unwrap();
     out.flush().unwrap();
 
-    dbg!(layer.first);
+    // dbg!(layer.first);
 
-    // repeated.position = repeated.position + Point::from((11, 11));
+    repeated.position = repeated.position + Point::from((11, 11));
 
-    (layer.as_mut(), &mut vec).render().unwrap();
+    (&mut layer).background(GREEN);
+    (&mut layer).under(&repeated);
+    (&mut layer, &mut out).render().unwrap();
     out.flush().unwrap();
 
     String::from_utf8(vec).unwrap()
