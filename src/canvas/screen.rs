@@ -1,97 +1,126 @@
 use super::*;
 
-#[derive(Debug)]
-pub struct Screen<Canvas> {
-    pub position:      Point,
-    pub(super) canvas: Canvas,
-    // pub(super) stdout: Stdout,
-    pub(super) stdout: BufWriter<Stdout>,
+pub struct Screen<G, O: Options = Cell, W = Stdout> {
+    pub out: W,
+    layer:   Layer<G, O>,
 }
 
-impl<Canvas> Screen<Canvas> {
-    pub fn new(position: impl Index0D, canvas: Canvas) -> Self {
-        Self {
-            position: position.unchecked(),
-            canvas,
-            // stdout: stdout(),
-            stdout: BufWriter::with_capacity(16_000, stdout()),
-        }
+impl<G, O: Options, W> Screen<G, O, W> {
+    pub fn new(layer: Layer<G, O>, out: W) -> Self {
+        Self { layer, out }
     }
 
     pub fn size(&self) -> Size
     where
-        Canvas: WithSize,
+        G: WithSize,
     {
-        self.canvas.size()
+        self.layer.size()
     }
 
-    pub fn frame(&mut self, rect: impl Index2D) -> Option<Frame<Canvas>>
+    pub fn frame<'a>(&'a self, rect: impl Index2D) -> Option<Screen<Crop<&'a G>, O, &'a W>>
     where
-        Canvas: WithSize,
+        G: WithSize,
+        &'a G: Grid,
     {
-        let rect = rect.checked(self.size())?;
-
-        Some(Frame { rect, screen: self })
+        Some(unsafe { Self::frame_unchecked(self, rect.checked(self.size())?) })
     }
 
-    pub unsafe fn frame_unchecked(&mut self, rect: impl Index2D) -> Frame<Canvas>
+    pub fn frame_mut<'a>(
+        &'a mut self,
+        rect: impl Index2D,
+    ) -> Option<Screen<Crop<&'a mut G>, O, &'a mut W>>
     where
-        Canvas: WithSize,
+        G: WithSize,
+        &'a mut G: Grid,
     {
-        let rect = rect.unchecked(self.size());
-
-        Frame { rect, screen: self }
+        Some(unsafe { Self::frame_mut_unchecked(self, rect.checked(self.size())?) })
     }
 
-    pub fn render<'a>(&'a mut self) -> io::Result<()>
+    pub unsafe fn frame_unchecked<'a>(&'a self, rect: impl Index2D) -> Screen<Crop<&'a G>, O, &'a W>
     where
-        &'a Canvas: GridRows,
-        <&'a Canvas as Grid>::Item: AsRef<Cell>,
+        G: WithSize,
+        &'a G: Grid,
     {
-        render(self.position, &self.canvas, &mut self.stdout)
+        Screen::new(self.layer.frame_unchecked(rect), &self.out)
     }
 
-    pub fn render_damage<'a>(&'a mut self) -> io::Result<()>
+    pub unsafe fn frame_mut_unchecked<'a>(
+        &'a mut self,
+        rect: impl Index2D,
+    ) -> Screen<Crop<&'a mut G>, O, &'a mut W>
     where
-        &'a mut Canvas: GridRows,
-        <&'a mut Canvas as Grid>::Item: AsMut<Damaged>,
+        G: WithSize,
+        &'a mut G: Grid,
     {
-        render_damage(self.position, &mut self.canvas, &mut self.stdout)
+        Screen::new(self.layer.frame_mut_unchecked(rect), &mut self.out)
     }
 
-    pub fn flush(&mut self) -> io::Result<()> {
-        self.stdout.flush()
-    }
-
-    pub fn as_layer_ref(&self) -> Layer<&Canvas> {
-        Layer::new(Point::ZERO, &self.canvas)
-    }
-
-    pub fn as_layer_mut(&mut self) -> Layer<&mut Canvas> {
-        Layer::new(Point::ZERO, &mut self.canvas)
+    pub fn flush(&mut self) -> io::Result<()>
+    where
+        W: Write,
+    {
+        self.out.flush()
     }
 }
 
-impl<Canvas> AsRef<Screen<Canvas>> for Screen<Canvas> {
-    fn as_ref(&self) -> &Self {
-        self
-    }
-}
-
-impl<Canvas> AsMut<Screen<Canvas>> for Screen<Canvas> {
-    fn as_mut(&mut self) -> &mut Self {
-        self
-    }
-}
-
-impl<'a, Canvas> Paint for &'a mut Screen<Canvas>
+impl<'t, 'b, Top, Bottom, T, B, W> Over<&'b mut Screen<Bottom, B, W>> for &'t Layer<Top, T>
 where
-    &'a mut Canvas: GridRows,
-    <&'a mut Canvas as Grid>::Item: AsMut<Cell>,
+    T: Options,
+    B: Options,
+    &'t Top: GridRows,
+    &'b mut Bottom: GridRows,
+    <&'t Top as Grid>::Item: Over<<&'b mut Bottom as Grid>::Item>,
+{
+    type Output = ();
+
+    fn over(self, bottom: &'b mut Screen<Bottom, B, W>) {
+        <&'t Layer<Top, T> as Over<&'b mut Layer<Bottom, B>>>::over(self, &mut bottom.layer);
+    }
+}
+
+impl<'a, G, O, W> Paint for &'a mut Screen<G, O, W>
+where
+    O: Options,
+    &'a mut G: GridRows,
+    <&'a mut G as Grid>::Item: AsMut<Cell>,
 {
     type Output = ();
 
     fn paint(self, painter: impl Painter) {
-        self.as_layer_mut().paint(painter);
+        self.layer.paint(painter);
+    }
+}
+
+impl<'a, G, W: Write> Render for &'a mut Screen<G, Cell, W>
+where
+    &'a G: GridRows<Item = &'a Cell>,
+{
+    fn render(self) -> io::Result<()> {
+        (&self.layer, &mut self.out).render()
+    }
+}
+
+impl<'a, G: 'a, W: Write> Render for &'a mut Screen<G, Damaged, W>
+where
+    &'a mut G: GridRows<Item = &'a mut Damaged>,
+{
+    fn render(self) -> io::Result<()> {
+        (&mut self.layer, &mut self.out).render()
+    }
+}
+
+impl<G: Debug, W> Debug for Screen<G, Cell, W> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        f.debug_struct("Screen")
+            .field("position", &self.layer)
+            .finish()
+    }
+}
+
+impl<G: Debug, W> Debug for Screen<G, Damaged, W> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        f.debug_struct("Screen")
+            .field("layer", &self.layer)
+            .finish()
     }
 }
