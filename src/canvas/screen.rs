@@ -109,6 +109,18 @@ where
     }
 }
 
+impl<G, O: Options, W> AsRef<Layer<G, O>> for Screen<G, O, W> {
+    fn as_ref(&self) -> &Layer<G, O> {
+        &self.layer
+    }
+}
+
+impl<G, O: Options, W> AsMut<Layer<G, O>> for Screen<G, O, W> {
+    fn as_mut(&mut self) -> &mut Layer<G, O> {
+        &mut self.layer
+    }
+}
+
 impl<G: Debug, W> Debug for Screen<G, Cell, W> {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         f.debug_struct("Screen")
