@@ -49,3 +49,11 @@ impl AsMut<Damaged> for Damaged {
         self
     }
 }
+
+impl Over<Damaged> for Damaged {
+    type Output = Damaged;
+
+    fn over(self, damaged: Damaged) -> Damaged {
+        self.current.over(damaged)
+    }
+}

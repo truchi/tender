@@ -3,13 +3,18 @@
 // mod frame;
 mod layer;
 // mod screen;
+mod screen2;
 
 // pub use frame::*;
 pub use layer::*;
 // pub use screen::*;
+pub use screen2::*;
 
 use crate::{geometry::*, grid::*, style::*};
-use std::io::{self, stdout, BufWriter, Stdout, Write};
+use std::{
+    fmt::{self, Debug, Formatter},
+    io::{self, Stdout, Write},
+};
 
 pub trait Render: Sized {
     fn render(self) -> io::Result<()> {

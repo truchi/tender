@@ -84,10 +84,11 @@ impl Paint for Cell {
 }
 
 impl Paint for &mut Cell {
-    type Output = ();
+    type Output = Self;
 
-    fn paint(self, painter: impl Painter) {
+    fn paint(self, painter: impl Painter) -> Self {
         painter.paint(self);
+        self
     }
 }
 
